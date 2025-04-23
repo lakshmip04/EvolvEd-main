@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+<html lang="en" class="light">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>StudyMind - AI-Powered Learning Assistant</title>
+  
+  <!-- Fonts & Icons -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet"/>
+
+  <!-- Tailwind & Config -->
+  <link href="https://ai-public.creatie.ai/gen_page/tailwind-custom.css" rel="stylesheet"/>
+  <script src="https://cdn.tailwindcss.com/3.4.5?plugins=forms@0.5.7,typography@0.5.13,aspect-ratio@0.4.2,container-queries@0.1.1"></script>
+  <script src="https://ai-public.creatie.ai/gen_page/tailwind-config.min.js" data-color="#000000" data-border-radius="small"></script>
+
+  <!-- Dark Mode & Additional Styles -->
+  <style>
+    /* Unified Dark Mode Styles */
+    html.dark {
+      color-scheme: dark;
+    }
+    html.dark body {
+      background-color: #111827;
+      color: #f3f4f6;
+    }
+    html.dark nav,
+    html.dark .secondary-nav,
+    html.dark footer {
+      background-color: #1f2937 !important;
+      border-color: #374151 !important;
+    }
+    html.dark .bg-white {
+      background-color: #1f2937 !important;
+    }
+    html.dark .border-gray-200 {
+      border-color: #374151 !important;
+    }
+    html.dark .text-gray-900 {
+      color: #f3f4f6 !important;
+    }
+    html.dark .text-gray-500,
+    html.dark .text-gray-600,
+    html.dark .text-gray-400 {
+      color: #9ca3af !important;
+    }
+    html.dark .bg-gray-50 {
+      background-color: #111827 !important;
+    }
+    html.dark .hover\:bg-gray-100:hover {
+      background-color: #374151 !important;
+    }
+    html.dark [contenteditable="true"],
+    html.dark input,
+    html.dark select,
+    html.dark textarea {
+      background-color: #1f2937 !important;
+      color: #f3f4f6 !important;
+      border-color: #4b5563 !important;
+    }
+    html.dark .shadow-sm {
+      box-shadow: 0 1px 2px 0 rgba(0,0,0,0.5)!important;
+    }
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background-color: rgba(0,0,0,0.5);
+      display: none; 
+      z-index: 50;
+    }
+    .modal {
+      background-color: #fff;
+      width: 95%;
+      max-width: 800px;
+      margin: 50px auto;
+      border-radius: 0.5rem;
+      padding: 1.5rem;
+      position: relative;
+    }
+    html.dark .modal {
+      background-color: #1f2937!important;
+    }
+    .modal-active .modal-overlay {
+      display: block;
+    }
+    #whiteboardCanvas {
+      border: 2px solid #ccc;
+      cursor: crosshair;
+    }
+    .active-format {
+      background-color: #e2e2e2;
+    }
+    html.dark .active-format {
+      background-color: #4b5563;
+    }
+    #editor {
+      word-wrap: break-word;
+      white-space: pre-wrap;
+      min-height: 200px;
+      max-width: 100%;
+      overflow-wrap: break-word;
+    }
+    #editor img {
+      max-width: 600px; 
+      height: auto;
+      display: block;
+      margin-bottom: 1rem;
+    }
+    #saveToast {
+      display: none;
+    }
+  </style>
+</head>
+<body class="bg-gray-50 font-sans">
+
+  <!-- Toast (pop-up) for saved note -->
+  <div id="saveToast" class="fixed top-5 right-5 z-50 bg-green-600 text-white px-4 py-2 rounded shadow-md">
+    Note saved successfully!
+  </div>
+
+  <!-- NavBar -->
+  <nav class="bg-white border-b border-gray-200">
+    <div class="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex justify-between h-16">
+        <div class="flex">
+          <div class="flex-shrink-0 flex items-center">
+            <img class="h-12 w-auto" src="logo.png" alt="StudyMind"/>
+          </div>
+          <div class="hidden sm:ml-6 sm:flex sm:space-x-8">
+            <a href="dashboard.html" class="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
+              Dashboard
+            </a>
+            <a href="ai notes.html" class="border-custom text-gray-900 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
+              AI Notes
+            </a>
+            <a href="flashcards.html" class="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
+              Flashcards
+            </a>
+            <a href="todo.html" class="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
+              Tasks &amp; To-Do
+            </a>
+          </div>                    
+        </div>
+        <div class="flex items-center">
+          <div class="ml-4 relative">
+            <div class="flex items-center">
+              <button class="bg-gray-800 flex text-sm rounded-full focus:outline-none">
+                <img class="h-8 w-8 rounded-full" src="https://creatie.ai/ai/api/search-image?query=A%20professional%20headshot%20of%20a%20young%20person..." alt=""/>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </nav>
+  
+  <!-- Secondary nav -->
+  <div class="bg-white border-b border-gray-200 py-2 secondary-nav">
+    <div class="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex justify-end space-x-4 items-center">
+        <button id="darkModeToggle" class="flex items-center text-sm text-gray-600">
+          <i class="fas fa-moon mr-2" id="darkModeIcon"></i>
+          <span id="darkModeText">Dark Mode</span>
+        </button>
+        <div class="border-l border-gray-200 h-4 mx-2"></div>
+        <button class="flex items-center text-sm text-gray-600">
+          <i class="fas fa-bell mr-2"></i>Notifications
+        </button>
+        <div class="border-l border-gray-200 h-4 mx-2"></div>
+        <select class="text-sm text-gray-600 bg-transparent border-none">
+          <option>English</option>
+          <option>Spanish</option>
+          <option>French</option>
+        </select>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Main Page Content -->
+  <main class="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="max-w-4xl mx-auto">
+      <div class="bg-white rounded-lg shadow-sm p-6 mb-8">
+        <h1 class="text-3xl font-bold text-gray-900 mb-6">AI Notes</h1>
+        <div class="space-y-6">
+          <!-- Rich Text Editor Section -->
+          <div class="bg-white rounded-lg p-6 border border-gray-200 shadow-sm mb-6">
+            <div class="flex items-center justify-between mb-4">
+              <h2 class="text-lg font-semibold text-gray-900">Rich Text Editor</h2>
+              <div class="flex space-x-2">
+                <button id="btnBold" class="p-2 hover:bg-gray-100 rounded" title="Bold (Ctrl+B)">
+                  <i class="fas fa-bold"></i>
+                </button>
+                <button id="btnItalic" class="p-2 hover:bg-gray-100 rounded" title="Italic (Ctrl+I)">
+                  <i class="fas fa-italic"></i>
+                </button>
+                <button id="btnList" class="p-2 hover:bg-gray-100 rounded" title="Unordered List">
+                  <i class="fas fa-list"></i>
+                </button>
+                <button id="btnCodeBlock" class="p-2 hover:bg-gray-100 rounded" title="Code Block">
+                  <i class="fas fa-code"></i>
+                </button>
+                <button id="btnHighlight" class="p-2 hover:bg-gray-100 rounded" title="Toggle Highlight">
+                  <i class="fas fa-palette"></i>
+                </button>
+              </div>
+            </div>
+            <div 
+              id="editor" 
+              class="border rounded-lg p-4"
+              contenteditable="true"
+              placeholder="Start typing your notes here...">
+            </div>
+            <div class="flex justify-end mt-4">
+              <button id="btnSaveNote" class="px-4 py-2 bg-custom text-white rounded-md text-sm flex items-center space-x-2">
+                <i class="fas fa-save"></i>
+                <span>Save Note</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Upload / Voice / Drawing Tools Section -->
+          <div class="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-custom transition-colors grid grid-cols-3 gap-4">
+            <!-- Upload Files -->
+            <div class="col-span-1 flex flex-col items-center justify-center">
+              <input type="file" class="hidden" id="file-upload" accept=".pdf,.doc,.docx,.txt,image/*"/>
+              <label for="file-upload" class="cursor-pointer flex flex-col items-center">
+                <i class="fas fa-cloud-upload-alt text-4xl text-gray-400 mb-4"></i>
+                <p class="text-sm font-medium text-gray-900 mb-2">Upload Files</p>
+                <p class="text-xs text-gray-500">PDF, Images, or Text</p>
+              </label>
+            </div>
+            <!-- Voice Input -->
+            <div class="col-span-1 flex flex-col items-center justify-center">
+              <button id="btnVoiceInput" class="w-full h-full flex flex-col items-center justify-center focus:outline-none">
+                <i class="fas fa-microphone text-4xl text-gray-400 mb-4"></i>
+                <p class="text-sm font-medium text-gray-900 mb-2">Voice Input</p>
+                <p class="text-xs text-gray-500">Dictate your notes</p>
+              </button>
+            </div>
+            <!-- Draw & Write -->
+            <div class="col-span-1 flex flex-col items-center justify-center">
+              <button id="btnWhiteboard" class="w-full h-full flex flex-col items-center justify-center focus:outline-none">
+                <i class="fas fa-pen text-4xl text-gray-400 mb-4"></i>
+                <p class="text-sm font-medium text-gray-900 mb-2">Draw &amp; Write</p>
+                <p class="text-xs text-gray-500">Sketch or handwrite</p>
+              </button>
+            </div>
+          </div>
+
+          <!-- Additional content sections -->
+          <div class="bg-white rounded-lg p-6 border border-gray-200 shadow-sm">
+            <h3 class="text-xl font-semibold text-gray-900 mb-2">Other Features</h3>
+            <p class="text-gray-600 text-sm">
+              Here you can provide more advanced AI functionalities, such as summarizing notes,
+              generating outlines, or analyzing content. Integrate an API or local ML model
+              to expand your note-taking experience.
+            </p>
+          </div>
+          <div class="bg-gray-50 rounded-lg p-6">
+            <p class="text-gray-600 text-sm">
+              You can also keep track of revision history, add tags, or collaborate in real-time.
+              This placeholder is for any additional expansions you wish to add.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+  
+  <!-- Whiteboard Modal -->
+  <div id="whiteboardModalOverlay" class="modal-overlay">
+    <div class="modal">
+      <div class="flex justify-between items-center mb-4">
+        <h2 class="text-lg font-semibold">Whiteboard</h2>
+        <button id="closeWhiteboard" class="text-gray-500 hover:text-gray-700">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      <div class="mb-4">
+        <canvas id="whiteboardCanvas" width="700" height="400"></canvas>
+      </div>
+      <div class="flex justify-end space-x-2">
+        <button id="whiteboardClearBtn" class="px-4 py-2 bg-gray-300 rounded-md">Clear</button>
+        <button id="whiteboardSaveBtn" class="px-4 py-2 bg-custom text-white rounded-md">Save to Editor</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="bg-white border-t border-gray-200 mt-12">
+    <div class="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+      <div class="flex justify-between items-center">
+        <div class="text-sm text-gray-500">
+          © 2024 StudyMind. All rights reserved.
+        </div>
+        <div class="flex space-x-6">
+          <a href="#" class="text-gray-400 hover:text-gray-500"><i class="fab fa-twitter"></i></a>
+          <a href="#" class="text-gray-400 hover:text-gray-500"><i class="fab fa-facebook"></i></a>
+          <a href="#" class="text-gray-400 hover:text-gray-500"><i class="fab fa-instagram"></i></a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- ECharts (if you have charts here) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/echarts/5.5.0/echarts.min.js"></script>
+  
+  <!-- Main Scripts -->
+  <script>
+    /**************************************************
+     * DARK MODE
+     **************************************************/
+    function initializeDarkMode() {
+      const savedTheme = localStorage.getItem('theme') || 'light';
+      if (savedTheme === 'dark') {
+        document.documentElement.classList.add('dark');
+        updateDarkModeUI(true);
+      } else {
+        document.documentElement.classList.remove('dark');
+        updateDarkModeUI(false);
+      }
+    }
+    function updateDarkModeUI(isDarkMode) {
+      const darkModeIcon = document.getElementById('darkModeIcon');
+      const darkModeText = document.getElementById('darkModeText');
+      if (isDarkMode) {
+        darkModeIcon.classList.remove('fa-moon');
+        darkModeIcon.classList.add('fa-sun');
+        darkModeText.textContent = 'Light Mode';
+      } else {
+        darkModeIcon.classList.remove('fa-sun');
+        darkModeIcon.classList.add('fa-moon');
+        darkModeText.textContent = 'Dark Mode';
+      }
+    }
+    function toggleDarkMode() {
+      const isDarkMode = document.documentElement.classList.toggle('dark');
+      localStorage.setItem('theme', isDarkMode ? 'dark' : 'light');
+      updateDarkModeUI(isDarkMode);
+    }
+    document.getElementById('darkModeToggle').addEventListener('click', toggleDarkMode);
+
+    /**************************************************
+     * RICH TEXT EDITOR & FORMAT TOGGLES
+     **************************************************/
+    const editor = document.getElementById('editor');
+    const btnBold = document.getElementById('btnBold');
+    const btnItalic = document.getElementById('btnItalic');
+    const btnList = document.getElementById('btnList');
+    const btnCodeBlock = document.getElementById('btnCodeBlock');
+    const btnHighlight = document.getElementById('btnHighlight');
+    const btnSaveNote = document.getElementById('btnSaveNote');
+
+    function showSaveToast() {
+      const toast = document.getElementById('saveToast');
+      toast.style.display = 'block';
+      setTimeout(() => {
+        toast.style.display = 'none';
+      }, 1500);
+    }
+    btnSaveNote.addEventListener('click', () => {
+      showSaveToast();
+    });
+
+    function focusEditor() {
+      if (document.activeElement !== editor) {
+        editor.focus();
+      }
+    }
+    function execCommand(cmd, val = null) {
+      document.execCommand(cmd, false, val);
+    }
+    function updateButtonStates() {
+      btnBold.classList.toggle('active-format', document.queryCommandState('bold'));
+      btnItalic.classList.toggle('active-format', document.queryCommandState('italic'));
+      btnList.classList.toggle('active-format', document.queryCommandState('insertUnorderedList'));
+      btnCodeBlock.classList.toggle('active-format', (document.queryCommandValue('formatBlock') === 'pre'));
+    }
+    document.addEventListener('selectionchange', updateButtonStates);
+    editor.addEventListener('input', updateButtonStates);
+
+    btnBold.addEventListener('click', () => {
+      focusEditor();
+      execCommand('bold');
+      updateButtonStates();
+    });
+    btnItalic.addEventListener('click', () => {
+      focusEditor();
+      execCommand('italic');
+      updateButtonStates();
+    });
+    btnList.addEventListener('click', () => {
+      focusEditor();
+      execCommand('insertUnorderedList');
+      updateButtonStates();
+    });
+    btnCodeBlock.addEventListener('click', () => {
+      focusEditor();
+      const currentBlock = document.queryCommandValue('formatBlock');
+      if (currentBlock === 'pre') {
+        execCommand('formatBlock', 'div');
+      } else {
+        execCommand('formatBlock', 'pre');
+      }
+      updateButtonStates();
+    });
+    btnHighlight.addEventListener('click', () => {
+      focusEditor();
+      let currentColor = document.queryCommandValue('hiliteColor') || document.queryCommandValue('backColor');
+      if (currentColor === 'rgb(255, 255, 0)' || currentColor === 'yellow') {
+        if (document.queryCommandSupported('hiliteColor')) {
+          execCommand('hiliteColor', 'transparent');
+        } else {
+          execCommand('backColor', 'transparent');
+        }
+      } else {
+        if (document.queryCommandSupported('hiliteColor')) {
+          execCommand('hiliteColor', 'yellow');
+        } else {
+          execCommand('backColor', 'yellow');
+        }
+      }
+      updateButtonStates();
+    });
+
+    /**************************************************
+     * FILE UPLOAD
+     **************************************************/
+    const fileUploadInput = document.getElementById('file-upload');
+    fileUploadInput.addEventListener('change', handleFileUpload);
+
+    function handleFileUpload(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      if (file.type.startsWith('image/')) {
+        reader.onload = function(event) {
+          placeCaretAtEnd(editor); 
+          const imgHTML = `<img src="${event.target.result}" alt="${file.name}" />`;
+          insertHTMLAtCursor(imgHTML);
+        };
+        reader.readAsDataURL(file);
+      }
+      else if (file.type.startsWith('text/') || file.name.endsWith('.doc') || file.name.endsWith('.docx')) {
+        reader.onload = function(event) {
+          editor.innerHTML = `<pre style="white-space: pre-wrap; word-wrap: break-word;">${escapeHTML(event.target.result)}</pre>`;
+        };
+        reader.readAsText(file);
+      }
+      else {
+        const fileURL = URL.createObjectURL(file);
+        placeCaretAtEnd(editor);
+        insertHTMLAtCursor(`<a href="${fileURL}" target="_blank">Open ${file.name}</a>`);
+      }
+    }
+    function placeCaretAtEnd(el) {
+      el.focus();
+      if (typeof window.getSelection !== "undefined" && typeof document.createRange !== "undefined") {
+        const range = document.createRange();
+        range.selectNodeContents(el);
+        range.collapse(false);
+        const sel = window.getSelection();
+        sel.removeAllRanges();
+        sel.addRange(range);
+      }
+    }
+    function insertHTMLAtCursor(html) {
+      const sel = window.getSelection();
+      if (!sel || sel.rangeCount === 0) {
+        editor.innerHTML += html;
+        return;
+      }
+      const range = sel.getRangeAt(0);
+      range.deleteContents();
+      const tempEl = document.createElement('div');
+      tempEl.innerHTML = html;
+      let node;
+      while ((node = tempEl.firstChild)) {
+        range.insertNode(node);
+        range.collapse(false);
+      }
+    }
+    function escapeHTML(str) {
+      return str
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
+
+    /**************************************************
+     * VOICE INPUT
+     **************************************************/
+    const btnVoiceInput = document.getElementById('btnVoiceInput');
+    let recognition;
+    if ('SpeechRecognition' in window) {
+      recognition = new SpeechRecognition();
+    } else if ('webkitSpeechRecognition' in window) {
+      recognition = new webkitSpeechRecognition();
+    }
+    if (recognition) {
+      recognition.continuous = true;
+      recognition.interimResults = false; 
+      recognition.lang = 'en-US';
+      recognition.onstart = () => {
+        console.log('Voice recognition started. Speak now...');
+        btnVoiceInput.querySelector('i').classList.add('text-red-500');
+      };
+      recognition.onerror = (event) => {
+        console.error('Speech recognition error', event.error);
+        btnVoiceInput.querySelector('i').classList.remove('text-red-500');
+      };
+      recognition.onend = () => {
+        console.log('Voice recognition stopped.');
+        btnVoiceInput.querySelector('i').classList.remove('text-red-500');
+        btnVoiceInput.dataset.listening = 'false';
+      };
+      recognition.onresult = (event) => {
+        let finalText = '';
+        for (let i = event.resultIndex; i < event.results.length; i++) {
+          finalText += event.results[i][0].transcript + ' ';
+        }
+        placeCaretAtEnd(editor);
+        insertHTMLAtCursor(finalText.trim() + ' ');
+      };
+    } else {
+      console.warn('SpeechRecognition not supported in this browser.');
+      btnVoiceInput.disabled = true;
+    }
+    btnVoiceInput.addEventListener('click', () => {
+      if (!recognition) {
+        alert('Speech recognition not supported in this browser.');
+        return;
+      }
+      if (btnVoiceInput.dataset.listening === 'true') {
+        recognition.stop();
+      } else {
+        recognition.start();
+        btnVoiceInput.dataset.listening = 'true';
+      }
+    });
+
+    /**************************************************
+     * WHITEBOARD MODAL
+     **************************************************/
+    const whiteboardModalOverlay = document.getElementById('whiteboardModalOverlay');
+    const btnWhiteboard = document.getElementById('btnWhiteboard');
+    const closeWhiteboard = document.getElementById('closeWhiteboard');
+    const whiteboardSaveBtn = document.getElementById('whiteboardSaveBtn');
+    const whiteboardClearBtn = document.getElementById('whiteboardClearBtn');
+    const whiteboardCanvas = document.getElementById('whiteboardCanvas');
+    const ctx = whiteboardCanvas.getContext('2d');
+    let drawing = false;
+    let lastX = 0;
+    let lastY = 0;
+    function openWhiteboard() {
+      document.documentElement.classList.add('modal-active');
+      whiteboardModalOverlay.style.display = 'block';
+    }
+    function closeWhiteboardModal() {
+      document.documentElement.classList.remove('modal-active');
+      whiteboardModalOverlay.style.display = 'none';
+    }
+    btnWhiteboard.addEventListener('click', openWhiteboard);
+    closeWhiteboard.addEventListener('click', closeWhiteboardModal);
+    whiteboardCanvas.addEventListener('mousedown', (e) => {
+      drawing = true;
+      [lastX, lastY] = [e.offsetX, e.offsetY];
+    });
+    whiteboardCanvas.addEventListener('mousemove', (e) => {
+      if (!drawing) return;
+      ctx.strokeStyle = '#000000';
+      ctx.lineWidth = 3;
+      ctx.lineCap = 'round';
+      ctx.beginPath();
+      ctx.moveTo(lastX, lastY);
+      ctx.lineTo(e.offsetX, e.offsetY);
+      ctx.stroke();
+      [lastX, lastY] = [e.offsetX, e.offsetY];
+    });
+    whiteboardCanvas.addEventListener('mouseup', () => (drawing = false));
+    whiteboardCanvas.addEventListener('mouseout', () => (drawing = false));
+    whiteboardClearBtn.addEventListener('click', () => {
+      ctx.clearRect(0, 0, whiteboardCanvas.width, whiteboardCanvas.height);
+    });
+    whiteboardSaveBtn.addEventListener('click', () => {
+      const dataURL = whiteboardCanvas.toDataURL('image/png');
+      placeCaretAtEnd(editor);
+      const imgHTML = `<img src="${dataURL}" alt="Whiteboard Drawing" />`;
+      insertHTMLAtCursor(imgHTML);
+      closeWhiteboardModal();
+    });
+
+    /**************************************************
+     * PAGE INIT
+     **************************************************/
+    document.addEventListener('DOMContentLoaded', function() {
+      initializeDarkMode();
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>StudyMind - AI-Powered Learning Assistant</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet"/>
+  <link href="https://ai-public.creatie.ai/gen_page/tailwind-custom.css" rel="stylesheet"/>
+
+  <!-- Tailwind -->
+  <script src="https://cdn.tailwindcss.com/3.4.5?plugins=forms@0.5.7,typography@0.5.13,aspect-ratio@0.4.2,container-queries@0.1.1"></script>
+  <script src="https://ai-public.creatie.ai/gen_page/tailwind-config.min.js" data-color="#000000" data-border-radius="small"></script>
+
+  <style>
+    /* Base dark mode styling */
+    body.dark-mode {
+      background-color: #1a1a1a;
+      color: #e5e5e5;
+    }
+    
+    /* Navigation and footer dark mode */
+    body.dark-mode nav,
+    body.dark-mode .bg-white,
+    body.dark-mode footer {
+      background-color: #2a2a2a !important;
+      border-color: #444 !important;
+    }
+    
+    /* Text colors in dark mode */
+    body.dark-mode .text-gray-900 {
+      color: #e5e5e5 !important;
+    }
+    body.dark-mode .text-gray-600,
+    body.dark-mode .text-gray-500,
+    body.dark-mode .text-gray-400 {
+      color: #aaa !important;
+    }
+
+    /* Additional style */
+    body.dark-mode .bg-gray-50 {
+      background-color: #333 !important;
+    }
+    body.dark-mode .bg-gray-50:hover {
+      background-color: #444 !important;
+    }
+    body.dark-mode .border-gray-200 {
+      border-color: #444 !important;
+    }
+    body.dark-mode select,
+    body.dark-mode select option {
+      background-color: #2a2a2a !important;
+      color: #e5e5e5 !important;
+    }
+    body.dark-mode main {
+      background-color: #1a1a1a !important;
+    }
+    body.dark-mode .bg-white {
+      background-color: #2a2a2a !important;
+    }
+    body.dark-mode .shadow-sm {
+      box-shadow: 0 1px 2px 0 rgba(0,0,0,0.5)!important;
+    }
+    body.dark-mode a:not(.text-custom) { color: #aaa !important; }
+    body.dark-mode a:hover:not(.text-custom) { color: #fff !important; }
+    body.dark-mode button:not(.bg-custom):not(.text-custom) { color: #e5e5e5 !important; }
+  </style>
+</head>
+<body class="bg-gray-50 font-sans transition-colors duration-200">
+  <!-- NAV -->
+  <nav class="bg-white border-b border-gray-200">
+    <div class="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex justify-between h-16">
+        <div class="flex">
+          <div class="flex-shrink-0 flex items-center">
+            <img class="h-12 w-auto" src="logo.png" alt="StudyMind"/>
+          </div>
+          <div class="hidden sm:ml-6 sm:flex sm:space-x-8">
+            <a href="dashboard.html" class="border-custom text-gray-900 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">Dashboard</a>
+            <a href="ai notes.html" class="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">AI Notes</a>
+            <a href="flashcards.html" class="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">Flashcards</a>
+            <a href="todo.html" class="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">Tasks &amp; To-Do</a>
+          </div>
+        </div>
+        <div class="flex items-center">
+          <div class="ml-4 relative">
+            <div class="flex items-center">
+              <button class="bg-gray-800 flex text-sm rounded-full focus:outline-none">
+                <img class="h-8 w-8 rounded-full" src="https://creatie.ai/ai/api/search-image?query=A%20professional%20headshot%20of%20a%20young%20person..." alt=""/>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Secondary nav -->
+  <div class="bg-white border-b border-gray-200 py-2">
+    <div class="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex justify-end space-x-4 items-center">
+        <button id="darkModeToggle" class="flex items-center text-sm text-gray-600">
+          <i class="fas fa-moon mr-2"></i>Dark Mode
+        </button>
+        <div class="border-l border-gray-200 h-4 mx-2"></div>
+        <button class="flex items-center text-sm text-gray-600">
+          <i class="fas fa-bell mr-2"></i>Notifications
+        </button>
+        <div class="border-l border-gray-200 h-4 mx-2"></div>
+        <select class="text-sm text-gray-600 bg-transparent border-none">
+          <option>English</option>
+          <option>Spanish</option>
+          <option>French</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <!-- MAIN -->
+  <main class="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <!-- Welcome Banner -->
+    <div class="bg-white rounded-lg shadow-sm p-6 mb-8">
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
+        <div>
+          <h1 class="text-4xl font-bold text-gray-900 mb-4">Welcome back, Yaswanth!</h1>
+          <p class="text-lg text-gray-600 mb-6">&#34;Success is not final, failure is not fatal: it is the courage to continue that counts.&#34;</p>
+          <button class="bg-custom text-white !rounded-button px-6 py-3 text-base font-medium inline-flex items-center">
+            <i class="fas fa-play-circle mr-2"></i>
+            Start Today&#39;s Session
+          </button>
+        </div>
+        <div class="hidden lg:block">
+          <!-- <img src="img.png" alt="Study Illustration" class="w-full h-auto"/> -->
+        </div>
+      </div>
+    </div>
+
+    <!-- Quick Actions / AI Flashcards / AI Notes -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
+      <!-- Quick Actions -->
+      <div class="bg-white rounded-lg shadow-sm p-6">
+        <div class="flex items-center justify-between mb-4">
+          <h2 class="text-lg font-semibold text-gray-900">Quick Actions</h2>
+          <i class="fas fa-bolt text-custom"></i>
+        </div>
+        <div class="grid grid-cols-2 gap-4">
+          <button id="btnCreateFlashcards" class="bg-gray-50 hover:bg-gray-100 !rounded-button p-4 text-center">
+            <i class="fas fa-cards-blank text-custom mb-2"></i>
+            <p class="text-sm font-medium text-gray-900">Create Flashcards</p>
+          </button>
+          <button id="btnJoinDiscussion" class="bg-gray-50 hover:bg-gray-100 !rounded-button p-4 text-center">
+            <i class="fas fa-users text-custom mb-2"></i>
+            <p class="text-sm font-medium text-gray-900">Join Discussion</p>
+          </button>
+          <button id="btnSetTimer" class="bg-gray-50 hover:bg-gray-100 !rounded-button p-4 text-center">
+            <i class="fas fa-clock text-custom mb-2"></i>
+            <p class="text-sm font-medium text-gray-900">Set Timer</p>
+          </button>
+          <button id="btnScheduleStudy" class="bg-gray-50 hover:bg-gray-100 !rounded-button p-4 text-center">
+            <i class="fas fa-calendar-plus text-custom mb-2"></i>
+            <p class="text-sm font-medium text-gray-900">Schedule Study</p>
+          </button>
+        </div>
+      </div>
+      <!-- AI Flashcards -->
+      <div class="bg-white rounded-lg shadow-sm p-6">
+        <div class="flex items-center justify-between mb-4">
+          <h2 class="text-lg font-semibold text-gray-900">AI Flashcards</h2>
+          <i class="fas fa-robot text-custom"></i>
+        </div>
+        <div class="space-y-4">
+          <button id="btnUploadStudy" class="w-full bg-gray-50 hover:bg-gray-100 !rounded-button p-4 text-left flex items-center">
+            <i class="fas fa-upload text-custom mr-3"></i>
+            <div>
+              <p class="text-sm font-medium text-gray-900">Upload Study Material</p>
+              <p class="text-xs text-gray-500">PDF, Image, or Text</p>
+            </div>
+          </button>
+          <button id="btnVoicePractice" class="w-full bg-gray-50 hover:bg-gray-100 !rounded-button p-4 text-left flex items-center">
+            <i class="fas fa-microphone text-custom mr-3"></i>
+            <div>
+              <p class="text-sm font-medium text-gray-900">Voice Practice</p>
+              <p class="text-xs text-gray-500">Speech-to-text learning</p>
+            </div>
+          </button>
+        </div>
+      </div>
+      <!-- AI Notes -->
+      <div class="bg-white rounded-lg shadow-sm p-6">
+        <div class="flex items-center justify-between mb-4">
+          <h2 class="text-lg font-semibold text-gray-900">AI Notes</h2>
+          <i class="fas fa-file-alt text-custom"></i>
+        </div>
+        <div class="space-y-4">
+          <button id="btnGenerateSummary" class="w-full bg-gray-50 hover:bg-gray-100 !rounded-button p-4 text-left flex items-center">
+            <i class="fas fa-magic text-custom mr-3"></i>
+            <div>
+              <p class="text-sm font-medium text-gray-900">Generate Summary</p>
+              <p class="text-xs text-gray-500">From any document</p>
+            </div>
+          </button>
+          <button id="btnDownloadNotes" class="w-full bg-gray-50 hover:bg-gray-100 !rounded-button p-4 text-left flex items-center">
+            <i class="fas fa-download text-custom mr-3"></i>
+            <div>
+              <p class="text-sm font-medium text-gray-900">Download Notes</p>
+              <p class="text-xs text-gray-500">Save for offline use</p>
+            </div>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tasks & Streak Chart -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+      <!-- Tasks & To-Do -->
+      <div class="bg-white rounded-lg shadow-sm p-6">
+        <div class="flex items-center justify-between mb-4">
+          <h2 class="text-lg font-semibold text-gray-900">Tasks &amp; To-Do</h2>
+          <i class="fas fa-tasks text-custom"></i>
+        </div>
+        <div class="space-y-4">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center">
+              <div class="w-2 h-2 bg-red-500 rounded-full mr-3"></div>
+              <div>
+                <p class="font-medium text-gray-900">Physics Assignment</p>
+                <p class="text-sm text-gray-500">Due: Tomorrow</p>
+              </div>
+            </div>
+            <button class="text-sm text-custom">Start Timer</button>
+          </div>
+          <div class="flex items-center justify-between">
+            <div class="flex items-center">
+              <div class="w-2 h-2 bg-yellow-500 rounded-full mr-3"></div>
+              <div>
+                <p class="font-medium text-gray-900">Math Practice</p>
+                <p class="text-sm text-gray-500">In Progress</p>
+              </div>
+            </div>
+            <button class="text-sm text-custom">25:00</button>
+          </div>
+          <div class="flex items-center justify-between">
+            <div class="flex items-center">
+              <div class="w-2 h-2 bg-green-500 rounded-full mr-3"></div>
+              <div>
+                <p class="font-medium text-gray-900">Biology Notes</p>
+                <p class="text-sm text-gray-500">Completed</p>
+              </div>
+            </div>
+            <i class="fas fa-check text-green-500"></i>
+          </div>
+        </div>
+      </div>
+      <!-- Study Streak -->
+      <div class="bg-white rounded-lg shadow-sm p-6">
+        <div class="flex items-center justify-between mb-4">
+          <h2 class="text-lg font-semibold text-gray-900">Study Streak</h2>
+          <i class="fas fa-fire text-orange-500"></i>
+        </div>
+        <div id="streakChart" class="h-48"></div>
+      </div>
+    </div>
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="bg-white border-t border-gray-200 mt-12">
+    <div class="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+      <div class="flex justify-between items-center">
+        <div class="text-sm text-gray-500">
+          © 2024 StudyMind. All rights reserved.
+        </div>
+        <div class="flex space-x-6">
+          <a href="#" class="text-gray-400 hover:text-gray-500">
+            <i class="fab fa-twitter"></i>
+          </a>
+          <a href="#" class="text-gray-400 hover:text-gray-500">
+            <i class="fab fa-facebook"></i>
+          </a>
+          <a href="#" class="text-gray-400 hover:text-gray-500">
+            <i class="fab fa-instagram"></i>
+          </a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- ECharts -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/echarts/5.5.0/echarts.min.js"></script>
+  <script>
+    /********************************************
+     * Dark Mode
+     ********************************************/
+    const darkModeToggle = document.getElementById('darkModeToggle');
+    let isDarkMode = localStorage.getItem('darkMode') === 'true';
+    function applyDarkMode() {
+      if (isDarkMode) {
+        document.body.classList.add('dark-mode');
+        darkModeToggle.innerHTML = '<i class="fas fa-sun mr-2"></i>Light Mode';
+      } else {
+        document.body.classList.remove('dark-mode');
+        darkModeToggle.innerHTML = '<i class="fas fa-moon mr-2"></i>Dark Mode';
+      }
+      updateChart();
+    }
+    darkModeToggle.addEventListener('click', () => {
+      isDarkMode = !isDarkMode;
+      localStorage.setItem('darkMode', isDarkMode);
+      applyDarkMode();
+    });
+    applyDarkMode();
+
+    /********************************************
+     * Study Streak Chart
+     ********************************************/
+    const streakChart = echarts.init(document.getElementById('streakChart'));
+    function updateChart() {
+      const backgroundColor = isDarkMode ? '#2a2a2a' : 'transparent';
+      const axisColor = isDarkMode ? '#aaa' : '#666';
+      streakChart.setOption({
+        backgroundColor: backgroundColor,
+        xAxis: {
+          type: 'category',
+          data: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+          axisLabel: { color: axisColor }
+        },
+        yAxis: {
+          type: 'value',
+          axisLabel: { color: axisColor }
+        },
+        series: [{
+          data: [3, 4, 2, 5, 3, 4, 2],
+          type: 'bar',
+          itemStyle: { color: '#4F46E5' }
+        }]
+      });
+    }
+    updateChart();
+    window.addEventListener('resize', () => { streakChart.resize(); });
+
+    /********************************************
+     * Quick Actions
+     ********************************************/
+    document.getElementById('btnCreateFlashcards').addEventListener('click', () => {
+      alert('Redirect to flashcards creation page.\n(Placeholder)'); 
+    });
+    document.getElementById('btnJoinDiscussion').addEventListener('click', () => {
+      alert('Join a discussion forum.\n(Placeholder)');
+    });
+    document.getElementById('btnSetTimer').addEventListener('click', () => {
+      alert('Open timer or scheduling interface.\n(Placeholder)');
+    });
+    document.getElementById('btnScheduleStudy').addEventListener('click', () => {
+      alert('Schedule study session.\n(Placeholder)');
+    });
+
+    /********************************************
+     * AI Flashcards
+     ********************************************/
+    document.getElementById('btnUploadStudy').addEventListener('click', () => {
+      alert('Upload study material.\n(Placeholder)'); 
+    });
+    document.getElementById('btnVoicePractice').addEventListener('click', () => {
+      alert('Voice practice.\n(Placeholder)'); 
+    });
+
+    /********************************************
+     * AI Notes
+     ********************************************/
+    document.getElementById('btnGenerateSummary').addEventListener('click', () => {
+      alert('Generate summary from doc or text.\n(Placeholder for AI call.)');
+    });
+    document.getElementById('btnDownloadNotes').addEventListener('click', () => {
+      alert('Prepare notes and download as PDF or text.\n(Placeholder logic.)');
+    });
+  </script>
+</body>
+</html>

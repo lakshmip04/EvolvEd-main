@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="en" class="light">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>StudyMind - AI-Powered Learning Assistant</title>
+  
+  <!-- Fonts & Icons -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet"/>
+
+  <!-- Tailwind & Config -->
+  <link href="https://ai-public.creatie.ai/gen_page/tailwind-custom.css" rel="stylesheet"/>
+  <script src="https://cdn.tailwindcss.com/3.4.5?plugins=forms@0.5.7,typography@0.5.13,aspect-ratio@0.4.2,container-queries@0.1.1"></script>
+  <script src="https://ai-public.creatie.ai/gen_page/tailwind-config.min.js" data-color="#000000" data-border-radius="small"></script>
+
+  <!-- Dark Mode & Additional Styles -->
+  <style>
+    /* Dark mode styles */
+    html.dark body {
+      background-color: #111827;
+      color: #f3f4f6;
+    }
+    html.dark nav, 
+    html.dark .secondary-nav,
+    html.dark footer {
+      background-color: #1f2937;
+      border-color: #374151;
+    }
+    html.dark .bg-white {
+      background-color: #1f2937;
+    }
+    html.dark .border-gray-200 {
+      border-color: #374151;
+    }
+    html.dark .text-gray-900 {
+      color: #f3f4f6;
+    }
+    html.dark .text-gray-500,
+    html.dark .text-gray-600,
+    html.dark .text-gray-400 {
+      color: #9ca3af;
+    }
+    html.dark .bg-gray-50,
+    html.dark .bg-gray-100 {
+      background-color: #111827;
+    }
+    html.dark .hover\:bg-gray-50:hover,
+    html.dark .hover\:bg-gray-100:hover {
+      background-color: #374151;
+    }
+    html.dark .border,
+    html.dark .border-gray-100 {
+      border-color: #374151;
+    }
+    html.dark .divide-gray-100 > * + * {
+      border-color: #374151;
+    }
+    /* Modal styling */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background-color: rgba(0,0,0,0.5);
+      display: none; 
+      z-index: 50;
+    }
+    .modal {
+      background-color: #fff;
+      width: 95%;
+      max-width: 600px;
+      margin: 80px auto; 
+      border-radius: 0.5rem;
+      padding: 1.5rem;
+      position: relative;
+    }
+    html.dark .modal {
+      background-color: #1f2937!important;
+    }
+    .modal-active .modal-overlay {
+      display: block;
+    }
+  </style>
+</head>
+<body class="bg-gray-50 font-sans">
+  <!-- NAV -->
+  <nav class="bg-white border-b border-gray-200">
+    <div class="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex justify-between h-16">
+        <div class="flex">
+          <div class="flex-shrink-0 flex items-center">
+            <img class="h-12 w-auto" src="logo.png" alt="StudyMind"/>
+          </div>
+          <div class="hidden sm:ml-6 sm:flex sm:space-x-8">
+            <a href="dashboard.html" class="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">Dashboard</a>
+            <a href="ai notes.html" class="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">AI Notes</a>
+            <a href="flashcards.html" class="border-custom text-gray-900 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">Flashcards</a>
+            <a href="todo.html" class="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">Tasks &amp; To-Do</a>
+          </div>
+        </div>
+        <div class="flex items-center">
+          <div class="ml-4 relative">
+            <div class="flex items-center">
+              <button class="bg-gray-800 flex text-sm rounded-full focus:outline-none">
+                <img class="h-8 w-8 rounded-full" src="https://creatie.ai/ai/api/search-image?query=A%20professional%20headshot..." alt=""/>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </nav>
+  <!-- Secondary Nav -->
+  <div class="bg-white border-b border-gray-200 py-2 secondary-nav">
+    <div class="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex justify-end space-x-4 items-center">
+        <button id="darkModeToggle" class="flex items-center text-sm text-gray-600">
+          <i class="fas fa-moon mr-2" id="darkModeIcon"></i>
+          <span id="darkModeText">Dark Mode</span>
+        </button>
+        <div class="border-l border-gray-200 h-4 mx-2"></div>
+        <button class="flex items-center text-sm text-gray-600">
+          <i class="fas fa-bell mr-2"></i>Notifications
+        </button>
+        <div class="border-l border-gray-200 h-4 mx-2"></div>
+        <select class="text-sm text-gray-600 bg-transparent border-none">
+          <option>English</option>
+          <option>Spanish</option>
+          <option>French</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <!-- MAIN -->
+  <main class="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <!-- Intro / Create Deck -->
+    <div class="bg-white rounded-lg shadow-sm p-6 mb-8">
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
+        <div>
+          <h1 class="text-4xl font-bold text-gray-900 mb-4">Flashcards</h1>
+          <p class="text-lg text-gray-600 mb-6">Create, study and master your subjects with AI-powered flashcards</p>
+          <button id="btnCreateDeck" class="bg-custom text-white !rounded-button px-6 py-3 text-base font-medium inline-flex items-center">
+            <i class="fas fa-plus mr-2"></i>Create New Deck
+          </button>
+        </div>
+        <div class="hidden lg:block">
+          <!-- <img src="img.png" alt="Study Illustration" class="w-full h-auto"/> -->
+        </div>
+      </div>
+    </div>
+
+    <!-- My Decks / Study Mode / AI Assistant / Tasks -->
+    <div class="grid grid-cols-1 lg:grid-cols-4 gap-8 mb-8">
+      <!-- My Decks -->
+      <div class="bg-white rounded-lg shadow-sm p-6 lg:col-span-2">
+        <div class="flex items-center justify-between mb-4">
+          <h2 class="text-lg font-semibold text-gray-900">My Decks</h2>
+          <i class="fas fa-layer-group text-custom"></i>
+        </div>
+        <div id="myDecks" class="space-y-4">
+          <!-- Decks appended dynamically here -->
+        </div>
+      </div>
+
+      <!-- Study Mode -->
+      <div class="bg-white rounded-lg shadow-sm p-6">
+        <div class="flex items-center justify-between mb-4">
+          <h2 class="text-lg font-semibold text-gray-900">Study Mode</h2>
+          <i class="fas fa-graduation-cap text-custom"></i>
+        </div>
+        <div class="space-y-4">
+          <button id="btnShuffle" class="w-full bg-custom text-white rounded-lg p-4 mb-3 flex items-center justify-center">
+            <i class="fas fa-random mr-2"></i>Shuffle Cards
+          </button>
+          <button id="btnSpacedRepetition" class="w-full bg-gray-100 text-gray-900 rounded-lg p-4 mb-3 flex items-center justify-center">
+            <i class="fas fa-sync mr-2"></i>Spaced Repetition
+          </button>
+          <button id="btnQuizMode" class="w-full bg-gray-100 text-gray-900 rounded-lg p-4 mb-3 flex items-center justify-center">
+            <i class="fas fa-gamepad mr-2"></i>Quiz Mode
+          </button>
+          <button id="btnTimeChallenge" class="w-full bg-gray-100 text-gray-900 rounded-lg p-4 flex items-center justify-center">
+            <i class="fas fa-clock mr-2"></i>Time Challenge
+          </button>
+        </div>
+      </div>
+
+      <!-- AI Assistant -->
+      <div class="bg-white rounded-lg shadow-sm p-6">
+        <div class="flex items-center justify-between mb-4">
+          <h2 class="text-lg font-semibold text-gray-900">AI Assistant</h2>
+          <i class="fas fa-robot text-custom"></i>
+        </div>
+        <div class="space-y-4">
+          <button class="w-full bg-gray-50 hover:bg-gray-100 rounded-lg p-4 text-left flex items-center">
+            <i class="fas fa-magic text-custom mr-3"></i>
+            <div>
+              <p class="text-sm font-medium text-gray-900">Generate Cards</p>
+              <p class="text-xs text-gray-500">From your notes or text</p>
+            </div>
+          </button>
+          <button class="w-full bg-gray-50 hover:bg-gray-100 rounded-lg p-4 text-left flex items-center">
+            <i class="fas fa-check-circle text-custom mr-3"></i>
+            <div>
+              <p class="text-sm font-medium text-gray-900">Answer Check</p>
+              <p class="text-xs text-gray-500">Verify your responses</p>
+            </div>
+          </button>
+          <button class="w-full bg-gray-50 hover:bg-gray-100 rounded-lg p-4 text-left flex items-center">
+            <i class="fas fa-lightbulb text-custom mr-3"></i>
+            <div>
+              <p class="text-sm font-medium text-gray-900">Smart Tips</p>
+              <p class="text-xs text-gray-500">Learning suggestions</p>
+            </div>
+          </button>
+        </div>
+      </div>
+
+      <!-- Tasks & To-Do Section -->
+      <div class="bg-white rounded-lg shadow-sm p-6 lg:col-span-4">
+        <div class="flex items-center justify-between mb-4">
+          <h2 class="text-lg font-semibold text-gray-900">Tasks &amp; To-Do</h2>
+          <i class="fas fa-tasks text-custom"></i>
+        </div>
+        <div class="space-y-4 divide-y divide-gray-100">
+          <div class="flex items-center justify-between p-4 hover:bg-gray-50 rounded-lg transition-colors">
+            <div class="flex items-center">
+              <div class="w-3 h-3 bg-red-500 rounded-full mr-3"></div>
+              <div>
+                <p class="font-medium text-gray-900">Physics Assignment</p>
+                <p class="text-sm text-gray-500">Due: Tomorrow</p>
+              </div>
+            </div>
+            <button class="px-3 py-1 text-sm text-custom border border-custom rounded-full hover:bg-custom hover:text-white transition-colors">Start Timer</button>
+          </div>
+          <div class="flex items-center justify-between p-4 hover:bg-gray-50 rounded-lg transition-colors">
+            <div class="flex items-center">
+              <div class="w-3 h-3 bg-yellow-500 rounded-full mr-3"></div>
+              <div>
+                <p class="font-medium text-gray-900">Math Practice</p>
+                <p class="text-sm text-gray-500">In Progress</p>
+              </div>
+            </div>
+            <button class="px-3 py-1 text-sm bg-custom text-white rounded-full">25:00</button>
+          </div>
+          <div class="flex items-center justify-between p-4 hover:bg-gray-50 rounded-lg transition-colors">
+            <div class="flex items-center">
+              <div class="w-3 h-3 bg-green-500 rounded-full mr-3"></div>
+              <div>
+                <p class="font-medium text-gray-900">Biology Notes</p>
+                <p class="text-sm text-gray-500">Completed</p>
+              </div>
+            </div>
+            <i class="fas fa-check text-green-500 bg-green-50 p-2 rounded-full"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="bg-white border-t border-gray-200 mt-12">
+    <div class="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+      <div class="flex justify-between items-center">
+        <div class="text-sm text-gray-500">
+          © 2024 StudyMind. All rights reserved.
+        </div>
+        <div class="flex space-x-6">
+          <a href="#" class="text-gray-400 hover:text-gray-500"><i class="fab fa-twitter"></i></a>
+          <a href="#" class="text-gray-400 hover:text-gray-500"><i class="fab fa-facebook"></i></a>
+          <a href="#" class="text-gray-400 hover:text-gray-500"><i class="fab fa-instagram"></i></a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Create Deck Modal -->
+  <div id="modalOverlay" class="modal-overlay">
+    <div class="modal">
+      <h3 class="text-xl font-semibold mb-4">Create New Deck</h3>
+      <form id="deckForm" class="space-y-4">
+        <div>
+          <label for="deckName" class="block text-sm font-medium">Deck Name</label>
+          <input type="text" id="deckName" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm" required />
+        </div>
+        <div>
+          <label for="deckDescription" class="block text-sm font-medium">Notes / Description</label>
+          <textarea id="deckDescription" rows="3" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm"></textarea>
+        </div>
+        <div class="flex justify-end pt-4 space-x-2">
+          <button type="button" id="cancelBtn" class="px-4 py-2 bg-gray-300 rounded-md">Cancel</button>
+          <button type="submit" id="saveDeckBtn" class="px-4 py-2 bg-custom text-white rounded-md">Create Deck</button>
+        </div>
+      </form>
+    </div>
+  </div>
+  
+  <!-- ECharts (if you have charts) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/echarts/5.5.0/echarts.min.js"></script>
+  
+  <!-- MAIN SCRIPT -->
+  <script>
+    /*********************************************
+     * Dark Mode
+     *********************************************/
+    function initializeDarkMode() {
+      const savedTheme = localStorage.getItem('theme');
+      if (savedTheme === 'dark') {
+        document.documentElement.classList.add('dark');
+        updateDarkModeUI(true);
+      } else {
+        document.documentElement.classList.remove('dark');
+        updateDarkModeUI(false);
+      }
+    }
+    function updateDarkModeUI(isDark) {
+      const darkModeIcon = document.getElementById('darkModeIcon');
+      const darkModeText = document.getElementById('darkModeText');
+      if (isDark) {
+        darkModeIcon.classList.remove('fa-moon');
+        darkModeIcon.classList.add('fa-sun');
+        darkModeText.textContent = 'Light Mode';
+      } else {
+        darkModeIcon.classList.remove('fa-sun');
+        darkModeIcon.classList.add('fa-moon');
+        darkModeText.textContent = 'Dark Mode';
+      }
+    }
+    function toggleDarkMode() {
+      const isDark = document.documentElement.classList.toggle('dark');
+      localStorage.setItem('theme', isDark ? 'dark' : 'light');
+      updateDarkModeUI(isDark);
+    }
+    document.getElementById('darkModeToggle').addEventListener('click', toggleDarkMode);
+
+    /*********************************************
+     * Flashcard Deck Management
+     *********************************************/
+    let decks = [];
+    const myDecksContainer = document.getElementById('myDecks');
+
+    // Modal elements
+    const btnCreateDeck = document.getElementById('btnCreateDeck');
+    const modalOverlay = document.getElementById('modalOverlay');
+    const deckForm = document.getElementById('deckForm');
+    const deckNameInput = document.getElementById('deckName');
+    const deckDescInput = document.getElementById('deckDescription');
+    const cancelBtn = document.getElementById('cancelBtn');
+
+    let editDeckId = null;
+
+    btnCreateDeck.addEventListener('click', () => {
+      editDeckId = null;
+      deckForm.reset();
+      document.documentElement.classList.add('modal-active');
+      modalOverlay.style.display = 'block';
+    });
+    function hideModal() {
+      document.documentElement.classList.remove('modal-active');
+      modalOverlay.style.display = 'none';
+    }
+    cancelBtn.addEventListener('click', hideModal);
+
+    function loadDecks() {
+      const decksJson = localStorage.getItem('flashcardDecks');
+      if (decksJson) decks = JSON.parse(decksJson);
+      else decks = [];
+    }
+    function saveDecks() {
+      localStorage.setItem('flashcardDecks', JSON.stringify(decks));
+    }
+    function renderDecks() {
+      myDecksContainer.innerHTML = '';
+      if (decks.length === 0) {
+        myDecksContainer.innerHTML = `
+          <p class="text-sm text-gray-500">No decks yet. Click "Create New Deck" to add one.</p>
+        `;
+        return;
+      }
+      decks.forEach(deck => {
+        const deckCard = document.createElement('div');
+        deckCard.className = 'p-4 border rounded-lg hover:shadow-md transition-shadow';
+        deckCard.innerHTML = `
+          <div class="flex justify-between items-center mb-2">
+            <h3 class="font-medium text-gray-900">${deck.name}</h3>
+            <span class="text-sm bg-blue-100 text-blue-800 px-2 py-1 rounded">${deck.cardsCount} cards</span>
+          </div>
+          <div class="flex justify-between items-center">
+            <div class="text-sm text-gray-500">${deck.lastStudied ? ('Last studied: ' + deck.lastStudied) : 'Not studied yet'}</div>
+            <div class="flex space-x-3">
+              <button class="text-custom hover:text-indigo-700 deck-study-btn" data-id="${deck.id}">Study Now</button>
+              <button class="text-red-600 hover:text-red-800 deck-delete-btn" data-id="${deck.id}">
+                <i class="fas fa-trash"></i>
+              </button>
+            </div>
+          </div>
+        `;
+        myDecksContainer.appendChild(deckCard);
+      });
+      document.querySelectorAll('.deck-study-btn').forEach(btn => {
+        btn.addEventListener('click', studyDeck);
+      });
+      document.querySelectorAll('.deck-delete-btn').forEach(btn => {
+        btn.addEventListener('click', deleteDeck);
+      });
+    }
+    function studyDeck(e) {
+      const deckId = e.currentTarget.getAttribute('data-id');
+      const deckObj = decks.find(d => d.id === deckId);
+      if (deckObj) {
+        alert(`Now studying deck: ${deckObj.name}\n(Implement a study interface here!)`);
+        deckObj.lastStudied = 'Today';
+        saveDecks();
+        renderDecks();
+      }
+    }
+    function deleteDeck(e) {
+      const deckId = e.currentTarget.getAttribute('data-id');
+      decks = decks.filter(d => d.id !== deckId);
+      saveDecks();
+      renderDecks();
+    }
+    deckForm.addEventListener('submit', (evt) => {
+      evt.preventDefault();
+      const deckName = deckNameInput.value.trim();
+      const desc = deckDescInput.value.trim();
+      if (!deckName) return;
+      const newDeck = {
+        id: Date.now().toString(),
+        name: deckName,
+        description: desc,
+        cardsCount: 0,
+        lastStudied: null
+      };
+      decks.push(newDeck);
+      saveDecks();
+      renderDecks();
+      hideModal();
+    });
+
+    /******************************************
+     * Study Mode Buttons
+     ******************************************/
+    document.getElementById('btnShuffle').addEventListener('click', () => {
+      alert('Shuffle all decks or shuffle the currently selected deck?\n(Placeholder!)');
+    });
+    document.getElementById('btnSpacedRepetition').addEventListener('click', () => {
+      alert('Start spaced repetition!\n(Placeholder for logic or AI approach.)');
+    });
+    document.getElementById('btnQuizMode').addEventListener('click', () => {
+      alert('Begin quiz mode!\n(Placeholder for quiz logic.)');
+    });
+    document.getElementById('btnTimeChallenge').addEventListener('click', () => {
+      alert('Time challenge started!\n(Placeholder for timed quiz or study mode.)');
+    });
+
+    document.addEventListener('DOMContentLoaded', () => {
+      initializeDarkMode();
+      loadDecks();
+      renderDecks();
+    });
+  </script>
+</body>
+</html>
