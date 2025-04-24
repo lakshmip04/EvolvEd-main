@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { Link } from 'react-router-dom';
+import PDFUploader from '../components/PDFUploader';
 
 function Notes() {
   const navigate = useNavigate();
@@ -24,6 +25,10 @@ function Notes() {
             </svg>
             Create New Note
           </button>
+        </div>
+        
+        <div className="mb-8">
+          <PDFUploader />
         </div>
         
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

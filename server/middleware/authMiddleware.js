@@ -18,25 +18,33 @@ const protect = asyncHandler(async (req, res, next) => {
         // Provide mock user data
         req.user = {
           _id: '60d0fe4f5311236168a109ca',
+          id: '60d0fe4f5311236168a109ca', // Add id property for consistency
           name: 'Test User',
           email: 'test@example.com'
         };
+        console.log('Using mock user:', req.user);
         next();
         return;
       }
 
       // Get user from the database
       req.user = await User.findById(decoded.id).select('-password');
+      
+      if (!req.user) {
+        console.error('User not found for ID:', decoded.id);
+        res.status(401);
+        throw new Error('User not found');
+      }
+      
+      console.log('Authenticated user:', req.user._id, req.user.email);
 
       next();
     } catch (error) {
-      console.error(error);
+      console.error('Auth error:', error);
       res.status(401);
-      throw new Error('Not authorized');
+      throw new Error('Not authorized: ' + error.message);
     }
-  }
-
-  if (!token) {
+  } else if (!token) {
     res.status(401);
     throw new Error('Not authorized, no token');
   }

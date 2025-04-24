@@ -59,4 +59,6 @@ pids
 .eslintcache
 
 # TypeScript cache
-*.tsbuildinfo 
+*.tsbuildinfo
+
+MONGO_URI=mongodb+srv://dbUser:12345@cluster0.w2rzyfh.mongodb.net/studymind?retryWrites=true&w=majority&appName=Cluster0 

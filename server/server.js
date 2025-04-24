@@ -4,12 +4,20 @@ const dotenv = require('dotenv');
 const connectDB = require('./config/db');
 const path = require('path');
 const { errorHandler } = require('./middleware/errorMiddleware');
+const mongoose = require('mongoose');
 
 // Load env vars
 dotenv.config();
 
 // Connect to database
 connectDB();
+
+// Test MongoDB connection
+setTimeout(() => {
+  console.log('MongoDB connection state:', mongoose.connection.readyState);
+  // 0 = disconnected, 1 = connected, 2 = connecting, 3 = disconnecting
+  console.log('MongoDB URI being used:', process.env.MONGO_URI.replace(/:[^:]*@/, ':****@'));
+}, 2000);
 
 const app = express();
 
@@ -23,6 +31,7 @@ app.use('/api/users', require('./routes/userRoutes'));
 app.use('/api/notes', require('./routes/noteRoutes'));
 app.use('/api/flashcards', require('./routes/flashcardRoutes'));
 app.use('/api/tasks', require('./routes/taskRoutes'));
+app.use('/api/pdf', require('./routes/pdfRoutes'));
 
 // Serve client build folder in production
 if (process.env.NODE_ENV === 'production') {

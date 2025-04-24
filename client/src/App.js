@@ -15,41 +15,25 @@ import PrivateRoute from './components/PrivateRoute';
 
 function App() {
   return (
-    <>
-      <Router>
-        <div className="flex flex-col min-h-screen">
-          <Header />
-          <main className="flex-grow bg-gray-50 dark:bg-gray-900">
-            <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-              <Routes>
-                <Route path="/login" element={<Login />} />
-                <Route path="/register" element={<Register />} />
-                <Route path="/" element={<PrivateRoute />}>
-                  <Route path="/" element={<Dashboard />} />
-                </Route>
-                <Route path="/notes" element={<PrivateRoute />}>
-                  <Route path="/notes" element={<Notes />} />
-                </Route>
-                <Route path="/notes/:id" element={<PrivateRoute />}>
-                  <Route path="/notes/:id" element={<NotePage />} />
-                </Route>
-                <Route path="/flashcards" element={<PrivateRoute />}>
-                  <Route path="/flashcards" element={<Flashcards />} />
-                </Route>
-                <Route path="/flashcards/:id" element={<PrivateRoute />}>
-                  <Route path="/flashcards/:id" element={<FlashcardDeck />} />
-                </Route>
-                <Route path="/tasks" element={<PrivateRoute />}>
-                  <Route path="/tasks" element={<Tasks />} />
-                </Route>
-              </Routes>
-            </div>
-          </main>
-          <Footer />
-        </div>
-      </Router>
+    <Router>
+      <div className="flex flex-col min-h-screen bg-gray-100 dark:bg-gray-900">
+        <Header />
+        <main className="flex-grow container mx-auto px-4 py-8">
+          <Routes>
+            <Route path="/" element={<Dashboard />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<Register />} />
+            <Route path="/notes" element={<Notes />} />
+            <Route path="/notes/:id" element={<NotePage />} />
+            <Route path="/flashcards" element={<Flashcards />} />
+            <Route path="/flashcards/:id" element={<FlashcardDeck />} />
+            <Route path="/tasks" element={<Tasks />} />
+          </Routes>
+        </main>
+        <Footer />
+      </div>
       <ToastContainer />
-    </>
+    </Router>
   );
 }
 
