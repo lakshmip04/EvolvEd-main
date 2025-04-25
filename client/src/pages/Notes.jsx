@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { Link } from 'react-router-dom';
@@ -7,12 +7,43 @@ import PDFUploader from '../components/PDFUploader';
 function Notes() {
   const navigate = useNavigate();
   const { user } = useSelector((state) => state.auth);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [sortBy, setSortBy] = useState('updatedAt');
+  const [sortOrder, setSortOrder] = useState('desc');
 
   useEffect(() => {
     if (!user) {
       navigate('/login');
     }
   }, [user, navigate]);
+
+  const handleSearch = (e) => {
+    setSearchTerm(e.target.value);
+  };
+
+  const handleSort = (criteria) => {
+    if (sortBy === criteria) {
+      setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortBy(criteria);
+      setSortOrder('asc');
+    }
+  };
+
+  const filteredNotes = [
+    { id: 1, title: "React Fundamentals", content: "Components, props, state, hooks, and more.", updatedAt: new Date(Date.now() - 3600000 * 24).toISOString() },
+    { id: 2, title: "JavaScript ES6+", content: "Modern JavaScript features: arrow functions, destructuring, spread operator, async/await.", updatedAt: new Date(Date.now() - 3600000 * 48).toISOString() },
+    { id: 3, title: "MongoDB Basics", content: "NoSQL database concepts, CRUD operations, and integration with Node.js.", updatedAt: new Date(Date.now() - 3600000 * 72).toISOString() }
+  ].filter(note =>
+    note.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    note.content.toLowerCase().includes(searchTerm.toLowerCase())
+  ).sort((a, b) => {
+    if (sortOrder === 'asc') {
+      return a[sortBy] > b[sortBy] ? 1 : -1;
+    } else {
+      return a[sortBy] < b[sortBy] ? 1 : -1;
+    }
+  });
 
   return (
     <div className="space-y-8">
@@ -26,49 +57,55 @@ function Notes() {
             Create New Note
           </button>
         </div>
-        
+
+        <div className="mb-4">
+          <input
+            type="text"
+            placeholder="Search notes..."
+            value={searchTerm}
+            onChange={handleSearch}
+            className="w-full p-2 border border-gray-300 rounded mb-4"
+          />
+        </div>
+
         <div className="mb-8">
           <PDFUploader />
         </div>
-        
+
+        <div className="flex justify-between items-center mb-4">
+          <div className="flex space-x-4">
+            <button
+              onClick={() => handleSort('title')}
+              className={`text-gray-700 dark:text-gray-300 hover:text-custom ${sortBy === 'title' ? 'font-bold' : ''}`}
+            >
+              Title {sortBy === 'title' && (sortOrder === 'asc' ? '↑' : '↓')}
+            </button>
+            <button
+              onClick={() => handleSort('updatedAt')}
+              className={`text-gray-700 dark:text-gray-300 hover:text-custom ${sortBy === 'updatedAt' ? 'font-bold' : ''}`}
+            >
+              Updated {sortBy === 'updatedAt' && (sortOrder === 'asc' ? '↑' : '↓')}
+            </button>
+          </div>
+        </div>
+
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {/* Sample note cards - these would be dynamically generated from Redux state */}
-          <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-5 hover:shadow-md transition-shadow">
-            <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">React Fundamentals</h3>
-            <p className="text-gray-600 dark:text-gray-300 text-sm mb-4 line-clamp-3">
-              Components, props, state, hooks, and more. Essential concepts for React development.
-            </p>
-            <div className="flex justify-between items-center">
-              <span className="text-xs text-gray-500 dark:text-gray-400">Updated 2 days ago</span>
-              <Link to="/notes/1" className="text-custom text-sm font-medium">View Note</Link>
+          {filteredNotes.map(note => (
+            <div key={note.id} className="bg-gray-50 dark:bg-gray-700 rounded-lg p-5 hover:shadow-md transition-shadow">
+              <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">{note.title}</h3>
+              <p className="text-gray-600 dark:text-gray-300 text-sm mb-4 line-clamp-3">
+                {note.content}
+              </p>
+              <div className="flex justify-between items-center">
+                <span className="text-xs text-gray-500 dark:text-gray-400">Updated {new Date(note.updatedAt).toLocaleString()}</span>
+                <Link to={`/notes/${note.id}`} className="text-custom text-sm font-medium">View Note</Link>
+              </div>
             </div>
-          </div>
-          
-          <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-5 hover:shadow-md transition-shadow">
-            <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">JavaScript ES6+</h3>
-            <p className="text-gray-600 dark:text-gray-300 text-sm mb-4 line-clamp-3">
-              Modern JavaScript features: arrow functions, destructuring, spread operator, async/await.
-            </p>
-            <div className="flex justify-between items-center">
-              <span className="text-xs text-gray-500 dark:text-gray-400">Updated 5 days ago</span>
-              <Link to="/notes/2" className="text-custom text-sm font-medium">View Note</Link>
-            </div>
-          </div>
-          
-          <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-5 hover:shadow-md transition-shadow">
-            <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">MongoDB Basics</h3>
-            <p className="text-gray-600 dark:text-gray-300 text-sm mb-4 line-clamp-3">
-              NoSQL database concepts, CRUD operations, and integration with Node.js.
-            </p>
-            <div className="flex justify-between items-center">
-              <span className="text-xs text-gray-500 dark:text-gray-400">Updated 1 week ago</span>
-              <Link to="/notes/3" className="text-custom text-sm font-medium">View Note</Link>
-            </div>
-          </div>
+          ))}
         </div>
       </div>
     </div>
   );
 }
 
-export default Notes; 
+export default Notes;
