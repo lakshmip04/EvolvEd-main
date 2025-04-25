@@ -1,8 +1,10 @@
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { Link } from 'react-router-dom';
 import PDFUploader from '../components/PDFUploader';
+import PDFViewer from '../components/PDFViewer'; // Import PDFViewer
+import NoteEditor from '../components/NoteEditor'; // Import NoteEditor
 
 function Notes() {
   const navigate = useNavigate();
@@ -10,6 +12,8 @@ function Notes() {
   const [searchTerm, setSearchTerm] = useState('');
   const [sortBy, setSortBy] = useState('updatedAt');
   const [sortOrder, setSortOrder] = useState('desc');
+  const [isEditorOpen, setIsEditorOpen] = useState(false);
+  const [selectedPDF, setSelectedPDF] = useState(null);
 
   useEffect(() => {
     if (!user) {
@@ -28,6 +32,14 @@ function Notes() {
       setSortBy(criteria);
       setSortOrder('asc');
     }
+  };
+
+  const handleCreateNote = () => {
+    setIsEditorOpen(true);
+  };
+
+  const handlePDFSelect = (file) => {
+    setSelectedPDF(file);
   };
 
   const filteredNotes = [
@@ -50,7 +62,10 @@ function Notes() {
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6">
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white">My Notes</h1>
-          <button className="bg-custom text-white rounded-md px-4 py-2 text-base font-medium inline-flex items-center">
+          <button
+            onClick={handleCreateNote}
+            className="bg-custom text-white rounded-md px-4 py-2 text-base font-medium inline-flex items-center"
+          >
             <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
               <path fillRule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clipRule="evenodd" />
             </svg>
@@ -69,7 +84,7 @@ function Notes() {
         </div>
 
         <div className="mb-8">
-          <PDFUploader />
+          <PDFUploader onPDFSelect={handlePDFSelect} />
         </div>
 
         <div className="flex justify-between items-center mb-4">
@@ -104,6 +119,30 @@ function Notes() {
           ))}
         </div>
       </div>
+
+      {isEditorOpen && (
+        <div className="fixed inset-0 flex items-center justify-center bg-gray-800 bg-opacity-50 z-50">
+          <div className="bg-white rounded-lg shadow-lg w-full max-w-5xl p-6">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-2xl font-bold">Edit Note</h2>
+              <button
+                onClick={() => setIsEditorOpen(false)}
+                className="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400"
+              >
+                Close
+              </button>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <PDFViewer pdfUrl={selectedPDF} />
+              </div>
+              <div>
+                <NoteEditor onPDFSelect={handlePDFSelect} />
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

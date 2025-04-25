@@ -1,207 +1,150 @@
-import { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useDispatch } from 'react-redux';
-import { updateNote } from '../features/notes/noteSlice';
-import { toast } from 'react-toastify';
+import { useSelector } from 'react-redux';
+import { Link } from 'react-router-dom';
+import PDFUploader from '../components/PDFUploader';
 
-function PDFEditor({ note, onClose }) {
-  const [content, setContent] = useState(note.content || '');
-  const [title, setTitle] = useState(note.title || '');
-  const [selectedText, setSelectedText] = useState('');
-  const [highlights, setHighlights] = useState([]);
-  const dispatch = useDispatch();
+
+
+function Notes() {
   const navigate = useNavigate();
+  const { user } = useSelector((state) => state.auth);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [sortBy, setSortBy] = useState('updatedAt');
+  const [sortOrder, setSortOrder] = useState('desc');
+  const [isEditorOpen, setIsEditorOpen] = useState(false);
+  const [selectedPDF, setSelectedPDF] = useState(null);
 
-  // Split content into summary and full text sections
-  const [summary, fullText] = useMemo(() => {
-    const summaryMatch = content.match(/# Summary\n([\s\S]*?)(?=\n# Full Text|\n# |\n$)/);
-    const fullTextMatch = content.match(/# Full Text\n([\s\S]*?)(?=\n# |\n$)/);
-    return [
-      summaryMatch ? summaryMatch[1] : '',
-      fullTextMatch ? fullTextMatch[1] : content
-    ];
-  }, [content]);
+  useEffect(() => {
+    if (!user) {
+      navigate('/login');
+    }
+  }, [user, navigate]);
 
-  // Handle text selection for highlighting
-  const handleTextSelection = () => {
-    const selection = window.getSelection();
-    if (selection.toString().length > 0) {
-      setSelectedText(selection.toString());
+  const handleSearch = (e) => {
+    setSearchTerm(e.target.value);
+  };
+
+  const handleSort = (criteria) => {
+    if (sortBy === criteria) {
+      setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortBy(criteria);
+      setSortOrder('asc');
     }
   };
 
-  // Add a highlight
-  const addHighlight = () => {
-    if (selectedText) {
-      setHighlights([...highlights, selectedText]);
-      toast.success('Highlight added!');
-      setSelectedText('');
+  const handleCreateNote = () => {
+    setIsEditorOpen(true);
+  };
+
+  const handlePDFSelect = (file) => {
+    setSelectedPDF(file);
+  };
+
+  const filteredNotes = [
+    { id: 1, title: "React Fundamentals", content: "Components, props, state, hooks, and more.", updatedAt: new Date(Date.now() - 3600000 * 24).toISOString() },
+    { id: 2, title: "JavaScript ES6+", content: "Modern JavaScript features: arrow functions, destructuring, spread operator, async/await.", updatedAt: new Date(Date.now() - 3600000 * 48).toISOString() },
+    { id: 3, title: "MongoDB Basics", content: "NoSQL database concepts, CRUD operations, and integration with Node.js.", updatedAt: new Date(Date.now() - 3600000 * 72).toISOString() }
+  ].filter(note =>
+    note.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    note.content.toLowerCase().includes(searchTerm.toLowerCase())
+  ).sort((a, b) => {
+    if (sortOrder === 'asc') {
+      return a[sortBy] > b[sortBy] ? 1 : -1;
+    } else {
+      return a[sortBy] < b[sortBy] ? 1 : -1;
     }
-  };
-
-  // Generate notes from highlights
-  const generateNotes = () => {
-    if (highlights.length === 0) {
-      toast.error('Please add some highlights first');
-      return;
-    }
-
-    const highlightsText = highlights.map(h => `- ${h}`).join('\n');
-    const newContent = `# Summary\n${summary}\n\n# Highlights\n${highlightsText}\n\n# Full Text\n${fullText}`;
-    setContent(newContent);
-    toast.success('Notes generated from highlights');
-  };
-
-  // Regenerate summary
-  const regenerateSummary = async () => {
-    try {
-      toast.info('Regenerating summary...');
-      
-      // This would ideally call your backend API to regenerate the summary
-      // For now we'll just update with a mock message
-      const newSummary = 'Regenerated summary would appear here. In a full implementation, this would call your backend API.';
-      
-      const newContent = `# Summary\n${newSummary}\n\n# Highlights\n${highlights.map(h => `- ${h}`).join('\n')}\n\n# Full Text\n${fullText}`;
-      setContent(newContent);
-      
-      toast.success('Summary regenerated');
-    } catch (error) {
-      toast.error('Failed to regenerate summary');
-    }
-  };
-
-  // Save the note
-  const saveNote = () => {
-    dispatch(updateNote({
-      noteId: note._id,
-      noteData: {
-        title,
-        content,
-        tags: [...note.tags, 'edited']
-      }
-    }));
-    toast.success('Note saved successfully');
-    onClose();
-  };
+  });
 
   return (
-    <div className="bg-white rounded-lg shadow-lg p-6 max-w-5xl mx-auto my-8">
-      <div className="flex justify-between items-center mb-4">
-        <h2 className="text-2xl font-bold">Edit PDF Notes</h2>
-        <div className="space-x-2">
-          <button 
-            onClick={onClose}
-            className="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400"
+    <div className="space-y-8">
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6">
+        <div className="flex justify-between items-center mb-6">
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">My Notes</h1>
+          <button
+            onClick={handleCreateNote}
+            className="bg-custom text-white rounded-md px-4 py-2 text-base font-medium inline-flex items-center"
           >
-            Cancel
-          </button>
-          <button 
-            onClick={saveNote}
-            className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-          >
-            Save
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+              <path fillRule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clipRule="evenodd" />
+            </svg>
+            Create New Note
           </button>
         </div>
-      </div>
 
-      <div className="mb-4">
-        <label className="block text-gray-700 mb-2">Title</label>
-        <input
-          type="text"
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-          className="w-full p-2 border border-gray-300 rounded"
-        />
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {/* PDF Text Panel */}
-        <div>
-          <h3 className="text-lg font-semibold mb-2">Original PDF Text</h3>
-          <div 
-            className="border border-gray-300 rounded p-4 h-96 overflow-y-auto"
-            onMouseUp={handleTextSelection}
-          >
-            <pre className="whitespace-pre-wrap">{fullText}</pre>
-          </div>
-          {selectedText && (
-            <div className="mt-2 flex justify-between items-center">
-              <div className="italic text-gray-600">"{selectedText.substring(0, 50)}..."</div>
-              <button 
-                onClick={addHighlight}
-                className="px-3 py-1 bg-yellow-400 rounded hover:bg-yellow-500"
-              >
-                Highlight
-              </button>
-            </div>
-          )}
+        <div className="mb-4">
+          <input
+            type="text"
+            placeholder="Search notes..."
+            value={searchTerm}
+            onChange={handleSearch}
+            className="w-full p-2 border border-gray-300 rounded mb-4"
+          />
         </div>
 
-        {/* Notes Panel */}
-        <div>
-          <div className="flex justify-between items-center mb-2">
-            <h3 className="text-lg font-semibold">Summary & Notes</h3>
-            <button 
-              onClick={regenerateSummary}
-              className="px-3 py-1 text-sm bg-green-500 text-white rounded hover:bg-green-600"
+        <div className="mb-8">
+          <PDFUploader onPDFSelect={handlePDFSelect} />
+        </div>
+
+        <div className="flex justify-between items-center mb-4">
+          <div className="flex space-x-4">
+            <button
+              onClick={() => handleSort('title')}
+              className={`text-gray-700 dark:text-gray-300 hover:text-custom ${sortBy === 'title' ? 'font-bold' : ''}`}
             >
-              Regenerate Summary
+              Title {sortBy === 'title' && (sortOrder === 'asc' ? '↑' : '↓')}
+            </button>
+            <button
+              onClick={() => handleSort('updatedAt')}
+              className={`text-gray-700 dark:text-gray-300 hover:text-custom ${sortBy === 'updatedAt' ? 'font-bold' : ''}`}
+            >
+              Updated {sortBy === 'updatedAt' && (sortOrder === 'asc' ? '↑' : '↓')}
             </button>
           </div>
-          
-          <div className="mb-4">
-            <h4 className="font-medium mb-1">Summary</h4>
-            <div className="border border-gray-300 rounded p-3 h-32 overflow-y-auto bg-gray-50">
-              <p>{summary}</p>
-            </div>
-          </div>
+        </div>
 
-          <div className="mb-4">
-            <div className="flex justify-between items-center mb-1">
-              <h4 className="font-medium">Highlights ({highlights.length})</h4>
-              <button 
-                onClick={generateNotes}
-                className="px-2 py-1 text-xs bg-blue-500 text-white rounded hover:bg-blue-600"
-                disabled={highlights.length === 0}
-              >
-                Generate Notes
-              </button>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {filteredNotes.map(note => (
+            <div key={note.id} className="bg-gray-50 dark:bg-gray-700 rounded-lg p-5 hover:shadow-md transition-shadow">
+              <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">{note.title}</h3>
+              <p className="text-gray-600 dark:text-gray-300 text-sm mb-4 line-clamp-3">
+                {note.content}
+              </p>
+              <div className="flex justify-between items-center">
+                <span className="text-xs text-gray-500 dark:text-gray-400">Updated {new Date(note.updatedAt).toLocaleString()}</span>
+                <Link to={`/notes/${note.id}`} className="text-custom text-sm font-medium">View Note</Link>
+              </div>
             </div>
-            <div className="border border-gray-300 rounded p-3 h-40 overflow-y-auto">
-              {highlights.length > 0 ? (
-                <ul className="list-disc pl-5 space-y-1">
-                  {highlights.map((highlight, index) => (
-                    <li key={index} className="text-sm">
-                      <div className="flex justify-between">
-                        <span>{highlight.substring(0, 100)}{highlight.length > 100 ? '...' : ''}</span>
-                        <button 
-                          onClick={() => setHighlights(highlights.filter((_, i) => i !== index))}
-                          className="text-red-500 hover:text-red-700"
-                        >
-                          ×
-                        </button>
-                      </div>
-                    </li>
-                  ))}
-                </ul>
-              ) : (
-                <p className="text-gray-500 text-sm">Select text from the PDF to add highlights</p>
-              )}
-            </div>
-          </div>
-
-          <div>
-            <h4 className="font-medium mb-1">Final Note Content</h4>
-            <textarea
-              value={content}
-              onChange={(e) => setContent(e.target.value)}
-              className="w-full h-32 p-3 border border-gray-300 rounded"
-            />
-          </div>
+          ))}
         </div>
       </div>
+
+      {isEditorOpen && (
+        <div className="fixed inset-0 flex items-center justify-center bg-gray-800 bg-opacity-50 z-50">
+          <div className="bg-white rounded-lg shadow-lg w-full max-w-5xl p-6">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-2xl font-bold">Edit Note</h2>
+              <button
+                onClick={() => setIsEditorOpen(false)}
+                className="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400"
+              >
+                Close
+              </button>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <PDFViewer pdfUrl={selectedPDF} />
+              </div>
+              <div>
+                <NoteEditor onPDFSelect={handlePDFSelect} />
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
 
-export default PDFEditor;
+export default Notes;
