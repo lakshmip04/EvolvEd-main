@@ -59,7 +59,7 @@ This will start both the backend server and the React frontend concurrently. The
 ## Project Structure
 
 ```
-study-mind/
+EvolvEd/
 ├── client/                 # React frontend
 │   ├── public/             # Static files
 │   └── src/                # React source code
