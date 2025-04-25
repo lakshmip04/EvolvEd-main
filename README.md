@@ -108,6 +108,4 @@ study-mind/
 - `PUT /api/tasks/:id` - Update a task
 - `DELETE /api/tasks/:id` - Delete a task
 
-## License
 
-This project is licensed under the MIT License - see the LICENSE file for details.
