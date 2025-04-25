@@ -1,6 +1,6 @@
-# StudyMind - AI-Powered Learning Assistant
+# EvolvEd - AI-Powered Learning Assistant
 
-StudyMind is a comprehensive MERN (MongoDB, Express, React, Node.js) stack application designed to enhance the learning experience with AI-powered features. It includes flashcards, notes, and task management to help students organize and optimize their study sessions.
+EvolvEd is a comprehensive MERN (MongoDB, Express, React, Node.js) stack application designed to enhance the learning experience with AI-powered features. It includes flashcards, notes, and task management to help students organize and optimize their study sessions.
 
 ## Features
 
