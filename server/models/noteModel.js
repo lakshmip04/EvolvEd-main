@@ -21,6 +21,10 @@ const noteSchema = mongoose.Schema({
   images: {
     type: [String], // URLs to stored images
     default: []
+  },
+  pdfFile: {
+    type: String, // Path or ID of the PDF file
+    default: null
   }
 }, {
   timestamps: true

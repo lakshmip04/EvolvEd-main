@@ -1,21 +1,98 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useSelector } from 'react-redux';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { useSelector, useDispatch } from 'react-redux';
+import { toast } from 'react-toastify';
+import axios from 'axios';
 import PDFUploader from '../components/PDFUploader';
 import PDFSelector from '../components/PDFSelector';
 import PDFStudyLayout from '../components/PDFStudyLayout';
+import { reset as resetNotes, getNotes, getNote } from '../features/notes/noteSlice';
+import config from '../config';
 
 function PDFStudy() {
   const navigate = useNavigate();
+  const location = useLocation();
+  const dispatch = useDispatch();
   const { user } = useSelector((state) => state.auth);
+  const { notes: userNotes, note: selectedNote } = useSelector((state) => state.notes);
   const [selectedPDF, setSelectedPDF] = useState(null);
   const [showPDFSelector, setShowPDFSelector] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     if (!user) {
       navigate('/login');
+    } else {
+      // Load user's notes
+      dispatch(getNotes());
+      
+      // Check if we have a specific note to load
+      const state = location.state;
+      if (state && state.noteId) {
+        dispatch(getNote(state.noteId));
+      } else if (state && state.pdfId) {
+        // If we have a pdfId but no noteId, try to load the PDF directly
+        setSelectedPDF({
+          url: `${config.API_URL}/uploads/${state.pdfId}`,
+          filename: state.pdfId.split('-').slice(1).join('-'),
+          id: state.pdfId
+        });
+      }
     }
-  }, [user, navigate]);
+    
+    // Clean up when component unmounts
+    return () => {
+      dispatch(resetNotes());
+    };
+  }, [user, navigate, dispatch, location]);
+
+  // Load PDF from note when note is selected
+  useEffect(() => {
+    const loadPDFFromNote = async () => {
+      // If we have a selected note with PDF file
+      if (selectedNote && selectedNote.pdfFile && !selectedPDF) {
+        setLoading(true);
+        try {
+          // If the pdfFile is a full URL
+          if (selectedNote.pdfFile.startsWith('http')) {
+            setSelectedPDF({
+              url: selectedNote.pdfFile,
+              filename: selectedNote.title.replace('Notes: ', ''),
+              id: selectedNote._id
+            });
+          } 
+          // If it's just an ID
+          else {
+            // Try to find matching PDF in userNotes
+            const pdfNotes = userNotes.filter(note => note.tags.includes('pdf'));
+            const matchingPDF = pdfNotes.find(note => note._id === selectedNote.pdfFile);
+            
+            if (matchingPDF) {
+              setSelectedPDF({
+                url: `${config.API_URL}/uploads/${matchingPDF.title}.pdf`,
+                filename: matchingPDF.title,
+                id: matchingPDF._id
+              });
+            } else {
+              // If can't find matching note, try to load directly
+              setSelectedPDF({
+                url: `${config.API_URL}/uploads/${selectedNote.pdfFile}`,
+                filename: selectedNote.title.replace('Notes: ', ''),
+                id: selectedNote.pdfFile
+              });
+            }
+          }
+        } catch (error) {
+          console.error('Error loading PDF from note:', error);
+          toast.error('Error loading the PDF file');
+        } finally {
+          setLoading(false);
+        }
+      }
+    };
+
+    loadPDFFromNote();
+  }, [selectedNote, userNotes, selectedPDF]);
 
   const handlePDFSelect = (pdfData) => {
     setSelectedPDF(pdfData);
@@ -29,6 +106,17 @@ function PDFStudy() {
   const togglePDFSelector = () => {
     setShowPDFSelector(!showPDFSelector);
   };
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center min-h-[50vh]">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading PDF and notes...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -71,6 +159,8 @@ function PDFStudy() {
             <PDFStudyLayout 
               pdfUrl={selectedPDF} 
               pdfTitle={selectedPDF.filename || 'PDF Document'}
+              initialNotes={selectedNote?.content || ''}
+              noteId={selectedNote?._id}
             />
           </>
         )}

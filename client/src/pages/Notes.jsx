@@ -1,15 +1,19 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
 import { Link } from 'react-router-dom';
+import { toast } from 'react-toastify';
 import PDFUploader from '../components/PDFUploader';
 import PDFViewer from '../components/PDFViewer';
 import PDFSelector from '../components/PDFSelector';
 import NoteEditor from '../components/NoteEditor';
+import { getNotes } from '../features/notes/noteSlice';
 
 function Notes() {
   const navigate = useNavigate();
+  const dispatch = useDispatch();
   const { user } = useSelector((state) => state.auth);
+  const { notes: userNotes = [], isLoading } = useSelector((state) => state.notes);
   const [searchTerm, setSearchTerm] = useState('');
   const [sortBy, setSortBy] = useState('updatedAt');
   const [sortOrder, setSortOrder] = useState('desc');
@@ -21,8 +25,11 @@ function Notes() {
   useEffect(() => {
     if (!user) {
       navigate('/login');
+    } else {
+      // Load user's notes
+      dispatch(getNotes());
     }
-  }, [user, navigate]);
+  }, [user, navigate, dispatch]);
 
   const handleSearch = (e) => {
     setSearchTerm(e.target.value);
@@ -68,20 +75,40 @@ function Notes() {
     setIsEditorOpen(false);
   };
 
-  const filteredNotes = [
-    { id: 1, title: "React Fundamentals", content: "Components, props, state, hooks, and more.", updatedAt: new Date(Date.now() - 3600000 * 24).toISOString() },
-    { id: 2, title: "JavaScript ES6+", content: "Modern JavaScript features: arrow functions, destructuring, spread operator, async/await.", updatedAt: new Date(Date.now() - 3600000 * 48).toISOString() },
-    { id: 3, title: "MongoDB Basics", content: "NoSQL database concepts, CRUD operations, and integration with Node.js.", updatedAt: new Date(Date.now() - 3600000 * 72).toISOString() }
-  ].filter(note =>
-    note.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    note.content.toLowerCase().includes(searchTerm.toLowerCase())
-  ).sort((a, b) => {
-    if (sortOrder === 'asc') {
-      return a[sortBy] > b[sortBy] ? 1 : -1;
-    } else {
-      return a[sortBy] < b[sortBy] ? 1 : -1;
-    }
-  });
+  // Filter notes based on search term
+  const filteredNotes = userNotes
+    .filter(note => 
+      !note.tags?.includes('pdf-notes') &&
+      (note.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+       note.content.toLowerCase().includes(searchTerm.toLowerCase()))
+    )
+    .sort((a, b) => {
+      if (sortOrder === 'asc') {
+        return a[sortBy] > b[sortBy] ? 1 : -1;
+      } else {
+        return a[sortBy] < b[sortBy] ? 1 : -1;
+      }
+    });
+
+  // Filter notes that have PDF attachments
+  const getPDFNotes = () => {
+    if (!userNotes || !Array.isArray(userNotes)) return [];
+    
+    return userNotes.filter(note => 
+      note.tags?.includes('pdf-notes') || note.pdfFile
+    );
+  };
+
+  if (isLoading) {
+    return (
+      <div className="flex justify-center items-center min-h-[50vh]">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading notes...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-8">
@@ -109,7 +136,48 @@ function Notes() {
           />
         </div>
 
+        {/* PDF Notes Section */}
+        {getPDFNotes().length > 0 && (
+          <div className="mb-8">
+            <h2 className="text-xl font-semibold mb-4">PDF Study Notes</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {getPDFNotes().map(note => (
+                <div key={note._id} className="bg-blue-50 dark:bg-gray-700 rounded-lg p-5 hover:shadow-md transition-shadow border border-blue-100">
+                  <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">{note.title}</h3>
+                  <p className="text-gray-600 dark:text-gray-300 text-sm mb-4 line-clamp-3">
+                    {note.content}
+                  </p>
+                  <div className="flex justify-between items-center">
+                    <span className="text-xs text-gray-500 dark:text-gray-400">
+                      Updated {new Date(note.updatedAt).toLocaleString()}
+                    </span>
+                    <div className="flex space-x-2">
+                      <Link 
+                        to={`/notes/${note._id}`} 
+                        className="text-blue-600 text-sm font-medium"
+                      >
+                        View
+                      </Link>
+                      {note.pdfFile && (
+                        <Link 
+                          to="/pdfstudy" 
+                          state={{ pdfId: note.pdfFile, noteId: note._id }}
+                          className="text-green-600 text-sm font-medium"
+                        >
+                          Study PDF
+                        </Link>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Regular Notes Section */}
         <div className="flex justify-between items-center mb-4">
+          <h2 className="text-xl font-semibold">All Notes</h2>
           <div className="flex space-x-4">
             <button
               onClick={() => handleSort('title')}
@@ -127,21 +195,32 @@ function Notes() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredNotes.map(note => (
-            <div key={note.id} className="bg-gray-50 dark:bg-gray-700 rounded-lg p-5 hover:shadow-md transition-shadow">
-              <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">{note.title}</h3>
-              <p className="text-gray-600 dark:text-gray-300 text-sm mb-4 line-clamp-3">
-                {note.content}
-              </p>
-              <div className="flex justify-between items-center">
-                <span className="text-xs text-gray-500 dark:text-gray-400">Updated {new Date(note.updatedAt).toLocaleString()}</span>
-                <Link to={`/notes/${note.id}`} className="text-blue-600 text-sm font-medium">View Note</Link>
+          {filteredNotes.length > 0 ? (
+            filteredNotes.map(note => (
+              <div key={note._id} className="bg-gray-50 dark:bg-gray-700 rounded-lg p-5 hover:shadow-md transition-shadow">
+                <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">{note.title}</h3>
+                <p className="text-gray-600 dark:text-gray-300 text-sm mb-4 line-clamp-3">
+                  {note.content}
+                </p>
+                <div className="flex justify-between items-center">
+                  <span className="text-xs text-gray-500 dark:text-gray-400">
+                    Updated {new Date(note.updatedAt).toLocaleString()}
+                  </span>
+                  <Link to={`/notes/${note._id}`} className="text-blue-600 text-sm font-medium">
+                    View Note
+                  </Link>
+                </div>
               </div>
+            ))
+          ) : (
+            <div className="col-span-3 py-8 text-center text-gray-500">
+              No notes found. Create your first note!
             </div>
-          ))}
+          )}
         </div>
       </div>
 
+      {/* Note Editor Modal */}
       {isEditorOpen && (
         <div className="fixed inset-0 flex items-center justify-center bg-gray-800 bg-opacity-75 z-50">
           <div className="bg-white rounded-lg shadow-lg w-full max-w-7xl h-[90vh] flex flex-col">
