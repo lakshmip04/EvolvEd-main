@@ -11,6 +11,7 @@ import NotePage from './pages/NotePage';
 import Flashcards from './pages/Flashcards';
 import FlashcardDeck from './pages/FlashcardDeck';
 import Tasks from './pages/Tasks';
+import PDFStudy from './pages/PDFStudy';
 import PrivateRoute from './components/PrivateRoute';
 
 function App() {
@@ -28,6 +29,7 @@ function App() {
             <Route path="/flashcards" element={<Flashcards />} />
             <Route path="/flashcards/:id" element={<FlashcardDeck />} />
             <Route path="/tasks" element={<Tasks />} />
+            <Route path="/pdfstudy" element={<PDFStudy />} />
           </Routes>
         </main>
         <Footer />

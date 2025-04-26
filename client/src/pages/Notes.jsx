@@ -42,6 +42,11 @@ function Notes() {
     setSelectedPDF(file);
   };
 
+  const handleCloseEditor = () => {
+    setIsEditorOpen(false);
+    setSelectedPDF(null);
+  };
+
   const filteredNotes = [
     { id: 1, title: "React Fundamentals", content: "Components, props, state, hooks, and more.", updatedAt: new Date(Date.now() - 3600000 * 24).toISOString() },
     { id: 2, title: "JavaScript ES6+", content: "Modern JavaScript features: arrow functions, destructuring, spread operator, async/await.", updatedAt: new Date(Date.now() - 3600000 * 48).toISOString() },
@@ -122,21 +127,21 @@ function Notes() {
 
       {isEditorOpen && (
         <div className="fixed inset-0 flex items-center justify-center bg-gray-800 bg-opacity-50 z-50">
-          <div className="bg-white rounded-lg shadow-lg w-full max-w-5xl p-6">
+          <div className="bg-white rounded-lg shadow-lg w-full max-w-7xl p-6">
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-2xl font-bold">Edit Note</h2>
               <button
-                onClick={() => setIsEditorOpen(false)}
+                onClick={handleCloseEditor}
                 className="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400"
               >
                 Close
               </button>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
+              <div className="md:w-1/2">
                 <PDFViewer pdfUrl={selectedPDF} />
               </div>
-              <div>
+              <div className="md:w-1/2">
                 <NoteEditor onPDFSelect={handlePDFSelect} />
               </div>
             </div>

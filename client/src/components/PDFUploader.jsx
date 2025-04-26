@@ -3,8 +3,9 @@ import { useDispatch, useSelector } from 'react-redux';
 import { toast } from 'react-toastify';
 import axios from 'axios';
 import { createNote } from '../features/notes/noteSlice';
+import config from '../config';
 
-function PDFUploader() {
+function PDFUploader({ onPDFSelect }) {
   const [file, setFile] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [progress, setProgress] = useState(0);
@@ -17,7 +18,13 @@ function PDFUploader() {
     const selectedFile = e.target.files[0];
     if (selectedFile && selectedFile.type === 'application/pdf') {
       setFile(selectedFile);
-      setPreviewURL(URL.createObjectURL(selectedFile));
+      const url = URL.createObjectURL(selectedFile);
+      setPreviewURL(url);
+      
+      // Call the onPDFSelect callback if provided
+      if (onPDFSelect) {
+        onPDFSelect(url);
+      }
     } else {
       toast.error('Please select a valid PDF file');
       e.target.value = null;
@@ -33,7 +40,13 @@ function PDFUploader() {
     const droppedFile = e.dataTransfer.files[0];
     if (droppedFile && droppedFile.type === 'application/pdf') {
       setFile(droppedFile);
-      setPreviewURL(URL.createObjectURL(droppedFile));
+      const url = URL.createObjectURL(droppedFile);
+      setPreviewURL(url);
+      
+      // Call the onPDFSelect callback if provided
+      if (onPDFSelect) {
+        onPDFSelect(url);
+      }
     } else {
       toast.error('Please select a valid PDF file');
     }
@@ -60,7 +73,7 @@ function PDFUploader() {
     try {
       const token = user.token;
 
-      const response = await axios.post('/api/pdf/upload', formData, {
+      const response = await axios.post(`${config.API_URL}/api/pdf/upload`, formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
           'Authorization': `Bearer ${token}`
@@ -79,7 +92,7 @@ function PDFUploader() {
       fileInputRef.current.value = null;
     } catch (error) {
       console.error('Error uploading PDF:', error);
-      toast.error(error.response?.data?.message || 'Error processing PDF');
+      toast.error(error.response?.data?.message || 'Error processing PDF: ' + error.message);
     } finally {
       setIsLoading(false);
     }

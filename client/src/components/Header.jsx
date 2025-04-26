@@ -83,6 +83,16 @@ function Header() {
                   >
                     Tasks &amp; To-Do
                   </Link>
+                  <Link 
+                    to="/pdfstudy" 
+                    className={`${
+                      window.location.pathname === '/pdfstudy' 
+                        ? 'border-custom text-gray-900 dark:text-white' 
+                        : 'border-transparent text-gray-500 dark:text-gray-300 hover:text-gray-700 dark:hover:text-gray-200'
+                    } inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium`}
+                  >
+                    PDF Study
+                  </Link>
                 </div>
               )}
             </div>
