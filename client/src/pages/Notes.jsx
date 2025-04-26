@@ -7,7 +7,7 @@ import PDFUploader from '../components/PDFUploader';
 import PDFViewer from '../components/PDFViewer';
 import PDFSelector from '../components/PDFSelector';
 import NoteEditor from '../components/NoteEditor';
-import { getNotes } from '../features/notes/noteSlice';
+import { getNotes, createNote } from '../features/notes/noteSlice';
 
 function Notes() {
   const navigate = useNavigate();
@@ -68,11 +68,60 @@ function Notes() {
     setNoteTitle(e.target.value);
   };
 
-  const handleSaveNote = () => {
-    // Save note logic to be implemented
-    console.log('Saving note:', { title: noteTitle, content: noteContent, pdfUrl: selectedPDF });
-    // Close editor after saving
-    setIsEditorOpen(false);
+  const handleSaveNote = async () => {
+    if (!noteTitle.trim()) {
+      toast.error('Please add a title for your note');
+      return;
+    }
+    
+    if (!noteContent.trim()) {
+      toast.error('Please add some content to your note');
+      return;
+    }
+    
+    try {
+      const noteData = {
+        title: noteTitle,
+        content: noteContent,
+        tags: []
+      };
+      
+      // Add PDF reference if there's a selected PDF
+      if (selectedPDF) {
+        let pdfId;
+        if (typeof selectedPDF === 'string') {
+          pdfId = selectedPDF;
+        } else if (selectedPDF.id) {
+          pdfId = selectedPDF.id;
+        } else if (selectedPDF.url) {
+          // Extract filename from URL
+          const urlParts = selectedPDF.url.split('/');
+          pdfId = urlParts[urlParts.length - 1];
+        }
+        
+        if (pdfId) {
+          noteData.pdfFile = pdfId;
+          noteData.tags.push('pdf-notes');
+        }
+      }
+      
+      console.log('Creating note with data:', noteData);
+      const result = await dispatch(createNote(noteData)).unwrap();
+      console.log('Note created successfully:', result);
+      toast.success('Note saved successfully');
+      
+      // Refresh notes list
+      dispatch(getNotes());
+      
+      // Close editor after saving
+      setIsEditorOpen(false);
+      setNoteContent('');
+      setNoteTitle('');
+      setSelectedPDF(null);
+    } catch (error) {
+      console.error('Error saving note:', error);
+      toast.error(`Failed to save note: ${error.message || 'Unknown error'}`);
+    }
   };
 
   // Filter notes based on search term

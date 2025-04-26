@@ -172,7 +172,11 @@ router.post('/upload', protect, upload.single('pdf'), async (req, res) => {
       
       console.log('Note created successfully:', note._id);
       
-      res.status(201).json(note);
+      // Return note data along with the stored filename
+      res.status(201).json({
+        ...note._doc,
+        storedFilename: req.file.filename || path.basename(req.file.path)
+      });
     } catch (pdfError) {
       console.error('Error processing PDF:', pdfError);
       return res.status(400).json({ message: 'Unable to parse PDF file: ' + pdfError.message });

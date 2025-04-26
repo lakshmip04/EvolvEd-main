@@ -6,7 +6,7 @@ import axios from 'axios';
 import PDFUploader from '../components/PDFUploader';
 import PDFSelector from '../components/PDFSelector';
 import PDFStudyLayout from '../components/PDFStudyLayout';
-import { reset as resetNotes, getNotes, getNote } from '../features/notes/noteSlice';
+import { reset as resetNotes, getNotes, getNote, updateNote, createNote } from '../features/notes/noteSlice';
 import config from '../config';
 
 function PDFStudy() {
@@ -18,6 +18,8 @@ function PDFStudy() {
   const [selectedPDF, setSelectedPDF] = useState(null);
   const [showPDFSelector, setShowPDFSelector] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [showDebugger, setShowDebugger] = useState(false);
+  const [notes, setNotes] = useState('');
 
   useEffect(() => {
     if (!user) {
@@ -33,7 +35,7 @@ function PDFStudy() {
       } else if (state && state.pdfId) {
         // If we have a pdfId but no noteId, try to load the PDF directly
         setSelectedPDF({
-          url: `${config.API_URL}/uploads/${state.pdfId}`,
+          url: `${config.API_URL}/api/pdf/${state.pdfId}`,
           filename: state.pdfId.split('-').slice(1).join('-'),
           id: state.pdfId
         });
@@ -64,23 +66,28 @@ function PDFStudy() {
           // If it's just an ID
           else {
             // Try to find matching PDF in userNotes
-            const pdfNotes = userNotes.filter(note => note.tags.includes('pdf'));
+            const pdfNotes = userNotes.filter(note => note.tags && note.tags.includes('pdf'));
             const matchingPDF = pdfNotes.find(note => note._id === selectedNote.pdfFile);
             
             if (matchingPDF) {
               setSelectedPDF({
-                url: `${config.API_URL}/uploads/${matchingPDF.title}.pdf`,
+                url: `${config.API_URL}/api/pdf/${matchingPDF.title}.pdf`,
                 filename: matchingPDF.title,
                 id: matchingPDF._id
               });
             } else {
               // If can't find matching note, try to load directly
               setSelectedPDF({
-                url: `${config.API_URL}/uploads/${selectedNote.pdfFile}`,
+                url: `${config.API_URL}/api/pdf/${selectedNote.pdfFile}`,
                 filename: selectedNote.title.replace('Notes: ', ''),
                 id: selectedNote.pdfFile
               });
             }
+          }
+          
+          // Set notes content if available
+          if (selectedNote.content) {
+            setNotes(selectedNote.content);
           }
         } catch (error) {
           console.error('Error loading PDF from note:', error);
@@ -106,6 +113,81 @@ function PDFStudy() {
   const togglePDFSelector = () => {
     setShowPDFSelector(!showPDFSelector);
   };
+  
+  const toggleDebugger = () => {
+    setShowDebugger(!showDebugger);
+  };
+  
+  // Handle notes input
+  const handleNotesChange = (e) => {
+    setNotes(e.target.value);
+  };
+  
+  // Save notes
+  const handleSaveNotes = async () => {
+    if (!notes.trim()) {
+      toast.info('Please enter some notes to save');
+      return;
+    }
+    
+    if (!selectedPDF) {
+      toast.error('No PDF selected');
+      return;
+    }
+    
+    try {
+      // Get PDF identifier
+      let pdfId;
+      if (typeof selectedPDF === 'string') {
+        pdfId = selectedPDF;
+      } else if (selectedPDF.id) {
+        pdfId = selectedPDF.id;
+      } else if (selectedPDF.url) {
+        // Extract filename from URL
+        const urlParts = selectedPDF.url.split('/');
+        pdfId = urlParts[urlParts.length - 1];
+      }
+      
+      if (!pdfId) {
+        console.error('Could not determine PDF ID:', selectedPDF);
+        toast.error('Invalid PDF reference');
+        return;
+      }
+      
+      console.log('Saving notes for PDF:', {
+        pdfId,
+        noteId: selectedNote?._id,
+        title: `Notes: ${selectedPDF.filename || 'PDF Document'}`
+      });
+      
+      const noteData = {
+        title: `Notes: ${selectedPDF.filename || 'PDF Document'}`,
+        content: notes,
+        tags: ['pdf-notes'],
+        pdfFile: pdfId
+      };
+      
+      let result;
+      if (selectedNote && selectedNote._id) {
+        result = await dispatch(updateNote({
+          noteId: selectedNote._id,
+          noteData
+        })).unwrap();
+        toast.success('Notes updated successfully');
+      } else {
+        result = await dispatch(createNote(noteData)).unwrap();
+        toast.success('Notes saved successfully');
+      }
+      
+      console.log('Note saved:', result);
+    } catch (error) {
+      console.error('Error saving notes:', error);
+      if (error.response) {
+        console.error('Error details:', error.response.data);
+      }
+      toast.error(`Failed to save notes: ${error.message || 'Unknown error'}`);
+    }
+  };
 
   if (loading) {
     return (
@@ -121,7 +203,28 @@ function PDFStudy() {
   return (
     <div className="space-y-6">
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-        <h1 className="text-2xl font-bold mb-6">PDF Study</h1>
+        <div className="flex justify-between items-center mb-6">
+          <h1 className="text-2xl font-bold">PDF Study</h1>
+          <div className="space-x-2">
+            <button
+              onClick={toggleDebugger}
+              className="text-xs px-2 py-1 bg-gray-200 text-gray-700 rounded hover:bg-gray-300"
+            >
+              {showDebugger ? 'Hide Debugger' : 'Debug PDF Access'}
+            </button>
+          </div>
+        </div>
+        
+        {showDebugger && (
+          <div className="mb-8 border border-gray-300 rounded-lg p-4">
+            <h3 className="font-bold mb-2">PDF Debug Info</h3>
+            {selectedPDF && (
+              <div className="mt-2 p-2 bg-blue-50 rounded text-xs overflow-auto">
+                <pre>{JSON.stringify(selectedPDF, null, 2)}</pre>
+              </div>
+            )}
+          </div>
+        )}
 
         {!selectedPDF ? (
           <div className="mb-8">
@@ -156,12 +259,45 @@ function PDFStudy() {
                 Upload Different PDF
               </button>
             </div>
-            <PDFStudyLayout 
-              pdfUrl={selectedPDF} 
-              pdfTitle={selectedPDF.filename || 'PDF Document'}
-              initialNotes={selectedNote?.content || ''}
-              noteId={selectedNote?._id}
-            />
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 h-[calc(100vh-200px)]">
+              {/* Left side: PDF Viewer */}
+              <div className="border rounded-lg shadow-sm overflow-hidden bg-white">
+                <div className="p-4 border-b bg-gray-50">
+                  <h3 className="text-lg font-semibold">
+                    Document: {selectedPDF.filename || 'PDF Document'}
+                  </h3>
+                </div>
+                <div className="h-[calc(100%-60px)]">
+                  <iframe 
+                    src={selectedPDF.url} 
+                    className="w-full h-full border-0"
+                    title="PDF Viewer"
+                  />
+                </div>
+              </div>
+              
+              {/* Right side: Notes */}
+              <div className="border rounded-lg shadow-sm overflow-hidden bg-white">
+                <div className="p-4 border-b bg-gray-50 flex justify-between items-center">
+                  <h3 className="text-lg font-semibold">Notes</h3>
+                  <button
+                    onClick={handleSaveNotes}
+                    className="px-4 py-2 rounded text-white bg-blue-600 hover:bg-blue-700"
+                  >
+                    Save Notes
+                  </button>
+                </div>
+                <div className="p-4 h-[calc(100%-60px)] overflow-y-auto">
+                  <textarea
+                    className="w-full h-full p-3 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    value={notes}
+                    onChange={handleNotesChange}
+                    placeholder="Take notes here..."
+                  ></textarea>
+                </div>
+              </div>
+            </div>
           </>
         )}
       </div>
