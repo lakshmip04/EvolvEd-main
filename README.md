@@ -1,6 +1,6 @@
-# StudyMind - AI-Powered Learning Assistant
+# EvolvEd - AI-Powered Learning Assistant
 
-StudyMind is a comprehensive MERN (MongoDB, Express, React, Node.js) stack application designed to enhance the learning experience with AI-powered features. It includes flashcards, notes, and task management to help students organize and optimize their study sessions.
+EvolvEd is a comprehensive MERN (MongoDB, Express, React, Node.js) stack application designed to enhance the learning experience with AI-powered features. It includes flashcards, notes, and task management to help students organize and optimize their study sessions.
 
 ## Features
 
@@ -59,7 +59,7 @@ This will start both the backend server and the React frontend concurrently. The
 ## Project Structure
 
 ```
-study-mind/
+EvolvEd/
 ├── client/                 # React frontend
 │   ├── public/             # Static files
 │   └── src/                # React source code
@@ -108,6 +108,4 @@ study-mind/
 - `PUT /api/tasks/:id` - Update a task
 - `DELETE /api/tasks/:id` - Delete a task
 
-## License
 
-This project is licensed under the MIT License - see the LICENSE file for details.
