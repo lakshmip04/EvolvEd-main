@@ -83,6 +83,52 @@ function simpleExtractSummary(text) {
   return sentences.join('.') + '.';
 }
 
+// @route   GET /api/pdf/list
+// @desc    Get all PDFs associated with the user
+// @access  Private
+router.get('/list', protect, async (req, res) => {
+  try {
+    // Find notes created by user that have PDF tags
+    const userId = req.user._id || req.user.id;
+    const pdfNotes = await Note.find({ 
+      user: userId,
+      tags: { $in: ['pdf'] }
+    }).select('title createdAt updatedAt');
+
+    // Get list of files in the uploads directory
+    const uploadDir = path.join(__dirname, '../uploads');
+    const files = fs.readdirSync(uploadDir);
+    
+    // Filter for only PDF files
+    const pdfFiles = files.filter(file => file.endsWith('.pdf'));
+    
+    // Create formatted response
+    const pdfs = pdfFiles.map(filename => {
+      const filePath = path.join(uploadDir, filename);
+      const stats = fs.statSync(filePath);
+      
+      // Find matching note if any
+      const matchingNote = pdfNotes.find(note => 
+        note.title === filename.split('-').slice(1).join('-').replace('.pdf', '')
+      );
+      
+      return {
+        id: filename,
+        filename: filename.split('-').slice(1).join('-'),
+        path: `/uploads/${filename}`,
+        uploadDate: stats.mtime,
+        size: stats.size,
+        noteId: matchingNote ? matchingNote._id : null
+      };
+    });
+    
+    res.json(pdfs);
+  } catch (error) {
+    console.error('Error fetching PDFs:', error);
+    res.status(500).json({ message: 'Error fetching PDFs: ' + error.message });
+  }
+});
+
 // @route   POST /api/pdf/upload
 // @desc    Upload PDF, extract text and create note
 // @access  Private
@@ -134,6 +180,27 @@ router.post('/upload', protect, upload.single('pdf'), async (req, res) => {
   } catch (error) {
     console.error('Error in PDF upload route:', error);
     res.status(500).json({ message: 'Error processing PDF file: ' + error.message });
+  }
+});
+
+// @route   GET /api/pdf/:filename
+// @desc    Serve a PDF file
+// @access  Private
+router.get('/:filename', protect, (req, res) => {
+  try {
+    const filename = req.params.filename;
+    const filePath = path.join(__dirname, '../uploads', filename);
+    
+    // Check if file exists
+    if (!fs.existsSync(filePath)) {
+      return res.status(404).json({ message: 'PDF file not found' });
+    }
+    
+    // Serve the file
+    res.sendFile(filePath);
+  } catch (error) {
+    console.error('Error serving PDF:', error);
+    res.status(500).json({ message: 'Error serving PDF: ' + error.message });
   }
 });
 

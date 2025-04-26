@@ -3,8 +3,9 @@ import { useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { Link } from 'react-router-dom';
 import PDFUploader from '../components/PDFUploader';
-import PDFViewer from '../components/PDFViewer'; // Import PDFViewer
-import NoteEditor from '../components/NoteEditor'; // Import NoteEditor
+import PDFViewer from '../components/PDFViewer';
+import PDFSelector from '../components/PDFSelector';
+import NoteEditor from '../components/NoteEditor';
 
 function Notes() {
   const navigate = useNavigate();
@@ -14,6 +15,8 @@ function Notes() {
   const [sortOrder, setSortOrder] = useState('desc');
   const [isEditorOpen, setIsEditorOpen] = useState(false);
   const [selectedPDF, setSelectedPDF] = useState(null);
+  const [noteContent, setNoteContent] = useState('');
+  const [noteTitle, setNoteTitle] = useState('');
 
   useEffect(() => {
     if (!user) {
@@ -36,15 +39,33 @@ function Notes() {
 
   const handleCreateNote = () => {
     setIsEditorOpen(true);
+    setSelectedPDF(null);
+    setNoteContent('');
+    setNoteTitle('');
   };
 
-  const handlePDFSelect = (file) => {
-    setSelectedPDF(file);
+  const handlePDFSelect = (pdfUrl) => {
+    setSelectedPDF(pdfUrl);
   };
 
   const handleCloseEditor = () => {
     setIsEditorOpen(false);
     setSelectedPDF(null);
+  };
+
+  const handleNoteContentChange = (e) => {
+    setNoteContent(e.target.value);
+  };
+
+  const handleNoteTitleChange = (e) => {
+    setNoteTitle(e.target.value);
+  };
+
+  const handleSaveNote = () => {
+    // Save note logic to be implemented
+    console.log('Saving note:', { title: noteTitle, content: noteContent, pdfUrl: selectedPDF });
+    // Close editor after saving
+    setIsEditorOpen(false);
   };
 
   const filteredNotes = [
@@ -69,7 +90,7 @@ function Notes() {
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white">My Notes</h1>
           <button
             onClick={handleCreateNote}
-            className="bg-custom text-white rounded-md px-4 py-2 text-base font-medium inline-flex items-center"
+            className="bg-blue-600 text-white rounded-md px-4 py-2 text-base font-medium inline-flex items-center hover:bg-blue-700"
           >
             <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
               <path fillRule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clipRule="evenodd" />
@@ -88,21 +109,17 @@ function Notes() {
           />
         </div>
 
-        <div className="mb-8">
-          <PDFUploader onPDFSelect={handlePDFSelect} />
-        </div>
-
         <div className="flex justify-between items-center mb-4">
           <div className="flex space-x-4">
             <button
               onClick={() => handleSort('title')}
-              className={`text-gray-700 dark:text-gray-300 hover:text-custom ${sortBy === 'title' ? 'font-bold' : ''}`}
+              className={`text-gray-700 dark:text-gray-300 hover:text-blue-600 ${sortBy === 'title' ? 'font-bold' : ''}`}
             >
               Title {sortBy === 'title' && (sortOrder === 'asc' ? '↑' : '↓')}
             </button>
             <button
               onClick={() => handleSort('updatedAt')}
-              className={`text-gray-700 dark:text-gray-300 hover:text-custom ${sortBy === 'updatedAt' ? 'font-bold' : ''}`}
+              className={`text-gray-700 dark:text-gray-300 hover:text-blue-600 ${sortBy === 'updatedAt' ? 'font-bold' : ''}`}
             >
               Updated {sortBy === 'updatedAt' && (sortOrder === 'asc' ? '↑' : '↓')}
             </button>
@@ -118,7 +135,7 @@ function Notes() {
               </p>
               <div className="flex justify-between items-center">
                 <span className="text-xs text-gray-500 dark:text-gray-400">Updated {new Date(note.updatedAt).toLocaleString()}</span>
-                <Link to={`/notes/${note.id}`} className="text-custom text-sm font-medium">View Note</Link>
+                <Link to={`/notes/${note.id}`} className="text-blue-600 text-sm font-medium">View Note</Link>
               </div>
             </div>
           ))}
@@ -126,23 +143,75 @@ function Notes() {
       </div>
 
       {isEditorOpen && (
-        <div className="fixed inset-0 flex items-center justify-center bg-gray-800 bg-opacity-50 z-50">
-          <div className="bg-white rounded-lg shadow-lg w-full max-w-7xl p-6">
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-2xl font-bold">Edit Note</h2>
-              <button
-                onClick={handleCloseEditor}
-                className="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400"
-              >
-                Close
-              </button>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="md:w-1/2">
-                <PDFViewer pdfUrl={selectedPDF} />
+        <div className="fixed inset-0 flex items-center justify-center bg-gray-800 bg-opacity-75 z-50">
+          <div className="bg-white rounded-lg shadow-lg w-full max-w-7xl h-[90vh] flex flex-col">
+            <div className="flex justify-between items-center p-4 border-b">
+              <div className="flex-1">
+                <input
+                  type="text"
+                  value={noteTitle}
+                  onChange={handleNoteTitleChange}
+                  placeholder="Note Title"
+                  className="w-full text-xl font-bold border-none focus:outline-none focus:ring-0"
+                />
               </div>
-              <div className="md:w-1/2">
-                <NoteEditor onPDFSelect={handlePDFSelect} />
+              <div className="flex space-x-2">
+                <button
+                  onClick={handleSaveNote}
+                  className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+                >
+                  Save Note
+                </button>
+                <button
+                  onClick={handleCloseEditor}
+                  className="px-4 py-2 bg-gray-200 text-gray-800 rounded hover:bg-gray-300"
+                >
+                  Close
+                </button>
+              </div>
+            </div>
+
+            <div className="flex flex-col md:flex-row flex-1 overflow-hidden">
+              {/* PDF Selection/Upload Section */}
+              {!selectedPDF ? (
+                <div className="w-full md:w-1/2 p-4 flex flex-col space-y-4 overflow-y-auto">
+                  <h3 className="text-lg font-semibold">Choose a PDF</h3>
+                  <PDFSelector onSelect={handlePDFSelect} />
+                  <div className="mt-8">
+                    <h3 className="text-lg font-semibold mb-4">Or Upload a New PDF</h3>
+                    <PDFUploader onPDFSelect={handlePDFSelect} />
+                  </div>
+                </div>
+              ) : (
+                <div className="w-full md:w-1/2 border-r border-gray-200 flex flex-col">
+                  <div className="p-3 bg-gray-100 border-b flex justify-between items-center">
+                    <h3 className="text-lg font-semibold">PDF Viewer</h3>
+                    <button 
+                      onClick={() => setSelectedPDF(null)} 
+                      className="text-sm text-blue-600 hover:text-blue-800"
+                    >
+                      Change PDF
+                    </button>
+                  </div>
+                  <div className="flex-1 overflow-auto p-4">
+                    <PDFViewer pdfUrl={selectedPDF} />
+                  </div>
+                </div>
+              )}
+
+              {/* Note Editor Section */}
+              <div className="w-full md:w-1/2 flex flex-col">
+                <div className="p-3 bg-gray-100 border-b">
+                  <h3 className="text-lg font-semibold">Take Notes</h3>
+                </div>
+                <div className="flex-1 p-4 overflow-auto">
+                  <textarea
+                    value={noteContent}
+                    onChange={handleNoteContentChange}
+                    className="w-full h-full p-3 border border-gray-300 rounded resize-none focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder="Write your notes here..."
+                  />
+                </div>
               </div>
             </div>
           </div>
