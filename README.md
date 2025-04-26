@@ -31,8 +31,8 @@ Before you begin, ensure you have met the following requirements:
 
 1. Clone the repository
    ```
-   git clone https://github.com/your-username/study-mind.git
-   cd study-mind
+   git clone https://github.com/lakshmip04/EvolvEd-main.git
+   cd EvolvEd-main
    ```
 
 2. Install dependencies for backend and frontend
