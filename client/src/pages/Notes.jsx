@@ -44,8 +44,8 @@ function Notes() {
     setNoteTitle('');
   };
 
-  const handlePDFSelect = (pdfUrl) => {
-    setSelectedPDF(pdfUrl);
+  const handlePDFSelect = (pdfData) => {
+    setSelectedPDF(pdfData);
   };
 
   const handleCloseEditor = () => {
@@ -172,32 +172,38 @@ function Notes() {
             </div>
 
             <div className="flex flex-col md:flex-row flex-1 overflow-hidden">
-              {/* PDF Selection/Upload Section */}
-              {!selectedPDF ? (
-                <div className="w-full md:w-1/2 p-4 flex flex-col space-y-4 overflow-y-auto">
-                  <h3 className="text-lg font-semibold">Choose a PDF</h3>
-                  <PDFSelector onSelect={handlePDFSelect} />
-                  <div className="mt-8">
-                    <h3 className="text-lg font-semibold mb-4">Or Upload a New PDF</h3>
-                    <PDFUploader onPDFSelect={handlePDFSelect} />
-                  </div>
-                </div>
-              ) : (
-                <div className="w-full md:w-1/2 border-r border-gray-200 flex flex-col">
-                  <div className="p-3 bg-gray-100 border-b flex justify-between items-center">
-                    <h3 className="text-lg font-semibold">PDF Viewer</h3>
+              {/* PDF Section */}
+              <div className="w-full md:w-1/2 border-r border-gray-200 flex flex-col">
+                <div className="p-3 bg-gray-100 border-b flex justify-between items-center">
+                  <h3 className="text-lg font-semibold">
+                    {selectedPDF ? (selectedPDF.filename || 'PDF Viewer') : 'Choose a PDF'}
+                  </h3>
+                  {selectedPDF && (
                     <button 
                       onClick={() => setSelectedPDF(null)} 
                       className="text-sm text-blue-600 hover:text-blue-800"
                     >
                       Change PDF
                     </button>
-                  </div>
-                  <div className="flex-1 overflow-auto p-4">
-                    <PDFViewer pdfUrl={selectedPDF} />
-                  </div>
+                  )}
                 </div>
-              )}
+                
+                <div className="flex-1 overflow-auto">
+                  {!selectedPDF ? (
+                    <div className="p-4 flex flex-col space-y-4">
+                      <PDFSelector onSelect={handlePDFSelect} />
+                      <div className="mt-4">
+                        <h3 className="text-lg font-semibold mb-4">Or Upload a New PDF</h3>
+                        <PDFUploader onPDFSelect={handlePDFSelect} />
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="h-full">
+                      <PDFViewer pdfUrl={selectedPDF} />
+                    </div>
+                  )}
+                </div>
+              </div>
 
               {/* Note Editor Section */}
               <div className="w-full md:w-1/2 flex flex-col">

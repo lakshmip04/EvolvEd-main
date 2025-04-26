@@ -186,7 +186,7 @@ router.post('/upload', protect, upload.single('pdf'), async (req, res) => {
 // @route   GET /api/pdf/:filename
 // @desc    Serve a PDF file
 // @access  Private
-router.get('/:filename', protect, (req, res) => {
+router.get('/:filename', (req, res) => {
   try {
     const filename = req.params.filename;
     const filePath = path.join(__dirname, '../uploads', filename);

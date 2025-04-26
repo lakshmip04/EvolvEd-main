@@ -21,9 +21,13 @@ function PDFUploader({ onPDFSelect }) {
       const url = URL.createObjectURL(selectedFile);
       setPreviewURL(url);
       
-      // Call the onPDFSelect callback if provided
+      // Call the onPDFSelect callback with consistent format
       if (onPDFSelect) {
-        onPDFSelect(url);
+        onPDFSelect({
+          url: url,
+          filename: selectedFile.name,
+          isLocal: true
+        });
       }
     } else {
       toast.error('Please select a valid PDF file');
@@ -43,9 +47,13 @@ function PDFUploader({ onPDFSelect }) {
       const url = URL.createObjectURL(droppedFile);
       setPreviewURL(url);
       
-      // Call the onPDFSelect callback if provided
+      // Call the onPDFSelect callback with consistent format
       if (onPDFSelect) {
-        onPDFSelect(url);
+        onPDFSelect({
+          url: url,
+          filename: droppedFile.name,
+          isLocal: true
+        });
       }
     } else {
       toast.error('Please select a valid PDF file');
@@ -84,8 +92,20 @@ function PDFUploader({ onPDFSelect }) {
         }
       });
 
-      dispatch(createNote(response.data));
       toast.success('PDF processed and note created successfully');
+      
+      // If parent component wants to know about the uploaded PDF
+      if (onPDFSelect) {
+        // Pass the uploaded file URL
+        onPDFSelect({
+          url: `${config.API_URL}/uploads/${response.data.title}.pdf`,
+          filename: response.data.title,
+          id: response.data._id,
+          isServer: true
+        });
+      }
+      
+      dispatch(createNote(response.data));
       setFile(null);
       setPreviewURL(null);
       setProgress(0);

@@ -34,7 +34,11 @@ function PDFSelector({ onSelect }) {
 
   const handleSelectPDF = (pdf) => {
     if (onSelect) {
-      onSelect(`${config.API_URL}/api/pdf/${pdf.id}`);
+      onSelect({
+        url: `${config.API_URL}/uploads/${pdf.id}`,
+        filename: pdf.filename,
+        id: pdf.id
+      });
     }
   };
 
