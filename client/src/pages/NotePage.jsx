@@ -1,26 +1,73 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
+import { getNote } from '../features/notes/noteSlice';
+import { toast } from 'react-toastify';
 
 function NotePage() {
   const navigate = useNavigate();
+  const dispatch = useDispatch();
   const { id } = useParams();
   const { user } = useSelector((state) => state.auth);
-  
-  // Placeholder state for a note - would be fetched from Redux in a complete implementation
-  const [note, setNote] = useState({
-    title: "React Fundamentals",
-    content: "# React Fundamentals\n\nReact is a JavaScript library for building user interfaces. It is maintained by Facebook and a community of individual developers and companies.\n\n## Key Concepts\n\n### Components\nComponents are the building blocks of any React application. A component is a JavaScript function or class that optionally accepts inputs, called props, and returns a React element that describes how a section of the UI should appear.\n\n### JSX\nJSX is a syntax extension to JavaScript that looks similar to HTML. React uses JSX for templating instead of regular JavaScript.\n\n### State and Props\nState is a built-in React object that is used to contain data or information about the component. Props are properties passed to a component from its parent.\n\n### Hooks\nHooks are functions that let you \"hook into\" React state and lifecycle features from function components. Examples include useState, useEffect, and useContext.",
-    createdAt: new Date(Date.now() - 3600000 * 48).toISOString(),
-    updatedAt: new Date(Date.now() - 3600000 * 24).toISOString()
-  });
+  const { note, isLoading, isError, message } = useSelector((state) => state.notes);
 
   useEffect(() => {
     if (!user) {
       navigate('/login');
+      return;
     }
-    // In a complete implementation, we would fetch the note by ID from the Redux store or API
-  }, [user, navigate, id]);
+
+    // Fetch the note data based on the ID from the URL
+    dispatch(getNote(id));
+
+    // Handle errors
+    if (isError) {
+      toast.error(message || 'Failed to load note');
+    }
+  }, [user, navigate, id, dispatch]);
+
+  if (isLoading) {
+    return (
+      <div className="flex justify-center items-center min-h-[50vh]">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading note...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (isError) {
+    return (
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-8">
+        <div className="text-center text-red-500">
+          <p>Error loading note: {message}</p>
+          <button 
+            onClick={() => navigate('/notes')}
+            className="mt-4 px-4 py-2 bg-blue-600 text-white rounded"
+          >
+            Back to Notes
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  if (!note) {
+    return (
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-8">
+        <div className="text-center text-gray-500">
+          <p>Note not found</p>
+          <button 
+            onClick={() => navigate('/notes')}
+            className="mt-4 px-4 py-2 bg-blue-600 text-white rounded"
+          >
+            Back to Notes
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
