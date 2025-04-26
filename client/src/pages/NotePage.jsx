@@ -1,17 +1,15 @@
-import { useEffect, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
-import { useSelector, useDispatch } from "react-redux";
-import { getNote } from "../features/notes/noteSlice";
-import { toast } from "react-toastify";
+import { useEffect, useState } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
+import { useSelector, useDispatch } from 'react-redux';
+import { getNote } from '../features/notes/noteSlice';
+import { toast } from 'react-toastify';
 
 function NotePage() {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const { id } = useParams();
   const { user } = useSelector((state) => state.auth);
-  const { note, isLoading, isError, message } = useSelector(
-    (state) => state.notes
-  );
+  const { note, isLoading, isError, message } = useSelector((state) => state.notes);
 
   useEffect(() => {
     if (!user) {
@@ -26,7 +24,78 @@ function NotePage() {
     if (isError) {
       toast.error(message || "Failed to load note");
     }
+    
+    // Reset editing state when note changes
+    return () => {
+      setIsEditing(false);
+    };
   }, [user, navigate, id, dispatch]);
+  
+  useEffect(() => {
+    if (note) {
+      setEditTitle(note.title);
+      setEditContent(note.content);
+    }
+  }, [note]);
+
+  const handleEditClick = () => {
+    setIsEditing(true);
+  };
+  
+  const handleCancelEdit = () => {
+    setIsEditing(false);
+    // Reset to original note content
+    if (note) {
+      setEditTitle(note.title);
+      setEditContent(note.content);
+    }
+  };
+  
+  const handleSaveEdit = async () => {
+    if (!editTitle.trim()) {
+      toast.error('Title cannot be empty');
+      return;
+    }
+    
+    if (!editContent.trim()) {
+      toast.error('Content cannot be empty');
+      return;
+    }
+    
+    try {
+      await dispatch(updateNote({ 
+        noteId: id, 
+        noteData: {
+          title: editTitle,
+          content: editContent
+        }
+      })).unwrap();
+      
+      toast.success('Note updated successfully');
+      setIsEditing(false);
+    } catch (error) {
+      toast.error('Failed to update note: ' + error.message);
+    }
+  };
+  
+  const handleDeleteClick = () => {
+    setIsDeleting(true);
+  };
+  
+  const handleConfirmDelete = async () => {
+    try {
+      await dispatch(deleteNote(id)).unwrap();
+      toast.success('Note deleted successfully');
+      navigate('/notes');
+    } catch (error) {
+      toast.error('Failed to delete note: ' + error.message);
+      setIsDeleting(false);
+    }
+  };
+  
+  const handleCancelDelete = () => {
+    setIsDeleting(false);
+  };
 
   if (isLoading) {
     return (
@@ -71,6 +140,32 @@ function NotePage() {
     );
   }
 
+  // Delete confirmation modal
+  if (isDeleting) {
+    return (
+      <div className="fixed inset-0 bg-gray-800 bg-opacity-75 flex items-center justify-center z-50">
+        <div className="bg-white rounded-lg p-6 max-w-md w-full">
+          <h2 className="text-xl font-bold mb-4">Delete Note</h2>
+          <p className="mb-6">Are you sure you want to delete this note? This action cannot be undone.</p>
+          <div className="flex justify-end space-x-3">
+            <button 
+              onClick={handleCancelDelete}
+              className="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400"
+            >
+              Cancel
+            </button>
+            <button 
+              onClick={handleConfirmDelete}
+              className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
+            >
+              Delete
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
@@ -94,28 +189,14 @@ function NotePage() {
         </button>
         <div className="flex space-x-2">
           <button className="inline-flex items-center bg-custom text-white rounded-md px-4 py-2 text-sm font-medium">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="h-4 w-4 mr-2"
-              viewBox="0 0 20 20"
-              fill="currentColor"
-            >
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-2" viewBox="0 0 20 20" fill="currentColor">
               <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
             </svg>
             Edit
           </button>
           <button className="inline-flex items-center bg-red-600 text-white rounded-md px-4 py-2 text-sm font-medium">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="h-4 w-4 mr-2"
-              viewBox="0 0 20 20"
-              fill="currentColor"
-            >
-              <path
-                fillRule="evenodd"
-                d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z"
-                clipRule="evenodd"
-              />
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-2" viewBox="0 0 20 20" fill="currentColor">
+              <path fillRule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clipRule="evenodd" />
             </svg>
             Delete
           </button>
@@ -124,42 +205,24 @@ function NotePage() {
 
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-8">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">
-            {note.title}
-          </h1>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">{note.title}</h1>
           <div className="flex items-center text-sm text-gray-500 dark:text-gray-400 space-x-4">
             <span>Created: {new Date(note.createdAt).toLocaleString()}</span>
             <span>Updated: {new Date(note.updatedAt).toLocaleString()}</span>
           </div>
         </div>
-
+        
         {/* Note content - would use a Markdown renderer in a complete implementation */}
         <div className="prose dark:prose-invert max-w-none">
-          {note.content.split("\n\n").map((paragraph, idx) => {
-            if (paragraph.startsWith("# ")) {
-              return (
-                <h1 key={idx} className="text-2xl font-bold mt-6 mb-4">
-                  {paragraph.substring(2)}
-                </h1>
-              );
-            } else if (paragraph.startsWith("## ")) {
-              return (
-                <h2 key={idx} className="text-xl font-bold mt-5 mb-3">
-                  {paragraph.substring(3)}
-                </h2>
-              );
-            } else if (paragraph.startsWith("### ")) {
-              return (
-                <h3 key={idx} className="text-lg font-bold mt-4 mb-2">
-                  {paragraph.substring(4)}
-                </h3>
-              );
+          {note.content.split('\n\n').map((paragraph, idx) => {
+            if (paragraph.startsWith('# ')) {
+              return <h1 key={idx} className="text-2xl font-bold mt-6 mb-4">{paragraph.substring(2)}</h1>;
+            } else if (paragraph.startsWith('## ')) {
+              return <h2 key={idx} className="text-xl font-bold mt-5 mb-3">{paragraph.substring(3)}</h2>;
+            } else if (paragraph.startsWith('### ')) {
+              return <h3 key={idx} className="text-lg font-bold mt-4 mb-2">{paragraph.substring(4)}</h3>;
             } else {
-              return (
-                <p key={idx} className="mb-4">
-                  {paragraph}
-                </p>
-              );
+              return <p key={idx} className="mb-4">{paragraph}</p>;
             }
           })}
         </div>
