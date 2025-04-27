@@ -2,10 +2,14 @@ const { createClient } = require("@supabase/supabase-js");
 const path = require("path");
 const crypto = require("crypto");
 
+// For development/testing only - in production use environment variables
+const SUPABASE_URL = process.env.SUPABASE_URL || "https://abcdefghijklmnopqrst.supabase.co";
+const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFiY2RlZmdoaWprbG1ub3BxcnN0IiwicmUiOiJhbm9uIiwiaWF0IjoxNjM0NTY3ODkwLCJleHAiOjE5NTAxNDM4OTB9.EXAMPLE_KEY_REPLACE_WITH_YOUR_ACTUAL_KEY";
+
 // Initialize Supabase client
 const supabase = createClient(
-  process.env.SUPABASE_URL,
-  process.env.SUPABASE_ANON_KEY
+  SUPABASE_URL,
+  SUPABASE_ANON_KEY
 );
 
 /**
