@@ -1,43 +1,38 @@
-import axios from 'axios';
-import config from '../../config';
+import axios from "axios";
+import config from "../../config";
 
-const API_URL = `${config.API_URL}/api/flashcards/`;
+const API_URL = `${config.API_URL}/api/flashcards`;
 
 // Create new flashcard deck
 const createDeck = async (deckData, token) => {
   const config = {
     headers: {
-      Authorization: `Bearer ${token}`
-    }
+      Authorization: `Bearer ${token}`,
+    },
   };
 
   const response = await axios.post(API_URL, deckData, config);
-
   return response.data;
 };
 
-// Get user flashcard decks
+// Get user's flashcard decks
 const getDecks = async (token) => {
-  const config = {
+  const response = await axios.get(`${API_URL}/decks`, {
     headers: {
-      Authorization: `Bearer ${token}`
-    }
-  };
-
-  const response = await axios.get(API_URL, config);
+      Authorization: `Bearer ${token}`,
+    },
+  });
 
   return response.data;
 };
 
-// Get single flashcard deck
+// Get single deck
 const getDeck = async (deckId, token) => {
-  const config = {
+  const response = await axios.get(`${API_URL}/decks/${deckId}`, {
     headers: {
-      Authorization: `Bearer ${token}`
-    }
-  };
-
-  const response = await axios.get(API_URL + deckId, config);
+      Authorization: `Bearer ${token}`,
+    },
+  });
 
   return response.data;
 };
@@ -46,11 +41,15 @@ const getDeck = async (deckId, token) => {
 const addCard = async (deckId, cardData, token) => {
   const config = {
     headers: {
-      Authorization: `Bearer ${token}`
-    }
+      Authorization: `Bearer ${token}`,
+    },
   };
 
-  const response = await axios.post(API_URL + deckId + '/cards', cardData, config);
+  const response = await axios.post(
+    `${API_URL}/decks/${deckId}/cards`,
+    cardData,
+    config
+  );
 
   return response.data;
 };
@@ -59,11 +58,15 @@ const addCard = async (deckId, cardData, token) => {
 const updateCard = async (deckId, cardId, cardData, token) => {
   const config = {
     headers: {
-      Authorization: `Bearer ${token}`
-    }
+      Authorization: `Bearer ${token}`,
+    },
   };
 
-  const response = await axios.put(API_URL + deckId + '/cards/' + cardId, cardData, config);
+  const response = await axios.put(
+    `${API_URL}/decks/${deckId}/cards/${cardId}`,
+    cardData,
+    config
+  );
 
   return response.data;
 };
@@ -72,11 +75,14 @@ const updateCard = async (deckId, cardId, cardData, token) => {
 const deleteCard = async (deckId, cardId, token) => {
   const config = {
     headers: {
-      Authorization: `Bearer ${token}`
-    }
+      Authorization: `Bearer ${token}`,
+    },
   };
 
-  const response = await axios.delete(API_URL + deckId + '/cards/' + cardId, config);
+  const response = await axios.delete(
+    `${API_URL}/decks/${deckId}/cards/${cardId}`,
+    config
+  );
 
   return response.data;
 };
@@ -85,11 +91,11 @@ const deleteCard = async (deckId, cardId, token) => {
 const deleteDeck = async (deckId, token) => {
   const config = {
     headers: {
-      Authorization: `Bearer ${token}`
-    }
+      Authorization: `Bearer ${token}`,
+    },
   };
 
-  const response = await axios.delete(API_URL + deckId, config);
+  const response = await axios.delete(`${API_URL}/decks/${deckId}`, config);
 
   return response.data;
 };
@@ -98,11 +104,15 @@ const deleteDeck = async (deckId, token) => {
 const updateCardStats = async (deckId, cardId, statsData, token) => {
   const config = {
     headers: {
-      Authorization: `Bearer ${token}`
-    }
+      Authorization: `Bearer ${token}`,
+    },
   };
 
-  const response = await axios.put(API_URL + deckId + '/cards/' + cardId + '/stats', statsData, config);
+  const response = await axios.put(
+    `${API_URL}/decks/${deckId}/cards/${cardId}/stats`,
+    statsData,
+    config
+  );
 
   return response.data;
 };
@@ -115,7 +125,7 @@ const flashcardService = {
   updateCard,
   deleteCard,
   deleteDeck,
-  updateCardStats
+  updateCardStats,
 };
 
-export default flashcardService; 
+export default flashcardService;

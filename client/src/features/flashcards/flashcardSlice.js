@@ -1,70 +1,70 @@
-import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import flashcardService from './flashcardService';
+import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
+import flashcardService from "./flashcardService";
 
 const initialState = {
   decks: [],
-  currentDeck: null,
+  deck: null,
   isError: false,
   isSuccess: false,
   isLoading: false,
-  message: ''
+  message: "",
 };
 
 // Create new flashcard deck
 export const createDeck = createAsyncThunk(
-  'flashcards/createDeck',
+  "flashcards/createDeck",
   async (deckData, thunkAPI) => {
     try {
       const token = thunkAPI.getState().auth.user.token;
       return await flashcardService.createDeck(deckData, token);
     } catch (error) {
-      const message = 
-        (error.response && 
-          error.response.data && 
+      const message =
+        (error.response &&
+          error.response.data &&
           error.response.data.message) ||
         error.message ||
         error.toString();
-      
+
       return thunkAPI.rejectWithValue(message);
     }
   }
 );
 
-// Get user flashcard decks
+// Get user's flashcard decks
 export const getDecks = createAsyncThunk(
-  'flashcards/getDecks',
+  "flashcards/getAll",
   async (_, thunkAPI) => {
     try {
       const token = thunkAPI.getState().auth.user.token;
       return await flashcardService.getDecks(token);
     } catch (error) {
-      const message = 
-        (error.response && 
-          error.response.data && 
+      const message =
+        (error.response &&
+          error.response.data &&
           error.response.data.message) ||
         error.message ||
         error.toString();
-      
+
       return thunkAPI.rejectWithValue(message);
     }
   }
 );
 
-// Get single flashcard deck
+// Get single deck
 export const getDeck = createAsyncThunk(
-  'flashcards/getDeck',
+  "flashcards/getOne",
   async (deckId, thunkAPI) => {
     try {
       const token = thunkAPI.getState().auth.user.token;
       return await flashcardService.getDeck(deckId, token);
     } catch (error) {
-      const message = 
-        (error.response && 
-          error.response.data && 
+      const message =
+        (error.response &&
+          error.response.data &&
           error.response.data.message) ||
         error.message ||
         error.toString();
-      
+
       return thunkAPI.rejectWithValue(message);
     }
   }
@@ -72,19 +72,19 @@ export const getDeck = createAsyncThunk(
 
 // Add card to deck
 export const addCard = createAsyncThunk(
-  'flashcards/addCard',
+  "flashcards/addCard",
   async ({ deckId, cardData }, thunkAPI) => {
     try {
       const token = thunkAPI.getState().auth.user.token;
       return await flashcardService.addCard(deckId, cardData, token);
     } catch (error) {
-      const message = 
-        (error.response && 
-          error.response.data && 
+      const message =
+        (error.response &&
+          error.response.data &&
           error.response.data.message) ||
         error.message ||
         error.toString();
-      
+
       return thunkAPI.rejectWithValue(message);
     }
   }
@@ -92,19 +92,19 @@ export const addCard = createAsyncThunk(
 
 // Update card in deck
 export const updateCard = createAsyncThunk(
-  'flashcards/updateCard',
+  "flashcards/updateCard",
   async ({ deckId, cardId, cardData }, thunkAPI) => {
     try {
       const token = thunkAPI.getState().auth.user.token;
       return await flashcardService.updateCard(deckId, cardId, cardData, token);
     } catch (error) {
-      const message = 
-        (error.response && 
-          error.response.data && 
+      const message =
+        (error.response &&
+          error.response.data &&
           error.response.data.message) ||
         error.message ||
         error.toString();
-      
+
       return thunkAPI.rejectWithValue(message);
     }
   }
@@ -112,19 +112,19 @@ export const updateCard = createAsyncThunk(
 
 // Delete card from deck
 export const deleteCard = createAsyncThunk(
-  'flashcards/deleteCard',
+  "flashcards/deleteCard",
   async ({ deckId, cardId }, thunkAPI) => {
     try {
       const token = thunkAPI.getState().auth.user.token;
       return await flashcardService.deleteCard(deckId, cardId, token);
     } catch (error) {
-      const message = 
-        (error.response && 
-          error.response.data && 
+      const message =
+        (error.response &&
+          error.response.data &&
           error.response.data.message) ||
         error.message ||
         error.toString();
-      
+
       return thunkAPI.rejectWithValue(message);
     }
   }
@@ -132,19 +132,19 @@ export const deleteCard = createAsyncThunk(
 
 // Delete deck
 export const deleteDeck = createAsyncThunk(
-  'flashcards/deleteDeck',
+  "flashcards/deleteDeck",
   async (deckId, thunkAPI) => {
     try {
       const token = thunkAPI.getState().auth.user.token;
       return await flashcardService.deleteDeck(deckId, token);
     } catch (error) {
-      const message = 
-        (error.response && 
-          error.response.data && 
+      const message =
+        (error.response &&
+          error.response.data &&
           error.response.data.message) ||
         error.message ||
         error.toString();
-      
+
       return thunkAPI.rejectWithValue(message);
     }
   }
@@ -152,29 +152,34 @@ export const deleteDeck = createAsyncThunk(
 
 // Update flashcard study stats
 export const updateCardStats = createAsyncThunk(
-  'flashcards/updateCardStats',
+  "flashcards/updateCardStats",
   async ({ deckId, cardId, statsData }, thunkAPI) => {
     try {
       const token = thunkAPI.getState().auth.user.token;
-      return await flashcardService.updateCardStats(deckId, cardId, statsData, token);
+      return await flashcardService.updateCardStats(
+        deckId,
+        cardId,
+        statsData,
+        token
+      );
     } catch (error) {
-      const message = 
-        (error.response && 
-          error.response.data && 
+      const message =
+        (error.response &&
+          error.response.data &&
           error.response.data.message) ||
         error.message ||
         error.toString();
-      
+
       return thunkAPI.rejectWithValue(message);
     }
   }
 );
 
 export const flashcardSlice = createSlice({
-  name: 'flashcard',
+  name: "flashcard",
   initialState,
   reducers: {
-    reset: (state) => initialState
+    reset: (state) => initialState,
   },
   extraReducers: (builder) => {
     builder
@@ -206,12 +211,12 @@ export const flashcardSlice = createSlice({
       })
       .addCase(getDeck.pending, (state) => {
         state.isLoading = true;
-        state.currentDeck = null;
+        state.deck = null;
       })
       .addCase(getDeck.fulfilled, (state, action) => {
         state.isLoading = false;
         state.isSuccess = true;
-        state.currentDeck = action.payload;
+        state.deck = action.payload;
       })
       .addCase(getDeck.rejected, (state, action) => {
         state.isLoading = false;
@@ -224,10 +229,12 @@ export const flashcardSlice = createSlice({
       .addCase(addCard.fulfilled, (state, action) => {
         state.isLoading = false;
         state.isSuccess = true;
-        state.currentDeck = action.payload;
-        
+        state.deck = action.payload;
+
         // Update the deck in the decks array
-        const index = state.decks.findIndex(deck => deck._id === action.payload._id);
+        const index = state.decks.findIndex(
+          (deck) => deck._id === action.payload._id
+        );
         if (index !== -1) {
           state.decks[index] = action.payload;
         }
@@ -243,10 +250,12 @@ export const flashcardSlice = createSlice({
       .addCase(updateCard.fulfilled, (state, action) => {
         state.isLoading = false;
         state.isSuccess = true;
-        state.currentDeck = action.payload;
-        
+        state.deck = action.payload;
+
         // Update the deck in the decks array
-        const index = state.decks.findIndex(deck => deck._id === action.payload._id);
+        const index = state.decks.findIndex(
+          (deck) => deck._id === action.payload._id
+        );
         if (index !== -1) {
           state.decks[index] = action.payload;
         }
@@ -262,10 +271,12 @@ export const flashcardSlice = createSlice({
       .addCase(deleteCard.fulfilled, (state, action) => {
         state.isLoading = false;
         state.isSuccess = true;
-        state.currentDeck = action.payload;
-        
+        state.deck = action.payload;
+
         // Update the deck in the decks array
-        const index = state.decks.findIndex(deck => deck._id === action.payload._id);
+        const index = state.decks.findIndex(
+          (deck) => deck._id === action.payload._id
+        );
         if (index !== -1) {
           state.decks[index] = action.payload;
         }
@@ -281,9 +292,11 @@ export const flashcardSlice = createSlice({
       .addCase(deleteDeck.fulfilled, (state, action) => {
         state.isLoading = false;
         state.isSuccess = true;
-        state.decks = state.decks.filter(deck => deck._id !== action.payload.id);
-        if (state.currentDeck && state.currentDeck._id === action.payload.id) {
-          state.currentDeck = null;
+        state.decks = state.decks.filter(
+          (deck) => deck._id !== action.payload.id
+        );
+        if (state.deck && state.deck._id === action.payload.id) {
+          state.deck = null;
         }
       })
       .addCase(deleteDeck.rejected, (state, action) => {
@@ -297,10 +310,12 @@ export const flashcardSlice = createSlice({
       .addCase(updateCardStats.fulfilled, (state, action) => {
         state.isLoading = false;
         state.isSuccess = true;
-        state.currentDeck = action.payload;
-        
+        state.deck = action.payload;
+
         // Update the deck in the decks array
-        const index = state.decks.findIndex(deck => deck._id === action.payload._id);
+        const index = state.decks.findIndex(
+          (deck) => deck._id === action.payload._id
+        );
         if (index !== -1) {
           state.decks[index] = action.payload;
         }
@@ -310,8 +325,8 @@ export const flashcardSlice = createSlice({
         state.isError = true;
         state.message = action.payload;
       });
-  }
+  },
 });
 
 export const { reset } = flashcardSlice.actions;
-export default flashcardSlice.reducer; 
+export default flashcardSlice.reducer;
