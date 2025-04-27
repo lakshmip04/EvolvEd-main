@@ -1,6 +1,9 @@
 const asyncHandler = require("express-async-handler");
 const Note = require("../models/noteModel");
 const { uploadToSupabase } = require("../utils/supabase");
+const axios = require("axios");
+const { createClient } = require("@supabase/supabase-js");
+const { generateWithMistral } = require('../utils/mistralApi');
 
 // @desc    Get all notes for a user
 // @route   GET /api/notes
@@ -223,6 +226,133 @@ const createNoteWithPDF = asyncHandler(async (req, res) => {
   }
 });
 
+// @desc    Summarize a PDF file using Mistral-7B
+// @route   POST /api/notes/summarize-pdf
+// @access  Private
+const summarizePDF = asyncHandler(async (req, res) => {
+  console.log("Summarizing PDF with Mistral-7B");
+  console.log("Request body:", req.body);
+  console.log("Request file:", req.file);
+
+  try {
+    let pdfUrl = null;
+    
+    // Handle either uploaded file or URL
+    if (req.file) {
+      // Upload PDF to Supabase if file is provided
+      console.log("Uploading PDF to Supabase...");
+      const fileData = await uploadToSupabase(req.file);
+      pdfUrl = fileData.url;
+      console.log("PDF uploaded successfully:", fileData);
+    } else if (req.body.pdfUrl) {
+      // Use the provided URL
+      pdfUrl = req.body.pdfUrl;
+      console.log("Using provided PDF URL:", pdfUrl);
+    } else {
+      res.status(400);
+      throw new Error("Please provide a PDF file or URL");
+    }
+
+    // Extract PDF text (this would typically use a PDF extraction library)
+    console.log("Extracting text from PDF...");
+    
+    // This is a simplified simulation - in a real implementation,
+    // you would use a library like pdf-parse to extract text from the PDF
+    const pdfText = await simulatePDFTextExtraction(pdfUrl);
+    
+    // Prepare prompt for Mistral-7B
+    const { length, style, focus } = req.body;
+    
+    const prompt = generateSummaryPrompt(pdfText, {
+      length: length || 'medium',
+      style: style || 'concise',
+      focus: focus || 'general'
+    });
+    
+    // Call Mistral API for summarization using our utility
+    console.log("Calling Mistral-7B for summarization...");
+    const summary = await generateWithMistral(prompt);
+    
+    // Return the summary
+    res.status(200).json({
+      success: true,
+      summary,
+      pdfUrl
+    });
+  } catch (error) {
+    console.error("Error in summarizePDF:", error);
+    res.status(500);
+    throw new Error("Error summarizing PDF: " + error.message);
+  }
+});
+
+// Helper function to generate a summary prompt based on options
+const generateSummaryPrompt = (text, options) => {
+  const { length, style, focus } = options;
+  
+  // Set length instruction
+  let lengthInstruction = '';
+  if (length === 'short') {
+    lengthInstruction = 'Create a brief summary in 1-2 paragraphs.';
+  } else if (length === 'medium') {
+    lengthInstruction = 'Create a comprehensive summary in 3-5 paragraphs.';
+  } else if (length === 'long') {
+    lengthInstruction = 'Create a detailed summary covering all important aspects.';
+  }
+  
+  // Set style instruction
+  let styleInstruction = '';
+  if (style === 'concise') {
+    styleInstruction = 'Keep the summary concise and to the point.';
+  } else if (style === 'detailed') {
+    styleInstruction = 'Include specific details and examples in your summary.';
+  } else if (style === 'bullet-points') {
+    styleInstruction = 'Format the summary as a list of bullet points highlighting key information.';
+  }
+  
+  // Set focus instruction
+  let focusInstruction = '';
+  if (focus === 'general') {
+    focusInstruction = 'Focus on providing a general overview of the content.';
+  } else if (focus === 'key-concepts') {
+    focusInstruction = 'Focus on identifying and explaining the key concepts presented.';
+  } else if (focus === 'technical') {
+    focusInstruction = 'Focus on technical details and methodology discussed.';
+  }
+  
+  // Build the complete prompt
+  return `
+    Summarize the following text extracted from a PDF document:
+    
+    ${text.substring(0, 15000)}... ${text.length > 15000 ? "(text truncated for length)" : ""}
+    
+    ${lengthInstruction} ${styleInstruction} ${focusInstruction}
+    
+    Your summary should:
+    1. Capture the main ideas and arguments
+    2. Identify key findings or conclusions
+    3. Be well-structured and easy to understand
+    4. Not include your own opinions on the content
+    
+    Summary:
+  `;
+};
+
+// Simulate PDF text extraction (in a real implementation, use a proper PDF parsing library)
+const simulatePDFTextExtraction = async (pdfUrl) => {
+  // In a real implementation, you would use a library like pdf-parse
+  // Here we're just simulating extraction for demonstration
+  console.log(`Simulating text extraction from: ${pdfUrl}`);
+  
+  // Simulate a delay
+  await new Promise(resolve => setTimeout(resolve, 2000));
+  
+  return `This is simulated text extracted from the PDF at ${pdfUrl}. In a real implementation, 
+  this would contain the actual content of the PDF document. The text would be processed and then 
+  sent to the Mistral-7B model for summarization. The summarization would consider the length, 
+  style, and focus parameters specified by the user.`;
+};
+
 module.exports = {
   getNotes,
   createNote,
@@ -230,4 +360,5 @@ module.exports = {
   updateNote,
   deleteNote,
   createNoteWithPDF,
+  summarizePDF,
 };

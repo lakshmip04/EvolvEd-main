@@ -10,6 +10,7 @@ const {
   updateNote,
   deleteNote,
   createNoteWithPDF,
+  summarizePDF,
 } = require("../controllers/noteController");
 
 const { protect } = require("../middleware/authMiddleware");
@@ -19,6 +20,10 @@ router.route("/").get(protect, getNotes).post(protect, createNote);
 router
   .route("/with-pdf")
   .post(protect, upload.single("pdf"), createNoteWithPDF);
+
+router
+  .route("/summarize-pdf")
+  .post(protect, upload.single("pdfFile"), summarizePDF);
 
 router
   .route("/:id")

@@ -7,6 +7,7 @@ import PDFUploader from "../components/PDFUploader";
 import PDFViewer from "../components/PDFViewer";
 import PDFSelector from "../components/PDFSelector";
 import NoteEditor from "../components/NoteEditor";
+import PDFSummarizer from "../components/PDFSummarizer";
 import { getNotes, createNote } from "../features/notes/noteSlice";
 import axios from "axios";
 import config from "../config";
@@ -26,6 +27,8 @@ function Notes() {
   const [noteContent, setNoteContent] = useState("");
   const [noteTitle, setNoteTitle] = useState("");
   const [isSaving, setIsSaving] = useState(false);
+  const [generatedSummary, setGeneratedSummary] = useState("");
+  const [showSummarizer, setShowSummarizer] = useState(false);
 
   useEffect(() => {
     if (!user) {
@@ -76,6 +79,19 @@ function Notes() {
     } else if (file) {
       toast.error("Please select a valid PDF file");
     }
+  };
+
+  const handleSummaryGenerated = (summary) => {
+    // Add the generated summary to the note content
+    setNoteContent((prevContent) => {
+      if (prevContent.trim()) {
+        return `${prevContent}\n\n## AI-Generated Summary\n\n${summary}`;
+      }
+      return `## AI-Generated Summary\n\n${summary}`;
+    });
+    
+    setGeneratedSummary(summary);
+    toast.success("Summary added to note content");
   };
 
   const handleSaveNote = async () => {
@@ -326,130 +342,196 @@ function Notes() {
       {/* Note Editor Modal */}
       {isEditorOpen && (
         <div className="fixed inset-0 flex items-center justify-center bg-gray-800 bg-opacity-75 z-50">
-          <div className="bg-white rounded-lg shadow-lg w-full max-w-7xl h-[90vh] flex flex-col">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg w-full max-w-5xl max-h-[90vh] overflow-y-auto">
             <div className="flex justify-between items-center p-4 border-b">
-              <div className="flex-1">
+              <h2 className="text-xl font-semibold dark:text-white">
+                {noteTitle ? noteTitle : "New Note"}
+              </h2>
+              <button
+                onClick={() => setIsEditorOpen(false)}
+                className="text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"
+              >
+                <svg
+                  className="w-6 h-6"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M6 18L18 6M6 6l12 12"
+                  />
+                </svg>
+              </button>
+            </div>
+
+            <div className="p-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="md:col-span-2">
+                <label
+                  htmlFor="noteTitle"
+                  className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+                >
+                  Title
+                </label>
                 <input
+                  id="noteTitle"
                   type="text"
                   value={noteTitle}
                   onChange={(e) => setNoteTitle(e.target.value)}
-                  placeholder="Note Title"
-                  className="w-full text-xl font-bold border-none focus:outline-none focus:ring-0"
+                  placeholder="Note title"
+                  className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                 />
               </div>
-              <div className="flex space-x-2">
-                <button
-                  onClick={handleSaveNote}
-                  disabled={isSaving}
-                  className={`px-4 py-2 ${
-                    isSaving
-                      ? "bg-gray-400 cursor-not-allowed"
-                      : "bg-blue-600 hover:bg-blue-700"
-                  } text-white rounded`}
-                >
-                  {isSaving ? "Saving..." : "Save Note"}
-                </button>
-                <button
-                  onClick={() => {
-                    setIsEditorOpen(false);
-                    setSelectedPDF(null);
-                  }}
-                  className="px-4 py-2 bg-gray-200 text-gray-800 rounded hover:bg-gray-300"
-                >
-                  Close
-                </button>
-              </div>
-            </div>
 
-            <div className="flex flex-col md:flex-row flex-1 overflow-hidden">
-              {/* PDF Section */}
-              <div className="w-full md:w-1/2 border-r border-gray-200 flex flex-col">
-                <div className="p-3 bg-gray-100 border-b">
-                  <h3 className="text-lg font-semibold">
-                    {selectedPDF ? selectedPDF.filename : "Add PDF (Optional)"}
-                  </h3>
-                </div>
-                <div className="flex-1 overflow-auto">
-                  {selectedPDF ? (
-                    <div className="h-full relative">
-                      <embed
-                        src={selectedPDF.previewUrl}
-                        type="application/pdf"
-                        className="w-full h-full"
-                      />
+              <div>
+                <div className="border rounded-md p-4 mb-4">
+                  <div className="flex justify-between items-center mb-2">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                      Attach PDF (Optional)
+                    </label>
+                    {selectedPDF && (
                       <button
-                        onClick={() => setSelectedPDF(null)}
-                        className="absolute top-2 right-2 bg-white rounded-full p-2 shadow-md hover:bg-gray-100"
+                        onClick={() => {
+                          setSelectedPDF(null);
+                          setShowSummarizer(false);
+                          setGeneratedSummary("");
+                        }}
+                        className="text-sm text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300"
                       >
+                        Remove PDF
+                      </button>
+                    )}
+                  </div>
+                  
+                  {!selectedPDF ? (
+                    <div
+                      className="border-2 border-dashed border-gray-300 rounded-md px-6 pt-5 pb-6 flex justify-center"
+                      onDrop={handleDrop}
+                      onDragOver={(e) => e.preventDefault()}
+                    >
+                      <div className="text-center">
                         <svg
-                          className="w-5 h-5"
+                          className="mx-auto h-12 w-12 text-gray-400"
                           fill="none"
-                          stroke="currentColor"
                           viewBox="0 0 24 24"
+                          stroke="currentColor"
+                          aria-hidden="true"
                         >
                           <path
                             strokeLinecap="round"
                             strokeLinejoin="round"
                             strokeWidth={2}
-                            d="M6 18L18 6M6 6l12 12"
+                            d="M9 13h6m-3-3v6m5 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
                           />
                         </svg>
-                      </button>
+                        <div className="mt-1 flex text-sm text-gray-600">
+                          <label
+                            htmlFor="file-upload"
+                            className="relative cursor-pointer rounded-md font-medium text-blue-600 focus-within:outline-none focus-within:ring-2 focus-within:ring-blue-500 focus-within:ring-offset-2 hover:text-blue-500"
+                          >
+                            <span>Upload a PDF file</span>
+                            <input
+                              id="file-upload"
+                              name="file-upload"
+                              type="file"
+                              className="sr-only"
+                              onChange={handleFileSelect}
+                              accept="application/pdf"
+                            />
+                          </label>
+                          <p className="pl-1">or drag and drop</p>
+                        </div>
+                        <p className="text-xs text-gray-500">
+                          PDF up to 10MB
+                        </p>
+                      </div>
                     </div>
                   ) : (
-                    <div
-                      className="h-full flex flex-col items-center justify-center p-8 border-2 border-dashed border-gray-300 rounded-lg m-4"
-                      onDragOver={(e) => e.preventDefault()}
-                      onDrop={handleDrop}
-                    >
-                      <svg
-                        className="w-12 h-12 text-gray-400 mb-4"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
+                    <div>
+                      <div className="bg-blue-50 dark:bg-blue-900/20 rounded-md p-3 mb-3 flex items-center">
+                        <svg
+                          className="h-8 w-8 text-blue-500 mr-2"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                          />
+                        </svg>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium text-blue-700 dark:text-blue-300 truncate">
+                            {selectedPDF.filename}
+                          </p>
+                        </div>
+                      </div>
+                      
+                      <div className="flex justify-between space-x-2">
+                        <button
+                          className="px-3 py-1 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded text-sm font-medium"
+                          onClick={() => window.open(selectedPDF.previewUrl, '_blank')}
+                        >
+                          View PDF
+                        </button>
+                        <button
+                          className="px-3 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded text-sm font-medium"
+                          onClick={() => setShowSummarizer(!showSummarizer)}
+                        >
+                          {showSummarizer ? "Hide Summarizer" : "Summarize with AI"}
+                        </button>
+                      </div>
+                      
+                      {showSummarizer && (
+                        <PDFSummarizer 
+                          pdfFile={selectedPDF.file || selectedPDF.previewUrl}
+                          onSummaryGenerated={handleSummaryGenerated}
                         />
-                      </svg>
-                      <p className="text-gray-600 mb-2">
-                        Drag & drop a PDF here or
-                      </p>
-                      <input
-                        type="file"
-                        accept="application/pdf"
-                        onChange={handleFileSelect}
-                        className="hidden"
-                        id="pdf-upload"
-                      />
-                      <label
-                        htmlFor="pdf-upload"
-                        className="text-blue-500 hover:text-blue-600 cursor-pointer"
-                      >
-                        browse to upload
-                      </label>
+                      )}
                     </div>
                   )}
                 </div>
               </div>
 
-              {/* Note Editor Section */}
-              <div className="w-full md:w-1/2 flex flex-col">
-                <div className="p-3 bg-gray-100 border-b">
-                  <h3 className="text-lg font-semibold">Take Notes</h3>
-                </div>
-                <div className="flex-1 p-4 overflow-auto">
-                  <textarea
-                    value={noteContent}
-                    onChange={(e) => setNoteContent(e.target.value)}
-                    className="w-full h-full p-3 border border-gray-300 rounded resize-none focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    placeholder="Write your notes here..."
-                  />
-                </div>
+              <div className="flex flex-col h-full">
+                <label
+                  htmlFor="noteContent"
+                  className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+                >
+                  Note Content
+                </label>
+                <textarea
+                  id="noteContent"
+                  value={noteContent}
+                  onChange={(e) => setNoteContent(e.target.value)}
+                  placeholder="Write your note here..."
+                  className="flex-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white min-h-[300px]"
+                />
               </div>
+            </div>
+
+            <div className="flex justify-end p-4 border-t">
+              <button
+                onClick={() => setIsEditorOpen(false)}
+                className="mr-2 px-4 py-2 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-600"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleSaveNote}
+                disabled={isSaving}
+                className={`px-4 py-2 rounded text-white font-medium ${
+                  isSaving
+                    ? "bg-gray-400 cursor-not-allowed"
+                    : "bg-blue-600 hover:bg-blue-700"
+                }`}
+              >
+                {isSaving ? "Saving..." : "Save Note"}
+              </button>
             </div>
           </div>
         </div>
