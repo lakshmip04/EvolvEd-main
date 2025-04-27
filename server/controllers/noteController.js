@@ -1,19 +1,20 @@
-const asyncHandler = require('express-async-handler');
-const Note = require('../models/noteModel');
+const asyncHandler = require("express-async-handler");
+const Note = require("../models/noteModel");
+const { uploadToSupabase } = require("../utils/supabase");
 
 // @desc    Get all notes for a user
 // @route   GET /api/notes
 // @access  Private
 const getNotes = asyncHandler(async (req, res) => {
-  console.log('Getting notes for user ID:', req.user.id);
+  console.log("Getting notes for user ID:", req.user.id);
   try {
     const notes = await Note.find({ user: req.user.id });
     console.log(`Found ${notes.length} notes for user`);
     res.status(200).json(notes);
   } catch (error) {
-    console.error('Error getting notes:', error);
+    console.error("Error getting notes:", error);
     res.status(500);
-    throw new Error('Error retrieving notes: ' + error.message);
+    throw new Error("Error retrieving notes: " + error.message);
   }
 });
 
@@ -21,31 +22,32 @@ const getNotes = asyncHandler(async (req, res) => {
 // @route   POST /api/notes
 // @access  Private
 const createNote = asyncHandler(async (req, res) => {
-  console.log('Creating note with data:', req.body);
-  
-  const { title, content, tags, images, pdfFile } = req.body;
+  console.log("Creating note with data:", req.body);
+
+  const { title, content, tags, images, url, pdfFile } = req.body;
 
   if (!title || !content) {
     res.status(400);
-    throw new Error('Please add title and content');
+    throw new Error("Please add title and content");
   }
 
   try {
     const note = await Note.create({
       title,
       content,
+      url: url || null,
       tags: tags || [],
       images: images || [],
       pdfFile: pdfFile || null,
-      user: req.user.id
+      user: req.user.id,
     });
 
-    console.log('Note created successfully:', note._id);
+    console.log("Note created successfully:", note._id);
     res.status(201).json(note);
   } catch (error) {
-    console.error('Error creating note:', error);
+    console.error("Error creating note:", error);
     res.status(500);
-    throw new Error('Error creating note: ' + error.message);
+    throw new Error("Error creating note: " + error.message);
   }
 });
 
@@ -53,31 +55,32 @@ const createNote = asyncHandler(async (req, res) => {
 // @route   GET /api/notes/:id
 // @access  Private
 const getNote = asyncHandler(async (req, res) => {
-  console.log('Getting note with ID:', req.params.id);
-  
+  console.log("Getting note with ID:", req.params.id);
+
   try {
     const note = await Note.findById(req.params.id);
+    console.log({ note });
 
     if (!note) {
-      console.log('Note not found');
+      console.log("Note not found");
       res.status(404);
-      throw new Error('Note not found');
+      throw new Error("Note not found");
     }
 
     // Make sure logged in user matches the note owner
     if (note.user.toString() !== req.user.id) {
-      console.log('User not authorized to access note');
+      console.log("User not authorized to access note");
       res.status(401);
-      throw new Error('Not authorized');
+      throw new Error("Not authorized");
     }
 
-    console.log('Note found:', note._id);
+    console.log("Note found:", note._id);
     res.status(200).json(note);
   } catch (error) {
-    console.error('Error getting note:', error);
-    if (error.kind === 'ObjectId') {
+    console.error("Error getting note:", error);
+    if (error.kind === "ObjectId") {
       res.status(404);
-      throw new Error('Note not found');
+      throw new Error("Note not found");
     }
     if (!res.statusCode || res.statusCode === 200) {
       res.status(500);
@@ -90,23 +93,23 @@ const getNote = asyncHandler(async (req, res) => {
 // @route   PUT /api/notes/:id
 // @access  Private
 const updateNote = asyncHandler(async (req, res) => {
-  console.log('Updating note with ID:', req.params.id);
-  console.log('Update data:', req.body);
-  
+  console.log("Updating note with ID:", req.params.id);
+  console.log("Update data:", req.body);
+
   try {
     const note = await Note.findById(req.params.id);
 
     if (!note) {
-      console.log('Note not found');
+      console.log("Note not found");
       res.status(404);
-      throw new Error('Note not found');
+      throw new Error("Note not found");
     }
 
     // Make sure logged in user matches the note owner
     if (note.user.toString() !== req.user.id) {
-      console.log('User not authorized to update note');
+      console.log("User not authorized to update note");
       res.status(401);
-      throw new Error('Not authorized');
+      throw new Error("Not authorized");
     }
 
     // Update with the pdfFile field if provided
@@ -114,19 +117,17 @@ const updateNote = asyncHandler(async (req, res) => {
       req.body.pdfFile = req.body.pdfFile || null;
     }
 
-    const updatedNote = await Note.findByIdAndUpdate(
-      req.params.id,
-      req.body,
-      { new: true }
-    );
+    const updatedNote = await Note.findByIdAndUpdate(req.params.id, req.body, {
+      new: true,
+    });
 
-    console.log('Note updated successfully:', updatedNote._id);
+    console.log("Note updated successfully:", updatedNote._id);
     res.status(200).json(updatedNote);
   } catch (error) {
-    console.error('Error updating note:', error);
-    if (error.kind === 'ObjectId') {
+    console.error("Error updating note:", error);
+    if (error.kind === "ObjectId") {
       res.status(404);
-      throw new Error('Note not found');
+      throw new Error("Note not found");
     }
     if (!res.statusCode || res.statusCode === 200) {
       res.status(500);
@@ -139,33 +140,33 @@ const updateNote = asyncHandler(async (req, res) => {
 // @route   DELETE /api/notes/:id
 // @access  Private
 const deleteNote = asyncHandler(async (req, res) => {
-  console.log('Deleting note with ID:', req.params.id);
-  
+  console.log("Deleting note with ID:", req.params.id);
+
   try {
     const note = await Note.findById(req.params.id);
 
     if (!note) {
-      console.log('Note not found');
+      console.log("Note not found");
       res.status(404);
-      throw new Error('Note not found');
+      throw new Error("Note not found");
     }
 
     // Make sure logged in user matches the note owner
     if (note.user.toString() !== req.user.id) {
-      console.log('User not authorized to delete note');
+      console.log("User not authorized to delete note");
       res.status(401);
-      throw new Error('Not authorized');
+      throw new Error("Not authorized");
     }
 
     await note.deleteOne();
 
-    console.log('Note deleted successfully');
+    console.log("Note deleted successfully");
     res.status(200).json({ id: req.params.id });
   } catch (error) {
-    console.error('Error deleting note:', error);
-    if (error.kind === 'ObjectId') {
+    console.error("Error deleting note:", error);
+    if (error.kind === "ObjectId") {
       res.status(404);
-      throw new Error('Note not found');
+      throw new Error("Note not found");
     }
     if (!res.statusCode || res.statusCode === 200) {
       res.status(500);
@@ -174,10 +175,59 @@ const deleteNote = asyncHandler(async (req, res) => {
   }
 });
 
+// @desc    Create a note with PDF upload
+// @route   POST /api/notes/with-pdf
+// @access  Private
+const createNoteWithPDF = asyncHandler(async (req, res) => {
+  console.log("Creating note with PDF upload");
+  console.log("Request body:", req.body);
+  console.log("Request file:", req.file);
+
+  // Check if we have a file
+  if (!req.file) {
+    res.status(400);
+    throw new Error("Please upload a PDF file");
+  }
+
+  // Check if we have the required note data
+  const { title, content } = req.body;
+  const tags = req.body.tags ? JSON.parse(req.body.tags) : [];
+
+  if (!title || !content) {
+    res.status(400);
+    throw new Error("Please add title and content");
+  }
+
+  try {
+    // Upload PDF to Supabase
+    console.log("Uploading PDF to Supabase...");
+    const fileData = await uploadToSupabase(req.file);
+    console.log("PDF uploaded successfully:", fileData);
+
+    // Create note with the PDF URL
+    const note = await Note.create({
+      title,
+      content,
+      tags,
+      url: fileData.url,
+      pdfFile: fileData._id || null,
+      user: req.user.id,
+    });
+
+    console.log("Note created successfully with PDF:", note._id);
+    res.status(201).json(note);
+  } catch (error) {
+    console.error("Error in createNoteWithPDF:", error);
+    res.status(500);
+    throw new Error("Error creating note with PDF: " + error.message);
+  }
+});
+
 module.exports = {
   getNotes,
   createNote,
   getNote,
   updateNote,
-  deleteNote
-}; 
+  deleteNote,
+  createNoteWithPDF,
+};

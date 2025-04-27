@@ -1,5 +1,5 @@
-import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import noteService from './noteService';
+import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
+import noteService from "./noteService";
 
 const initialState = {
   notes: [],
@@ -7,24 +7,24 @@ const initialState = {
   isError: false,
   isSuccess: false,
   isLoading: false,
-  message: ''
+  message: "",
 };
 
 // Create new note
 export const createNote = createAsyncThunk(
-  'notes/create',
+  "notes/create",
   async (noteData, thunkAPI) => {
     try {
       const token = thunkAPI.getState().auth.user.token;
       return await noteService.createNote(noteData, token);
     } catch (error) {
-      const message = 
-        (error.response && 
-          error.response.data && 
+      const message =
+        (error.response &&
+          error.response.data &&
           error.response.data.message) ||
         error.message ||
         error.toString();
-      
+
       return thunkAPI.rejectWithValue(message);
     }
   }
@@ -32,19 +32,19 @@ export const createNote = createAsyncThunk(
 
 // Get user notes
 export const getNotes = createAsyncThunk(
-  'notes/getAll',
+  "notes/getAll",
   async (_, thunkAPI) => {
     try {
       const token = thunkAPI.getState().auth.user.token;
       return await noteService.getNotes(token);
     } catch (error) {
-      const message = 
-        (error.response && 
-          error.response.data && 
+      const message =
+        (error.response &&
+          error.response.data &&
           error.response.data.message) ||
         error.message ||
         error.toString();
-      
+
       return thunkAPI.rejectWithValue(message);
     }
   }
@@ -52,19 +52,19 @@ export const getNotes = createAsyncThunk(
 
 // Get single note
 export const getNote = createAsyncThunk(
-  'notes/getOne',
+  "notes/getOne",
   async (noteId, thunkAPI) => {
     try {
       const token = thunkAPI.getState().auth.user.token;
       return await noteService.getNote(noteId, token);
     } catch (error) {
-      const message = 
-        (error.response && 
-          error.response.data && 
+      const message =
+        (error.response &&
+          error.response.data &&
           error.response.data.message) ||
         error.message ||
         error.toString();
-      
+
       return thunkAPI.rejectWithValue(message);
     }
   }
@@ -72,19 +72,19 @@ export const getNote = createAsyncThunk(
 
 // Update a note
 export const updateNote = createAsyncThunk(
-  'notes/update',
+  "notes/update",
   async ({ noteId, noteData }, thunkAPI) => {
     try {
       const token = thunkAPI.getState().auth.user.token;
       return await noteService.updateNote(noteId, noteData, token);
     } catch (error) {
-      const message = 
-        (error.response && 
-          error.response.data && 
+      const message =
+        (error.response &&
+          error.response.data &&
           error.response.data.message) ||
         error.message ||
         error.toString();
-      
+
       return thunkAPI.rejectWithValue(message);
     }
   }
@@ -92,29 +92,29 @@ export const updateNote = createAsyncThunk(
 
 // Delete a note
 export const deleteNote = createAsyncThunk(
-  'notes/delete',
+  "notes/delete",
   async (noteId, thunkAPI) => {
     try {
       const token = thunkAPI.getState().auth.user.token;
       return await noteService.deleteNote(noteId, token);
     } catch (error) {
-      const message = 
-        (error.response && 
-          error.response.data && 
+      const message =
+        (error.response &&
+          error.response.data &&
           error.response.data.message) ||
         error.message ||
         error.toString();
-      
+
       return thunkAPI.rejectWithValue(message);
     }
   }
 );
 
 export const noteSlice = createSlice({
-  name: 'note',
+  name: "note",
   initialState,
   reducers: {
-    reset: (state) => initialState
+    reset: (state) => initialState,
   },
   extraReducers: (builder) => {
     builder
@@ -164,7 +164,7 @@ export const noteSlice = createSlice({
       .addCase(updateNote.fulfilled, (state, action) => {
         state.isLoading = false;
         state.isSuccess = true;
-        state.notes = state.notes.map(note => 
+        state.notes = state.notes.map((note) =>
           note._id === action.payload._id ? action.payload : note
         );
         state.note = action.payload;
@@ -180,15 +180,17 @@ export const noteSlice = createSlice({
       .addCase(deleteNote.fulfilled, (state, action) => {
         state.isLoading = false;
         state.isSuccess = true;
-        state.notes = state.notes.filter(note => note._id !== action.payload.id);
+        state.notes = state.notes.filter(
+          (note) => note._id !== action.payload.id
+        );
       })
       .addCase(deleteNote.rejected, (state, action) => {
         state.isLoading = false;
         state.isError = true;
         state.message = action.payload;
       });
-  }
+  },
 });
 
 export const { reset } = noteSlice.actions;
-export default noteSlice.reducer; 
+export default noteSlice.reducer;

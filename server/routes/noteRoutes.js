@@ -1,21 +1,29 @@
-const express = require('express');
+const express = require("express");
 const router = express.Router();
-const { 
-  getNotes, 
-  createNote, 
-  getNote, 
-  updateNote, 
-  deleteNote 
-} = require('../controllers/noteController');
-const { protect } = require('../middleware/authMiddleware');
+const multer = require("multer");
+const upload = multer({ storage: multer.memoryStorage() });
 
-router.route('/')
-  .get(protect, getNotes)
-  .post(protect, createNote);
+const {
+  getNotes,
+  createNote,
+  getNote,
+  updateNote,
+  deleteNote,
+  createNoteWithPDF,
+} = require("../controllers/noteController");
 
-router.route('/:id')
+const { protect } = require("../middleware/authMiddleware");
+
+router.route("/").get(protect, getNotes).post(protect, createNote);
+
+router
+  .route("/with-pdf")
+  .post(protect, upload.single("pdf"), createNoteWithPDF);
+
+router
+  .route("/:id")
   .get(protect, getNote)
   .put(protect, updateNote)
   .delete(protect, deleteNote);
 
-module.exports = router; 
+module.exports = router;

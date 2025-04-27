@@ -1,30 +1,35 @@
-import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useSelector, useDispatch } from 'react-redux';
-import { Link } from 'react-router-dom';
-import { toast } from 'react-toastify';
-import PDFUploader from '../components/PDFUploader';
-import PDFViewer from '../components/PDFViewer';
-import PDFSelector from '../components/PDFSelector';
-import NoteEditor from '../components/NoteEditor';
-import { getNotes, createNote } from '../features/notes/noteSlice';
+import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { useSelector, useDispatch } from "react-redux";
+import { Link } from "react-router-dom";
+import { toast } from "react-toastify";
+import PDFUploader from "../components/PDFUploader";
+import PDFViewer from "../components/PDFViewer";
+import PDFSelector from "../components/PDFSelector";
+import NoteEditor from "../components/NoteEditor";
+import { getNotes, createNote } from "../features/notes/noteSlice";
+import axios from "axios";
+import config from "../config";
 
 function Notes() {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const { user } = useSelector((state) => state.auth);
-  const { notes: userNotes = [], isLoading } = useSelector((state) => state.notes);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [sortBy, setSortBy] = useState('updatedAt');
-  const [sortOrder, setSortOrder] = useState('desc');
+  const { notes: userNotes, isLoading: notesLoading } = useSelector(
+    (state) => state.notes
+  );
+  const [searchTerm, setSearchTerm] = useState("");
+  const [sortBy, setSortBy] = useState("updatedAt");
+  const [sortOrder, setSortOrder] = useState("desc");
   const [isEditorOpen, setIsEditorOpen] = useState(false);
   const [selectedPDF, setSelectedPDF] = useState(null);
-  const [noteContent, setNoteContent] = useState('');
-  const [noteTitle, setNoteTitle] = useState('');
+  const [noteContent, setNoteContent] = useState("");
+  const [noteTitle, setNoteTitle] = useState("");
+  const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
     if (!user) {
-      navigate('/login');
+      navigate("/login");
     } else {
       // Load user's notes
       dispatch(getNotes());
@@ -37,102 +42,117 @@ function Notes() {
 
   const handleSort = (criteria) => {
     if (sortBy === criteria) {
-      setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
+      setSortOrder(sortOrder === "asc" ? "desc" : "asc");
     } else {
       setSortBy(criteria);
-      setSortOrder('asc');
+      setSortOrder("asc");
     }
   };
 
-  const handleCreateNote = () => {
-    setIsEditorOpen(true);
-    setSelectedPDF(null);
-    setNoteContent('');
-    setNoteTitle('');
+  const handleFileSelect = (e) => {
+    const file = e.target.files[0];
+    if (file && file.type === "application/pdf") {
+      const url = URL.createObjectURL(file);
+      setSelectedPDF({
+        file,
+        previewUrl: url,
+        filename: file.name,
+      });
+    } else if (file) {
+      toast.error("Please select a valid PDF file");
+    }
   };
 
-  const handlePDFSelect = (pdfData) => {
-    setSelectedPDF(pdfData);
-  };
-
-  const handleCloseEditor = () => {
-    setIsEditorOpen(false);
-    setSelectedPDF(null);
-  };
-
-  const handleNoteContentChange = (e) => {
-    setNoteContent(e.target.value);
-  };
-
-  const handleNoteTitleChange = (e) => {
-    setNoteTitle(e.target.value);
+  const handleDrop = (e) => {
+    e.preventDefault();
+    const file = e.dataTransfer.files[0];
+    if (file && file.type === "application/pdf") {
+      const url = URL.createObjectURL(file);
+      setSelectedPDF({
+        file,
+        previewUrl: url,
+        filename: file.name,
+      });
+    } else if (file) {
+      toast.error("Please select a valid PDF file");
+    }
   };
 
   const handleSaveNote = async () => {
     if (!noteTitle.trim()) {
-      toast.error('Please add a title for your note');
+      toast.error("Please add a title for your note");
       return;
     }
-    
+
     if (!noteContent.trim()) {
-      toast.error('Please add some content to your note');
+      toast.error("Please add some content to your note");
       return;
     }
-    
+
     try {
-      const noteData = {
+      setIsSaving(true);
+      let noteData = {
         title: noteTitle,
         content: noteContent,
-        tags: []
+        tags: [],
       };
-      
-      // Add PDF reference if there's a selected PDF
-      if (selectedPDF) {
-        let pdfId;
-        if (typeof selectedPDF === 'string') {
-          pdfId = selectedPDF;
-        } else if (selectedPDF.id) {
-          pdfId = selectedPDF.id;
-        } else if (selectedPDF.url) {
-          // Extract filename from URL
-          const urlParts = selectedPDF.url.split('/');
-          pdfId = urlParts[urlParts.length - 1];
-        }
-        
-        if (pdfId) {
-          noteData.pdfFile = pdfId;
-          noteData.tags.push('pdf-notes');
-        }
+
+      // If there's a PDF file to upload
+      if (selectedPDF?.file) {
+        const formData = new FormData();
+        formData.append("pdf", selectedPDF.file);
+        formData.append("title", noteTitle);
+        formData.append("content", noteContent);
+        formData.append("tags", JSON.stringify(["pdf-notes"]));
+
+        console.log("Uploading PDF and creating note...");
+        const response = await axios.post(
+          `${config.API_URL}/api/notes/with-pdf`,
+          formData,
+          {
+            headers: {
+              "Content-Type": "multipart/form-data",
+              Authorization: `Bearer ${user.token}`,
+            },
+          }
+        );
+
+        console.log("Note created with PDF:", response.data);
+        toast.success("PDF uploaded and note created successfully");
+      } else {
+        // Regular note without PDF
+        noteData.url = "none";
+        console.log("Creating regular note:", noteData);
+        await dispatch(createNote(noteData)).unwrap();
+        toast.success("Note saved successfully");
       }
-      
-      console.log('Creating note with data:', noteData);
-      const result = await dispatch(createNote(noteData)).unwrap();
-      console.log('Note created successfully:', result);
-      toast.success('Note saved successfully');
-      
+
       // Refresh notes list
       dispatch(getNotes());
-      
-      // Close editor after saving
+
+      // Close editor and reset form
       setIsEditorOpen(false);
-      setNoteContent('');
-      setNoteTitle('');
+      setNoteContent("");
+      setNoteTitle("");
       setSelectedPDF(null);
     } catch (error) {
-      console.error('Error saving note:', error);
-      toast.error(`Failed to save note: ${error.message || 'Unknown error'}`);
+      console.error("Error saving note:", error);
+      toast.error(`Failed to save note: ${error.message || "Unknown error"}`);
+    } finally {
+      setIsSaving(false);
     }
   };
 
   // Filter notes based on search term
   const filteredNotes = userNotes
-    .filter(note => 
-      !note.tags?.includes('pdf-notes') &&
-      (note.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-       note.content.toLowerCase().includes(searchTerm.toLowerCase()))
+    .filter(
+      (note) =>
+        !note.tags?.includes("pdf-notes") &&
+        (note.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          note.content.toLowerCase().includes(searchTerm.toLowerCase()))
     )
     .sort((a, b) => {
-      if (sortOrder === 'asc') {
+      if (sortOrder === "asc") {
         return a[sortBy] > b[sortBy] ? 1 : -1;
       } else {
         return a[sortBy] < b[sortBy] ? 1 : -1;
@@ -142,13 +162,13 @@ function Notes() {
   // Filter notes that have PDF attachments
   const getPDFNotes = () => {
     if (!userNotes || !Array.isArray(userNotes)) return [];
-    
-    return userNotes.filter(note => 
-      note.tags?.includes('pdf-notes') || note.pdfFile
+
+    return userNotes.filter(
+      (note) => note.tags?.includes("pdf-notes") || note.pdfFile
     );
   };
 
-  if (isLoading) {
+  if (notesLoading) {
     return (
       <div className="flex justify-center items-center min-h-[50vh]">
         <div className="text-center">
@@ -163,13 +183,29 @@ function Notes() {
     <div className="space-y-8">
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6">
         <div className="flex justify-between items-center mb-6">
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">My Notes</h1>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+            My Notes
+          </h1>
           <button
-            onClick={handleCreateNote}
+            onClick={() => {
+              setIsEditorOpen(true);
+              setSelectedPDF(null);
+              setNoteContent("");
+              setNoteTitle("");
+            }}
             className="bg-blue-600 text-white rounded-md px-4 py-2 text-base font-medium inline-flex items-center hover:bg-blue-700"
           >
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
-              <path fillRule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clipRule="evenodd" />
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-5 w-5 mr-2"
+              viewBox="0 0 20 20"
+              fill="currentColor"
+            >
+              <path
+                fillRule="evenodd"
+                d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z"
+                clipRule="evenodd"
+              />
             </svg>
             Create New Note
           </button>
@@ -190,9 +226,14 @@ function Notes() {
           <div className="mb-8">
             <h2 className="text-xl font-semibold mb-4">PDF Study Notes</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {getPDFNotes().map(note => (
-                <div key={note._id} className="bg-blue-50 dark:bg-gray-700 rounded-lg p-5 hover:shadow-md transition-shadow border border-blue-100">
-                  <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">{note.title}</h3>
+              {getPDFNotes().map((note) => (
+                <div
+                  key={note._id}
+                  className="bg-blue-50 dark:bg-gray-700 rounded-lg p-5 hover:shadow-md transition-shadow border border-blue-100"
+                >
+                  <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
+                    {note.title}
+                  </h3>
                   <p className="text-gray-600 dark:text-gray-300 text-sm mb-4 line-clamp-3">
                     {note.content}
                   </p>
@@ -201,15 +242,15 @@ function Notes() {
                       Updated {new Date(note.updatedAt).toLocaleString()}
                     </span>
                     <div className="flex space-x-2">
-                      <Link 
-                        to={`/notes/${note._id}`} 
+                      <Link
+                        to={`/notes/${note._id}`}
                         className="text-blue-600 text-sm font-medium"
                       >
                         View
                       </Link>
                       {note.pdfFile && (
-                        <Link 
-                          to="/pdfstudy" 
+                        <Link
+                          to="/pdfstudy"
                           state={{ pdfId: note.pdfFile, noteId: note._id }}
                           className="text-green-600 text-sm font-medium"
                         >
@@ -229,25 +270,35 @@ function Notes() {
           <h2 className="text-xl font-semibold">All Notes</h2>
           <div className="flex space-x-4">
             <button
-              onClick={() => handleSort('title')}
-              className={`text-gray-700 dark:text-gray-300 hover:text-blue-600 ${sortBy === 'title' ? 'font-bold' : ''}`}
+              onClick={() => handleSort("title")}
+              className={`text-gray-700 dark:text-gray-300 hover:text-blue-600 ${
+                sortBy === "title" ? "font-bold" : ""
+              }`}
             >
-              Title {sortBy === 'title' && (sortOrder === 'asc' ? '↑' : '↓')}
+              Title {sortBy === "title" && (sortOrder === "asc" ? "↑" : "↓")}
             </button>
             <button
-              onClick={() => handleSort('updatedAt')}
-              className={`text-gray-700 dark:text-gray-300 hover:text-blue-600 ${sortBy === 'updatedAt' ? 'font-bold' : ''}`}
+              onClick={() => handleSort("updatedAt")}
+              className={`text-gray-700 dark:text-gray-300 hover:text-blue-600 ${
+                sortBy === "updatedAt" ? "font-bold" : ""
+              }`}
             >
-              Updated {sortBy === 'updatedAt' && (sortOrder === 'asc' ? '↑' : '↓')}
+              Updated{" "}
+              {sortBy === "updatedAt" && (sortOrder === "asc" ? "↑" : "↓")}
             </button>
           </div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredNotes.length > 0 ? (
-            filteredNotes.map(note => (
-              <div key={note._id} className="bg-gray-50 dark:bg-gray-700 rounded-lg p-5 hover:shadow-md transition-shadow">
-                <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">{note.title}</h3>
+            filteredNotes.map((note) => (
+              <div
+                key={note._id}
+                className="bg-gray-50 dark:bg-gray-700 rounded-lg p-5 hover:shadow-md transition-shadow"
+              >
+                <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
+                  {note.title}
+                </h3>
                 <p className="text-gray-600 dark:text-gray-300 text-sm mb-4 line-clamp-3">
                   {note.content}
                 </p>
@@ -255,7 +306,10 @@ function Notes() {
                   <span className="text-xs text-gray-500 dark:text-gray-400">
                     Updated {new Date(note.updatedAt).toLocaleString()}
                   </span>
-                  <Link to={`/notes/${note._id}`} className="text-blue-600 text-sm font-medium">
+                  <Link
+                    to={`/notes/${note._id}`}
+                    className="text-blue-600 text-sm font-medium"
+                  >
                     View Note
                   </Link>
                 </div>
@@ -278,7 +332,7 @@ function Notes() {
                 <input
                   type="text"
                   value={noteTitle}
-                  onChange={handleNoteTitleChange}
+                  onChange={(e) => setNoteTitle(e.target.value)}
                   placeholder="Note Title"
                   className="w-full text-xl font-bold border-none focus:outline-none focus:ring-0"
                 />
@@ -286,12 +340,20 @@ function Notes() {
               <div className="flex space-x-2">
                 <button
                   onClick={handleSaveNote}
-                  className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+                  disabled={isSaving}
+                  className={`px-4 py-2 ${
+                    isSaving
+                      ? "bg-gray-400 cursor-not-allowed"
+                      : "bg-blue-600 hover:bg-blue-700"
+                  } text-white rounded`}
                 >
-                  Save Note
+                  {isSaving ? "Saving..." : "Save Note"}
                 </button>
                 <button
-                  onClick={handleCloseEditor}
+                  onClick={() => {
+                    setIsEditorOpen(false);
+                    setSelectedPDF(null);
+                  }}
                   className="px-4 py-2 bg-gray-200 text-gray-800 rounded hover:bg-gray-300"
                 >
                   Close
@@ -302,32 +364,73 @@ function Notes() {
             <div className="flex flex-col md:flex-row flex-1 overflow-hidden">
               {/* PDF Section */}
               <div className="w-full md:w-1/2 border-r border-gray-200 flex flex-col">
-                <div className="p-3 bg-gray-100 border-b flex justify-between items-center">
+                <div className="p-3 bg-gray-100 border-b">
                   <h3 className="text-lg font-semibold">
-                    {selectedPDF ? (selectedPDF.filename || 'PDF Viewer') : 'Choose a PDF'}
+                    {selectedPDF ? selectedPDF.filename : "Add PDF (Optional)"}
                   </h3>
-                  {selectedPDF && (
-                    <button 
-                      onClick={() => setSelectedPDF(null)} 
-                      className="text-sm text-blue-600 hover:text-blue-800"
-                    >
-                      Change PDF
-                    </button>
-                  )}
                 </div>
-                
                 <div className="flex-1 overflow-auto">
-                  {!selectedPDF ? (
-                    <div className="p-4 flex flex-col space-y-4">
-                      <PDFSelector onSelect={handlePDFSelect} />
-                      <div className="mt-4">
-                        <h3 className="text-lg font-semibold mb-4">Or Upload a New PDF</h3>
-                        <PDFUploader onPDFSelect={handlePDFSelect} />
-                      </div>
+                  {selectedPDF ? (
+                    <div className="h-full relative">
+                      <embed
+                        src={selectedPDF.previewUrl}
+                        type="application/pdf"
+                        className="w-full h-full"
+                      />
+                      <button
+                        onClick={() => setSelectedPDF(null)}
+                        className="absolute top-2 right-2 bg-white rounded-full p-2 shadow-md hover:bg-gray-100"
+                      >
+                        <svg
+                          className="w-5 h-5"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M6 18L18 6M6 6l12 12"
+                          />
+                        </svg>
+                      </button>
                     </div>
                   ) : (
-                    <div className="h-full">
-                      <PDFViewer pdfUrl={selectedPDF} />
+                    <div
+                      className="h-full flex flex-col items-center justify-center p-8 border-2 border-dashed border-gray-300 rounded-lg m-4"
+                      onDragOver={(e) => e.preventDefault()}
+                      onDrop={handleDrop}
+                    >
+                      <svg
+                        className="w-12 h-12 text-gray-400 mb-4"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
+                        />
+                      </svg>
+                      <p className="text-gray-600 mb-2">
+                        Drag & drop a PDF here or
+                      </p>
+                      <input
+                        type="file"
+                        accept="application/pdf"
+                        onChange={handleFileSelect}
+                        className="hidden"
+                        id="pdf-upload"
+                      />
+                      <label
+                        htmlFor="pdf-upload"
+                        className="text-blue-500 hover:text-blue-600 cursor-pointer"
+                      >
+                        browse to upload
+                      </label>
                     </div>
                   )}
                 </div>
@@ -341,7 +444,7 @@ function Notes() {
                 <div className="flex-1 p-4 overflow-auto">
                   <textarea
                     value={noteContent}
-                    onChange={handleNoteContentChange}
+                    onChange={(e) => setNoteContent(e.target.value)}
                     className="w-full h-full p-3 border border-gray-300 rounded resize-none focus:outline-none focus:ring-2 focus:ring-blue-500"
                     placeholder="Write your notes here..."
                   />
