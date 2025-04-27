@@ -1,52 +1,26 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
+import { toast } from 'react-toastify';
 import Timer from '../components/Timer';
+import { 
+  getTasks, 
+  createTask, 
+  deleteTask, 
+  toggleTaskCompletion, 
+  reset 
+} from '../features/tasks/taskSlice';
 
 function Tasks() {
   const navigate = useNavigate();
-  const { user } = useSelector((state) => state.auth);
-  const [sessionActive, setSessionActive] = useState(false);
+  const dispatch = useDispatch();
   
-  // Sample tasks data - would be fetched from Redux in a complete implementation
-  const [tasks, setTasks] = useState([
-    {
-      id: 1,
-      title: 'Complete React assignment',
-      description: 'Implement a todo list component with Redux',
-      dueDate: new Date(Date.now() + 86400000 * 2).toISOString(), // 2 days from now
-      priority: 'high',
-      completed: false,
-      category: 'Assignments'
-    },
-    {
-      id: 2,
-      title: 'Study MongoDB aggregation',
-      description: 'Learn about $match, $group, $project operators',
-      dueDate: new Date(Date.now() + 86400000 * 5).toISOString(), // 5 days from now
-      priority: 'medium',
-      completed: false,
-      category: 'Study'
-    },
-    {
-      id: 3,
-      title: 'Review JavaScript closures',
-      description: 'Make sure to understand lexical environment',
-      dueDate: new Date(Date.now() - 86400000 * 1).toISOString(), // 1 day ago
-      priority: 'low',
-      completed: true,
-      category: 'Study'
-    },
-    {
-      id: 4,
-      title: 'Prepare for Node.js interview',
-      description: 'Review common interview questions about Node.js',
-      dueDate: new Date(Date.now() + 86400000 * 7).toISOString(), // 7 days from now
-      priority: 'high',
-      completed: false,
-      category: 'Career'
-    }
-  ]);
+  const { user } = useSelector((state) => state.auth);
+  const { tasks, isLoading, isError, isSuccess, message } = useSelector(
+    (state) => state.tasks
+  );
+
+  const [sessionActive, setSessionActive] = useState(false);
   
   const [newTask, setNewTask] = useState({
     title: '',
@@ -65,8 +39,18 @@ function Tasks() {
   useEffect(() => {
     if (!user) {
       navigate('/login');
+    } else {
+      dispatch(getTasks());
     }
-  }, [user, navigate]);
+
+    if (isError) {
+      toast.error(message);
+    }
+
+    return () => {
+      dispatch(reset());
+    };
+  }, [user, navigate, isError, message, dispatch]);
   
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -76,22 +60,20 @@ function Tasks() {
     });
   };
   
-  const toggleTaskCompletion = (id) => {
-    setTasks(tasks.map(task => 
-      task.id === id ? { ...task, completed: !task.completed } : task
-    ));
+  const handleToggleCompletion = (id) => {
+    dispatch(toggleTaskCompletion(id));
   };
   
-  const addTask = (e) => {
+  const handleAddTask = (e) => {
     e.preventDefault();
     
-    const task = {
-      id: Date.now(),
-      ...newTask,
-      completed: false
-    };
+    if (!newTask.title) {
+      toast.error('Please add a title');
+      return;
+    }
     
-    setTasks([...tasks, task]);
+    dispatch(createTask(newTask));
+    
     setNewTask({
       title: '',
       description: '',
@@ -99,42 +81,14 @@ function Tasks() {
       priority: 'medium',
       category: ''
     });
+    
     setShowAddTask(false);
   };
   
-  const deleteTask = (id) => {
-    setTasks(tasks.filter(task => task.id !== id));
+  const handleDeleteTask = (id) => {
+    dispatch(deleteTask(id));
   };
   
-  const filteredTasks = tasks.filter(task => {
-    if (filter === 'all') return true;
-    if (filter === 'active') return !task.completed;
-    if (filter === 'completed') return task.completed;
-    return true;
-  });
-  
-  // Sort tasks by due date and priority
-  const sortedTasks = [...filteredTasks].sort((a, b) => {
-    if (a.completed && !b.completed) return 1;
-    if (!a.completed && b.completed) return -1;
-    
-    // For incomplete tasks, sort by due date first
-    if (!a.completed && !b.completed) {
-      const dateA = new Date(a.dueDate);
-      const dateB = new Date(b.dueDate);
-      
-      if (dateA < dateB) return -1;
-      if (dateA > dateB) return 1;
-      
-      // If due dates are the same, sort by priority
-      const priorityOrder = { high: 0, medium: 1, low: 2 };
-      return priorityOrder[a.priority] - priorityOrder[b.priority];
-    }
-    
-    // For completed tasks, sort by completion date (would need a completedAt field in a real implementation)
-    return 0;
-  });
-
   const handleTimerComplete = () => {
     alert('Study session complete! Take a break.');
     setSessionActive(false);
@@ -165,6 +119,45 @@ function Tasks() {
   const startStudySession = () => {
     setSessionActive(true);
   };
+  
+  const filteredTasks = tasks.filter(task => {
+    if (filter === 'all') return true;
+    if (filter === 'active') return !task.completed;
+    if (filter === 'completed') return task.completed;
+    return true;
+  });
+  
+  // Sort tasks by due date and priority
+  const sortedTasks = [...filteredTasks].sort((a, b) => {
+    if (a.completed && !b.completed) return 1;
+    if (!a.completed && b.completed) return -1;
+    
+    // For incomplete tasks, sort by due date first
+    if (!a.completed && !b.completed) {
+      const dateA = new Date(a.dueDate);
+      const dateB = new Date(b.dueDate);
+      
+      if (dateA < dateB) return -1;
+      if (dateA > dateB) return 1;
+      
+      // If due dates are the same, sort by priority
+      const priorityOrder = { high: 0, medium: 1, low: 2 };
+      return priorityOrder[a.priority] - priorityOrder[b.priority];
+    }
+    
+    return 0;
+  });
+
+  if (isLoading) {
+    return (
+      <div className="flex justify-center items-center min-h-[50vh]">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading tasks...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-8">
@@ -179,9 +172,7 @@ function Tasks() {
               <p className="text-sm text-blue-600 dark:text-blue-400">Focus time in progress</p>
             </div>
           </div>
-          {/* <div className="current-session">
-            <Timer initialMinutes={25} onComplete={handleTimerComplete} />
-          </div> */}
+          {/* Timer is now in the header buttons */}
         </div>
       )}
       
@@ -256,7 +247,7 @@ function Tasks() {
         {showAddTask && (
           <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-6 mb-6">
             <h2 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Add New Task</h2>
-            <form onSubmit={addTask}>
+            <form onSubmit={handleAddTask}>
               <div className="grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-6">
                 <div className="sm:col-span-4">
                   <label htmlFor="title" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
@@ -386,7 +377,12 @@ function Tasks() {
         
         {/* Task List */}
         <div className="space-y-4">
-          {sortedTasks.length === 0 ? (
+          {isLoading ? (
+            <div className="text-center py-8">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
+              <p className="text-gray-600">Loading tasks...</p>
+            </div>
+          ) : sortedTasks.length === 0 ? (
             <div className="text-center py-8">
               <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 mx-auto text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
@@ -399,13 +395,13 @@ function Tasks() {
           ) : (
             sortedTasks.map(task => (
               <div 
-                key={task.id} 
+                key={task._id} 
                 className={`flex items-start p-4 rounded-lg ${task.completed ? 'bg-gray-50 dark:bg-gray-700 opacity-75' : 'bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700'}`}
               >
                 <input
                   type="checkbox"
                   checked={task.completed}
-                  onChange={() => toggleTaskCompletion(task.id)}
+                  onChange={() => handleToggleCompletion(task._id)}
                   className="h-4 w-4 mt-1 text-custom border-gray-300 rounded cursor-pointer"
                 />
                 <div className="ml-3 flex-1 flex justify-between">
@@ -436,7 +432,7 @@ function Tasks() {
                     </div>
                   </div>
                   <button
-                    onClick={() => deleteTask(task.id)}
+                    onClick={() => handleDeleteTask(task._id)}
                     className="text-gray-400 hover:text-red-500"
                   >
                     <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
