@@ -218,7 +218,7 @@ function NotePage() {
             
             {/* Note content - would use a Markdown renderer in a complete implementation */}
             <div className="prose dark:prose-invert max-w-none">
-              {note.content.split('\n\n').map((paragraph, idx) => {
+              {note.content && note.content.split('\n\n').map((paragraph, idx) => {
                 if (paragraph.startsWith('# ')) {
                   return <h1 key={idx} className="text-2xl font-bold mt-6 mb-4">{paragraph.substring(2)}</h1>;
                 } else if (paragraph.startsWith('## ')) {
