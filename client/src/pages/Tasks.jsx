@@ -1,10 +1,12 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
+import Timer from '../components/Timer';
 
 function Tasks() {
   const navigate = useNavigate();
   const { user } = useSelector((state) => state.auth);
+  const [sessionActive, setSessionActive] = useState(false);
   
   // Sample tasks data - would be fetched from Redux in a complete implementation
   const [tasks, setTasks] = useState([
@@ -133,21 +135,84 @@ function Tasks() {
     return 0;
   });
 
+  const handleTimerComplete = () => {
+    alert('Study session complete! Take a break.');
+    setSessionActive(false);
+    
+    // Save session data to localStorage
+    const today = new Date().toISOString().split('T')[0];
+    const savedHistory = localStorage.getItem('studyHistory');
+    let studyHistory = savedHistory ? JSON.parse(savedHistory) : [];
+    
+    const todayIndex = studyHistory.findIndex(item => item.date === today);
+    if (todayIndex >= 0) {
+      studyHistory[todayIndex].minutes += 25;
+    } else {
+      studyHistory.push({ date: today, minutes: 25 });
+    }
+    
+    localStorage.setItem('studyHistory', JSON.stringify(studyHistory));
+    
+    // Update total study time
+    const savedTime = localStorage.getItem('totalStudyTime');
+    const totalTime = savedTime ? parseInt(savedTime) : 0;
+    localStorage.setItem('totalStudyTime', (totalTime + 25 * 60).toString());
+  };
+  
+  const startStudySession = () => {
+    setSessionActive(true);
+  };
+
   return (
     <div className="space-y-8">
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6">
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white">My Tasks</h1>
-          <button 
-            onClick={() => setShowAddTask(!showAddTask)}
-            className="bg-custom text-white rounded-md px-4 py-2 text-base font-medium inline-flex items-center"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
-              <path fillRule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clipRule="evenodd" />
-            </svg>
-            Add Task
-          </button>
+          <div className="flex items-center space-x-4">
+            {!sessionActive ? (
+              <button 
+                onClick={startStudySession}
+                className="bg-green-600 text-white rounded-md px-4 py-2 text-base font-medium inline-flex items-center"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clipRule="evenodd" />
+                </svg>
+                Start Study Session
+              </button>
+            ) : (
+              <div className="flex items-center bg-green-50 dark:bg-green-900/20 rounded-lg px-4 py-2">
+                <span className="text-green-700 dark:text-green-300 mr-3">Current Session:</span>
+                <Timer initialMinutes={25} onComplete={handleTimerComplete} />
+              </div>
+            )}
+            <button 
+              onClick={() => setShowAddTask(!showAddTask)}
+              className="bg-custom text-white rounded-md px-4 py-2 text-base font-medium inline-flex items-center"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                <path fillRule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clipRule="evenodd" />
+              </svg>
+              Add Task
+            </button>
+          </div>
         </div>
+        
+        {/* Study Session Info */}
+        {sessionActive && (
+          <div className="bg-green-50 dark:bg-green-900/10 rounded-lg p-4 mb-6">
+            <div className="flex items-center">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-green-600 dark:text-green-400 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clipRule="evenodd" />
+              </svg>
+              <h3 className="text-lg font-medium text-green-800 dark:text-green-300">
+                Study Session in Progress
+              </h3>
+            </div>
+            <p className="mt-1 text-sm text-green-700 dark:text-green-400">
+              Focus on your tasks and avoid distractions. The timer will notify you when it's time for a break.
+            </p>
+          </div>
+        )}
         
         {/* Task Form */}
         {showAddTask && (
