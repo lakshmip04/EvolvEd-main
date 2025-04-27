@@ -83,7 +83,7 @@ function Header() {
                   >
                     Tasks &amp; To-Do
                   </Link>
-                  <Link 
+                  {/* <Link 
                     to="/pdfstudy" 
                     className={`${
                       window.location.pathname === '/pdfstudy' 
@@ -92,7 +92,7 @@ function Header() {
                     } inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium`}
                   >
                     PDF Study
-                  </Link>
+                  </Link> */}
                 </div>
               )}
             </div>
