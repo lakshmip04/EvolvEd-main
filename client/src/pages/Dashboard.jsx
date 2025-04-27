@@ -30,8 +30,13 @@ function Dashboard() {
     // You can add notification or sound here
     alert('Timer completed!');
     
+    // Get the actual time that was set (in case user changed it)
+    const timerElement = document.querySelector('.timer-container');
+    const minutes = timerElement && timerElement.dataset.minutes ? 
+      parseInt(timerElement.dataset.minutes) : 25;
+    
     // Update study time
-    const newTotalTime = studyTime + 25 * 60; // Add the 25 minutes in seconds
+    const newTotalTime = studyTime + minutes * 60; // Add the minutes in seconds
     setStudyTime(newTotalTime);
     localStorage.setItem('totalStudyTime', newTotalTime.toString());
     
@@ -41,9 +46,9 @@ function Dashboard() {
     const todayIndex = updatedHistory.findIndex(item => item.date === today);
     
     if (todayIndex >= 0) {
-      updatedHistory[todayIndex].minutes += 25;
+      updatedHistory[todayIndex].minutes += minutes;
     } else {
-      updatedHistory.push({ date: today, minutes: 25 });
+      updatedHistory.push({ date: today, minutes: minutes });
     }
     
     setStudyHistory(updatedHistory);
@@ -205,7 +210,9 @@ function Dashboard() {
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <span className="text-gray-600">Study Timer</span>
-              <Timer initialMinutes={25} onComplete={handleTimerComplete} />
+              <div className="timer-container timer-display" data-minutes="25">
+                <Timer initialMinutes={25} onComplete={handleTimerComplete} />
+              </div>
             </div>
             {/* Add other quick actions here */}
           </div>

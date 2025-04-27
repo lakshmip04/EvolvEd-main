@@ -144,11 +144,14 @@ function Tasks() {
     const savedHistory = localStorage.getItem('studyHistory');
     let studyHistory = savedHistory ? JSON.parse(savedHistory) : [];
     
+    const sessionMinutes = document.getElementById('session-length') ? 
+      parseInt(document.getElementById('session-length').value) : 25;
+    
     const todayIndex = studyHistory.findIndex(item => item.date === today);
     if (todayIndex >= 0) {
-      studyHistory[todayIndex].minutes += 25;
+      studyHistory[todayIndex].minutes += sessionMinutes;
     } else {
-      studyHistory.push({ date: today, minutes: 25 });
+      studyHistory.push({ date: today, minutes: sessionMinutes });
     }
     
     localStorage.setItem('studyHistory', JSON.stringify(studyHistory));
@@ -156,7 +159,7 @@ function Tasks() {
     // Update total study time
     const savedTime = localStorage.getItem('totalStudyTime');
     const totalTime = savedTime ? parseInt(savedTime) : 0;
-    localStorage.setItem('totalStudyTime', (totalTime + 25 * 60).toString());
+    localStorage.setItem('totalStudyTime', (totalTime + sessionMinutes * 60).toString());
   };
   
   const startStudySession = () => {
@@ -165,6 +168,23 @@ function Tasks() {
 
   return (
     <div className="space-y-8">
+      {sessionActive && (
+        <div className="bg-blue-50 dark:bg-blue-900/10 rounded-lg p-4 border border-blue-100 dark:border-blue-900/30 flex justify-between items-center">
+          <div className="flex items-center">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-blue-600 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <div>
+              <p className="font-semibold text-blue-800 dark:text-blue-300">Current Session</p>
+              <p className="text-sm text-blue-600 dark:text-blue-400">Focus time in progress</p>
+            </div>
+          </div>
+          {/* <div className="current-session">
+            <Timer initialMinutes={25} onComplete={handleTimerComplete} />
+          </div> */}
+        </div>
+      )}
+      
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6">
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white">My Tasks</h1>
@@ -181,8 +201,10 @@ function Tasks() {
               </button>
             ) : (
               <div className="flex items-center bg-green-50 dark:bg-green-900/20 rounded-lg px-4 py-2">
-                <span className="text-green-700 dark:text-green-300 mr-3">Current Session:</span>
-                <Timer initialMinutes={25} onComplete={handleTimerComplete} />
+                <span className="text-green-700 dark:text-green-300 mr-3 font-medium">Current Session:</span>
+                <div className="timer-display">
+                  <Timer initialMinutes={25} onComplete={handleTimerComplete} />
+                </div>
               </div>
             )}
             <button 
@@ -199,16 +221,32 @@ function Tasks() {
         
         {/* Study Session Info */}
         {sessionActive && (
-          <div className="bg-green-50 dark:bg-green-900/10 rounded-lg p-4 mb-6">
-            <div className="flex items-center">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-green-600 dark:text-green-400 mr-2" viewBox="0 0 20 20" fill="currentColor">
-                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clipRule="evenodd" />
-              </svg>
-              <h3 className="text-lg font-medium text-green-800 dark:text-green-300">
-                Study Session in Progress
-              </h3>
+          <div className="session-progress mb-6">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-green-600 dark:text-green-400 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clipRule="evenodd" />
+                </svg>
+                <h3 className="text-lg font-medium text-green-800 dark:text-green-300">
+                  Study Session in Progress
+                </h3>
+              </div>
+              <div className="flex items-center">
+                <label htmlFor="session-length" className="mr-2 text-sm text-green-700 dark:text-green-400">Session Length:</label>
+                <select 
+                  id="session-length" 
+                  className="text-sm bg-green-100 dark:bg-green-800 border-0 rounded px-2 py-1 text-green-800 dark:text-green-200"
+                  defaultValue="25"
+                >
+                  <option value="15">15 min</option>
+                  <option value="25">25 min</option>
+                  <option value="30">30 min</option>
+                  <option value="45">45 min</option>
+                  <option value="60">60 min</option>
+                </select>
+              </div>
             </div>
-            <p className="mt-1 text-sm text-green-700 dark:text-green-400">
+            <p className="mt-2 text-sm text-green-700 dark:text-green-400">
               Focus on your tasks and avoid distractions. The timer will notify you when it's time for a break.
             </p>
           </div>
