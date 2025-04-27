@@ -1,17 +1,64 @@
-import { useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { useNavigate, Link } from 'react-router-dom';
 import { useSelector } from 'react-redux';
-import { Link } from 'react-router-dom';
+import Timer from '../components/Timer';
 
 function Dashboard() {
   const navigate = useNavigate();
   const { user } = useSelector((state) => state.auth);
+  const [studyTime, setStudyTime] = useState(0);
+  const [studyHistory, setStudyHistory] = useState([]);
 
   useEffect(() => {
     if (!user) {
       navigate('/login');
     }
+
+    // Load study history from localStorage
+    const savedHistory = localStorage.getItem('studyHistory');
+    if (savedHistory) {
+      setStudyHistory(JSON.parse(savedHistory));
+    }
+
+    const savedTime = localStorage.getItem('totalStudyTime');
+    if (savedTime) {
+      setStudyTime(parseInt(savedTime));
+    }
   }, [user, navigate]);
+
+  const handleTimerComplete = () => {
+    // You can add notification or sound here
+    alert('Timer completed!');
+    
+    // Update study time
+    const newTotalTime = studyTime + 25 * 60; // Add the 25 minutes in seconds
+    setStudyTime(newTotalTime);
+    localStorage.setItem('totalStudyTime', newTotalTime.toString());
+    
+    // Update study history
+    const today = new Date().toISOString().split('T')[0];
+    const updatedHistory = [...studyHistory];
+    const todayIndex = updatedHistory.findIndex(item => item.date === today);
+    
+    if (todayIndex >= 0) {
+      updatedHistory[todayIndex].minutes += 25;
+    } else {
+      updatedHistory.push({ date: today, minutes: 25 });
+    }
+    
+    setStudyHistory(updatedHistory);
+    localStorage.setItem('studyHistory', JSON.stringify(updatedHistory));
+  };
+
+  const formatStudyTime = (seconds) => {
+    const hours = Math.floor(seconds / 3600);
+    const minutes = Math.floor((seconds % 3600) / 60);
+    return `${hours}h ${minutes}m`;
+  };
+
+  const startTodaysSession = () => {
+    navigate('/tasks');
+  };
 
   return (
     <div className="space-y-8">
@@ -25,7 +72,10 @@ function Dashboard() {
             <p className="text-lg text-gray-600 dark:text-gray-300 mb-6">
               "Success is not final, failure is not fatal: it is the courage to continue that counts."
             </p>
-            <button className="bg-custom text-white rounded-md px-6 py-3 text-base font-medium inline-flex items-center">
+            <button 
+              className="bg-custom text-white rounded-md px-6 py-3 text-base font-medium inline-flex items-center"
+              onClick={startTodaysSession}
+            >
               <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
                 <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clipRule="evenodd" />
               </svg>
@@ -85,6 +135,27 @@ function Dashboard() {
         </Link>
       </div>
 
+      {/* Analytics Section */}
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6">
+        <div className="flex items-center justify-between mb-6">
+          <h2 className="text-xl font-semibold text-gray-900 dark:text-white">My Analytics</h2>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-6">
+            <h3 className="text-lg font-medium text-gray-700 dark:text-gray-300 mb-2">Total Study Time</h3>
+            <p className="text-3xl font-bold text-blue-600 dark:text-blue-400">{formatStudyTime(studyTime)}</p>
+          </div>
+          <div className="bg-green-50 dark:bg-green-900/20 rounded-lg p-6">
+            <h3 className="text-lg font-medium text-gray-700 dark:text-gray-300 mb-2">Current Streak</h3>
+            <p className="text-3xl font-bold text-green-600 dark:text-green-400">{studyHistory.length} days</p>
+          </div>
+          <div className="bg-purple-50 dark:bg-purple-900/20 rounded-lg p-6">
+            <h3 className="text-lg font-medium text-gray-700 dark:text-gray-300 mb-2">Tasks Completed</h3>
+            <p className="text-3xl font-bold text-purple-600 dark:text-purple-400">15</p>
+          </div>
+        </div>
+      </div>
+
       {/* Recent Activity Section */}
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6">
         <div className="flex items-center justify-between mb-6">
@@ -124,6 +195,19 @@ function Dashboard() {
               <p className="text-sm font-medium text-gray-900 dark:text-white">Completed task: "Finish homework assignment"</p>
               <p className="text-xs text-gray-500 dark:text-gray-400">2 days ago</p>
             </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="bg-white rounded-lg shadow-md p-6">
+          <h2 className="text-xl font-semibold text-gray-800 mb-4">Quick Actions</h2>
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <span className="text-gray-600">Study Timer</span>
+              <Timer initialMinutes={25} onComplete={handleTimerComplete} />
+            </div>
+            {/* Add other quick actions here */}
           </div>
         </div>
       </div>

@@ -5,6 +5,7 @@ import { Link } from "react-router-dom";
 import { toast } from "react-toastify";
 import FlashcardUploader from "../components/FlashcardUploader";
 import { getDecks } from "../features/flashcards/flashcardSlice";
+import Timer from '../components/Timer';
 
 function Flashcards() {
   const navigate = useNavigate();
@@ -14,6 +15,7 @@ function Flashcards() {
     (state) => state.flashcards
   );
   const [isUploaderOpen, setIsUploaderOpen] = useState(false);
+  const [currentCardIndex, setCurrentCardIndex] = useState(0);
 
   useEffect(() => {
     if (!user) {
@@ -26,6 +28,10 @@ function Flashcards() {
       toast.error(message);
     }
   }, [user, navigate, dispatch, isError, message]);
+
+  const handleTimerComplete = () => {
+    alert('Study session completed!');
+  };
 
   if (isLoading) {
     return (
@@ -63,6 +69,11 @@ function Flashcards() {
             </svg>
             Create New Deck
           </button>
+        </div>
+
+        <div className="flex items-center space-x-4">
+          <span className="text-gray-600">Session Timer:</span>
+          <Timer initialMinutes={15} onComplete={handleTimerComplete} />
         </div>
 
         {/* Flashcard Uploader Modal */}

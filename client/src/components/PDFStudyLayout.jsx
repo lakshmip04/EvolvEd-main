@@ -5,7 +5,7 @@ import PDFViewer from "./PDFViewer";
 import { createNote, getNotes, updateNote } from "../features/notes/noteSlice";
 
 function PDFStudyLayout({
-  pdfUrl,
+  pdfUrl = "",
   pdfTitle = "",
   initialNotes = "",
   noteId: externalNoteId = null,
@@ -24,41 +24,24 @@ function PDFStudyLayout({
   } = useSelector((state) => state.notes);
 
   useEffect(() => {
-    console.log("PDFStudyLayout props:", {
-      pdfUrl,
-      pdfTitle,
-      initialNotes,
-      externalNoteId,
-    });
-  }, [pdfUrl, pdfTitle, initialNotes, externalNoteId]);
+    if (user) {
+      dispatch(getNotes());
+    }
+  }, [user, dispatch]);
 
   // Update local state when props change
   useEffect(() => {
     if (initialNotes) {
-      console.log("Setting notes from initialNotes:", initialNotes);
       setNotes(initialNotes);
     }
     if (externalNoteId) {
-      console.log("Setting noteId from externalNoteId:", externalNoteId);
       setNoteId(externalNoteId);
     }
   }, [initialNotes, externalNoteId]);
 
-  // Load existing notes for this PDF if available
-  useEffect(() => {
-    if (user && pdfUrl && !noteId) {
-      console.log("Fetching user notes to find matching PDF note");
-      // Fetch all user notes if not already loaded
-      if (!userNotes.length) {
-        dispatch(getNotes());
-      }
-    }
-  }, [user, pdfUrl, noteId, dispatch, userNotes.length]);
-
   // Find note for this PDF
   useEffect(() => {
-    if (userNotes && userNotes.length > 0 && pdfUrl && !noteId) {
-      console.log("Searching for existing note matching PDF:", pdfUrl);
+    if (userNotes?.length > 0 && pdfUrl && !noteId) {
       // Extract the PDF ID from the pdfUrl object or string
       let pdfId;
       if (typeof pdfUrl === "string") {
@@ -66,48 +49,24 @@ function PDFStudyLayout({
       } else if (pdfUrl.id) {
         pdfId = pdfUrl.id;
       } else if (pdfUrl.url) {
-        // Extract filename from URL
         const urlParts = pdfUrl.url.split("/");
         pdfId = urlParts[urlParts.length - 1];
       }
 
-      console.log("Searching for notes with pdfId:", pdfId);
-      console.log("Available notes:", userNotes);
-
       const existingNote = userNotes.find((note) => {
-        // Check if the note is linked to this PDF
+        if (!note) return false;
         if (note.pdfFile === pdfId) return true;
-
-        // Check if note title matches the PDF filename
-        if (pdfUrl.filename && note.title === `Notes: ${pdfUrl.filename}`)
-          return true;
-
-        // Check if note pdfFile contains the filename part
+        if (pdfUrl.filename && note.title === `Notes: ${pdfUrl.filename}`) return true;
         if (note.pdfFile && pdfId && note.pdfFile.includes(pdfId)) return true;
-
         return false;
       });
 
       if (existingNote) {
-        console.log("Found existing note:", existingNote);
-        setNotes(existingNote.content);
+        setNotes(existingNote.content || '');
         setNoteId(existingNote._id);
-      } else {
-        console.log("No existing note found for this PDF");
       }
     }
   }, [userNotes, pdfUrl, noteId]);
-
-  // Log Redux state changes for debugging
-  useEffect(() => {
-    console.log("Redux notes state:", {
-      userNotes,
-      isLoading,
-      isError,
-      message,
-      isSuccess,
-    });
-  }, [userNotes, isLoading, isError, message, isSuccess]);
 
   const handleNotesChange = (e) => {
     setNotes(e.target.value);
@@ -122,7 +81,6 @@ function PDFStudyLayout({
     try {
       setIsSaving(true);
 
-      // Get PDF identifier and URL
       let pdfId;
       let fileUrl;
 
@@ -133,23 +91,12 @@ function PDFStudyLayout({
         pdfId = pdfUrl.id;
         fileUrl = pdfUrl.url;
       } else if (pdfUrl.url) {
-        // Extract filename from URL if it's a URL
         const urlParts = pdfUrl.url.split("/");
         pdfId = urlParts[urlParts.length - 1];
         fileUrl = pdfUrl.url;
       }
 
-      const noteTitle = `Notes: ${
-        pdfUrl.filename || pdfTitle || "PDF Document"
-      }`;
-
-      console.log("Saving note with pdfId:", pdfId);
-      console.log("Note data:", {
-        title: noteTitle,
-        content: notes.substring(0, 50) + "...",
-        pdfId,
-        url: fileUrl,
-      });
+      const noteTitle = `Notes: ${pdfUrl.filename || pdfTitle || "PDF Document"}`;
 
       const noteData = {
         title: noteTitle,
@@ -160,29 +107,18 @@ function PDFStudyLayout({
       };
 
       if (noteId) {
-        // Update existing note
-        console.log("Updating existing note with ID:", noteId);
-        const updated = await dispatch(
-          updateNote({ noteId, noteData })
-        ).unwrap();
-        console.log("Note updated:", updated);
+        await dispatch(updateNote({ noteId, noteData })).unwrap();
         toast.success("Notes updated successfully");
       } else {
-        // Create new note
-        console.log("Creating new note");
         const result = await dispatch(createNote(noteData)).unwrap();
-        console.log("New note created:", result);
         setNoteId(result._id);
         toast.success("Notes saved successfully");
       }
 
-      // Refresh notes list
       dispatch(getNotes());
     } catch (error) {
       console.error("Error saving notes:", error);
-      toast.error(
-        "Failed to save notes: " + (error.message || "Unknown error")
-      );
+      toast.error("Failed to save notes: " + (error.message || "Unknown error"));
     } finally {
       setIsSaving(false);
     }
@@ -198,7 +134,13 @@ function PDFStudyLayout({
           </h3>
         </div>
         <div className="h-[calc(100%-60px)]">
-          <PDFViewer pdfUrl={pdfUrl} />
+          {pdfUrl ? (
+            <PDFViewer url={typeof pdfUrl === 'string' ? pdfUrl : pdfUrl.url} />
+          ) : (
+            <div className="flex items-center justify-center h-full text-gray-500">
+              No PDF selected
+            </div>
+          )}
         </div>
       </div>
 
@@ -209,22 +151,18 @@ function PDFStudyLayout({
           <button
             onClick={handleSaveNotes}
             disabled={isSaving}
-            className={`px-4 py-2 rounded text-white ${
-              isSaving
-                ? "bg-gray-400 cursor-not-allowed"
-                : "bg-blue-600 hover:bg-blue-700"
-            }`}
+            className="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700 disabled:opacity-50"
           >
-            {isSaving ? "Saving..." : noteId ? "Update Notes" : "Save Notes"}
+            {isSaving ? "Saving..." : "Save Notes"}
           </button>
         </div>
-        <div className="p-4 h-[calc(100%-60px)] overflow-y-auto">
+        <div className="p-4 h-[calc(100%-60px)]">
           <textarea
-            className="w-full h-full p-3 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             value={notes}
             onChange={handleNotesChange}
             placeholder="Take notes here..."
-          ></textarea>
+            className="w-full h-full p-2 border rounded resize-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+          />
         </div>
       </div>
     </div>

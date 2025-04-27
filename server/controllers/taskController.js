@@ -1,7 +1,7 @@
 const asyncHandler = require('express-async-handler');
 const Task = require('../models/taskModel');
 
-// @desc    Get all tasks for a user
+// @desc    Get tasks
 // @route   GET /api/tasks
 // @access  Private
 const getTasks = asyncHandler(async (req, res) => {
@@ -9,23 +9,25 @@ const getTasks = asyncHandler(async (req, res) => {
   res.status(200).json(tasks);
 });
 
-// @desc    Create a new task
+// @desc    Create task
 // @route   POST /api/tasks
 // @access  Private
 const createTask = asyncHandler(async (req, res) => {
-  const { title, description, priority, dueDate } = req.body;
+  const { title, description, dueDate, priority, status, tags } = req.body;
 
   if (!title) {
     res.status(400);
-    throw new Error('Please add a task title');
+    throw new Error('Please add a title');
   }
 
   const task = await Task.create({
     title,
-    description: description || '',
-    priority: priority || 'medium',
-    dueDate: dueDate || null,
-    user: req.user.id
+    description,
+    dueDate,
+    priority,
+    status,
+    tags,
+    user: req.user.id,
   });
 
   res.status(201).json(task);
@@ -51,7 +53,7 @@ const getTask = asyncHandler(async (req, res) => {
   res.status(200).json(task);
 });
 
-// @desc    Update a task
+// @desc    Update task
 // @route   PUT /api/tasks/:id
 // @access  Private
 const updateTask = asyncHandler(async (req, res) => {
@@ -62,20 +64,16 @@ const updateTask = asyncHandler(async (req, res) => {
     throw new Error('Task not found');
   }
 
-  // Make sure logged in user matches the task owner
+  // Check for user
+  if (!req.user) {
+    res.status(401);
+    throw new Error('User not found');
+  }
+
+  // Make sure the logged in user matches the task user
   if (task.user.toString() !== req.user.id) {
     res.status(401);
-    throw new Error('Not authorized');
-  }
-
-  // If completing the task, set completedAt date
-  if (req.body.status === 'completed' && task.status !== 'completed') {
-    req.body.completedAt = new Date();
-  }
-
-  // If un-completing the task, clear completedAt date
-  if (req.body.status !== 'completed' && task.status === 'completed') {
-    req.body.completedAt = null;
+    throw new Error('User not authorized');
   }
 
   const updatedTask = await Task.findByIdAndUpdate(
@@ -87,7 +85,7 @@ const updateTask = asyncHandler(async (req, res) => {
   res.status(200).json(updatedTask);
 });
 
-// @desc    Delete a task
+// @desc    Delete task
 // @route   DELETE /api/tasks/:id
 // @access  Private
 const deleteTask = asyncHandler(async (req, res) => {
@@ -98,10 +96,16 @@ const deleteTask = asyncHandler(async (req, res) => {
     throw new Error('Task not found');
   }
 
-  // Make sure logged in user matches the task owner
+  // Check for user
+  if (!req.user) {
+    res.status(401);
+    throw new Error('User not found');
+  }
+
+  // Make sure the logged in user matches the task user
   if (task.user.toString() !== req.user.id) {
     res.status(401);
-    throw new Error('Not authorized');
+    throw new Error('User not authorized');
   }
 
   await task.deleteOne();
