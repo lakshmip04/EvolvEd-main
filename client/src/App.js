@@ -13,6 +13,7 @@ import FlashcardDeck from './pages/FlashcardDeck';
 import Tasks from './pages/Tasks';
 import PDFStudy from './pages/PDFStudy';
 import PrivateRoute from './components/PrivateRoute';
+import Chatbot from "./pages/Chatbot";
 
 function App() {
   return (
@@ -30,6 +31,7 @@ function App() {
             <Route path="/flashcards/:id" element={<FlashcardDeck />} />
             <Route path="/tasks" element={<Tasks />} />
             <Route path="/pdfstudy" element={<PDFStudy />} />
+            <Route path="/chatbot" element={<Chatbot />} />
           </Routes>
         </main>
         <Footer />
