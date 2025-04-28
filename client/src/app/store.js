@@ -3,6 +3,7 @@ import authReducer from "../features/auth/authSlice";
 import noteReducer from "../features/notes/noteSlice";
 import flashcardReducer from "../features/flashcards/flashcardSlice";
 import taskReducer from "../features/tasks/taskSlice";
+import analyticsReducer from "../features/analytics/analyticsSlice";
 
 export const store = configureStore({
   reducer: {
@@ -10,5 +11,6 @@ export const store = configureStore({
     notes: noteReducer,
     flashcards: flashcardReducer,
     tasks: taskReducer,
+    analytics: analyticsReducer,
   },
 });

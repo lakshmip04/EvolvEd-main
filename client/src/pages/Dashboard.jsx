@@ -3,6 +3,7 @@ import { useNavigate, Link } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import { format } from "date-fns";
 import { getTasks } from "../features/tasks/taskSlice";
+import { getUserAnalytics, updateStudyTime } from "../features/analytics/analyticsSlice";
 import Timer from "../components/Timer";
 
 function Dashboard() {
@@ -10,6 +11,7 @@ function Dashboard() {
   const dispatch = useDispatch();
   const { user } = useSelector((state) => state.auth);
   const { tasks } = useSelector((state) => state.tasks);
+  const { analytics } = useSelector((state) => state.analytics);
 
   const [studyTime, setStudyTime] = useState(0);
   const [studyHistory, setStudyHistory] = useState([]);
@@ -20,33 +22,38 @@ function Dashboard() {
     rate: 0,
   });
   const [dailyStudyTime, setDailyStudyTime] = useState([]);
+  const [dataMigrated, setDataMigrated] = useState(false);
 
   useEffect(() => {
     if (!user) {
       navigate("/login");
     } else {
       dispatch(getTasks());
-
-      // Load study history from localStorage
-      const savedHistory = localStorage.getItem("studyHistory");
-      if (savedHistory) {
-        const parsedHistory = JSON.parse(savedHistory);
-        setStudyHistory(parsedHistory);
-
-        // Calculate current streak
-        calculateStreak(parsedHistory);
-
-        // Calculate daily study times for chart
-        const recentDays = parsedHistory.slice(-7).reverse();
-        setDailyStudyTime(recentDays);
-      }
-
-      const savedTime = localStorage.getItem("totalStudyTime");
-      if (savedTime) {
-        setStudyTime(parseInt(savedTime));
-      }
+      dispatch(getUserAnalytics());
     }
   }, [user, navigate, dispatch]);
+
+  // Migrate localStorage data to the backend once
+  useEffect(() => {
+    if (user && analytics && !dataMigrated) {
+      migrateLocalStorageData();
+    }
+  }, [user, analytics, dataMigrated, dispatch]);
+
+  // Update local state when analytics data is loaded
+  useEffect(() => {
+    if (analytics) {
+      setStudyTime(analytics.totalStudyTime);
+      setStudyHistory(analytics.studyHistory || []);
+      setStreak(analytics.currentStreak);
+      
+      // Calculate daily study times for chart
+      const recentDays = analytics.studyHistory 
+        ? analytics.studyHistory.slice(-7).reverse() 
+        : [];
+      setDailyStudyTime(recentDays);
+    }
+  }, [analytics]);
 
   useEffect(() => {
     if (tasks && tasks.length > 0) {
@@ -59,65 +66,41 @@ function Dashboard() {
     }
   }, [tasks]);
 
-  const calculateStreak = (history) => {
-    if (!history || history.length === 0) {
-      setStreak(0);
-      return;
-    }
+  // Function to migrate localStorage data to the backend
+  const migrateLocalStorageData = () => {
+    // Only migrate if we have localStorage data and backend analytics is empty
+    const savedHistory = localStorage.getItem("studyHistory");
+    const savedTime = localStorage.getItem("totalStudyTime");
 
-    // Sort history by date
-    const sortedHistory = [...history].sort(
-      (a, b) => new Date(b.date) - new Date(a.date)
-    );
-
-    let currentStreak = 0;
-    const today = new Date().toISOString().split("T")[0];
-    const yesterday = new Date(Date.now() - 86400000)
-      .toISOString()
-      .split("T")[0];
-
-    // Check if studied today or yesterday to maintain streak
-    const hasStudiedToday = sortedHistory.some((item) => item.date === today);
-    const hasStudiedYesterday = sortedHistory.some(
-      (item) => item.date === yesterday
-    );
-
-    if (!hasStudiedToday && !hasStudiedYesterday) {
-      setStreak(0);
-      return;
-    }
-
-    // Calculate consecutive days
-    let previousDate = hasStudiedToday ? today : yesterday;
-    currentStreak = 1; // Start with 1 for today/yesterday
-
-    for (let i = 0; i < sortedHistory.length; i++) {
-      const currentDate = sortedHistory[i].date;
-
-      // Skip if we already counted today/yesterday
-      if (
-        (hasStudiedToday && currentDate === today) ||
-        (!hasStudiedToday && currentDate === yesterday)
-      ) {
-        continue;
-      }
-
-      // Calculate the difference in days
-      const prevDay = new Date(previousDate);
-      const currDay = new Date(currentDate);
-      const diffTime = prevDay.getTime() - currDay.getTime();
-      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-
-      // If the difference is exactly 1 day, it's consecutive
-      if (diffDays === 1) {
-        currentStreak++;
-        previousDate = currentDate;
-      } else {
-        break; // Break the streak
+    if ((savedHistory || savedTime) && 
+        analytics && (!analytics.studyHistory || analytics.studyHistory.length === 0)) {
+      console.log('Migrating analytics data from localStorage to backend...');
+      
+      // Process study history
+      if (savedHistory) {
+        try {
+          const parsedHistory = JSON.parse(savedHistory);
+          
+          // For each day in history, update the backend
+          parsedHistory.forEach(day => {
+            dispatch(updateStudyTime({ 
+              minutes: day.minutes, 
+              date: day.date 
+            }));
+          });
+          
+          // Clean up localStorage after migration
+          localStorage.removeItem("studyHistory");
+          localStorage.removeItem("totalStudyTime");
+          
+          console.log('Analytics data migration complete');
+        } catch (error) {
+          console.error('Failed to migrate analytics data:', error);
+        }
       }
     }
-
-    setStreak(currentStreak);
+    
+    setDataMigrated(true);
   };
 
   const handleTimerComplete = () => {
@@ -131,31 +114,11 @@ function Dashboard() {
         ? parseInt(timerElement.dataset.minutes)
         : 25;
 
-    // Update study time
-    const newTotalTime = studyTime + minutes * 60; // Add the minutes in seconds
-    setStudyTime(newTotalTime);
-    localStorage.setItem("totalStudyTime", newTotalTime.toString());
-
-    // Update study history
+    // Get today's date in YYYY-MM-DD format
     const today = new Date().toISOString().split("T")[0];
-    const updatedHistory = [...studyHistory];
-    const todayIndex = updatedHistory.findIndex((item) => item.date === today);
-
-    if (todayIndex >= 0) {
-      updatedHistory[todayIndex].minutes += minutes;
-    } else {
-      updatedHistory.push({ date: today, minutes: minutes });
-    }
-
-    setStudyHistory(updatedHistory);
-    localStorage.setItem("studyHistory", JSON.stringify(updatedHistory));
-
-    // Recalculate streak
-    calculateStreak(updatedHistory);
-
-    // Update daily study times
-    const recentDays = updatedHistory.slice(-7).reverse();
-    setDailyStudyTime(recentDays);
+    
+    // Update study time with API
+    dispatch(updateStudyTime({ minutes, date: today }));
   };
 
   const formatStudyTime = (seconds) => {

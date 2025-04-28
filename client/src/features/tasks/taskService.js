@@ -20,6 +20,7 @@ const createTask = async (taskData, token) => {
 
 // Get user tasks
 const getTasks = async (token) => {
+  console.log("getTasks", token)
   try {
     const config = {
       headers: {
