@@ -34,7 +34,11 @@ function App() {
         </main>
         <Footer />
       </div>
-      <ToastContainer />
+      <ToastContainer 
+        theme="colored"
+        toastClassName="!bg-gray-800 !text-white"
+        progressClassName="!bg-gray-300"
+      />
     </Router>
   );
 }

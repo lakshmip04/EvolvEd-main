@@ -2,10 +2,10 @@ function Footer() {
   const year = new Date().getFullYear();
 
   return (
-    <footer className="bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700">
+    <footer className="bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-800">
       <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         <div className="flex justify-between items-center">
-          <div className="text-sm text-gray-500 dark:text-gray-400">
+          <div className="text-sm text-gray-600 dark:text-gray-400">
             © {year} EvolvEd. All rights reserved.
           </div>
           <div className="flex space-x-6">
@@ -13,7 +13,7 @@ function Footer() {
               href="https://github.com/lakshmip04/EvolvEd-main"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-gray-400 hover:text-gray-500 dark:hover:text-gray-300"
+              className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
             >
               <span className="sr-only">Twitter</span>
               <svg className="h-6 w-6" fill="currentColor" viewBox="0 0 24 24">
@@ -24,7 +24,7 @@ function Footer() {
               href="https://github.com/lakshmip04/EvolvEd-main"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-gray-400 hover:text-gray-500 dark:hover:text-gray-300"
+              className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
             >
               <span className="sr-only">GitHub</span>
               <svg className="h-6 w-6" fill="currentColor" viewBox="0 0 24 24">
@@ -37,7 +37,7 @@ function Footer() {
             </a>
             <a
               href="https://instagram.com/laksh.me_priya"
-              className="text-gray-400 hover:text-gray-500 dark:hover:text-gray-300"
+              className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
             >
               <span className="sr-only">Instagram</span>
               <svg className="h-6 w-6" fill="currentColor" viewBox="0 0 24 24">

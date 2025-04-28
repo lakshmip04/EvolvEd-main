@@ -32,7 +32,7 @@ function Header() {
 
   return (
     <>
-      <nav className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
+      <nav className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800">
         <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between h-16">
             <div className="flex">
@@ -48,7 +48,7 @@ function Header() {
                     className={`${
                       window.location.pathname === '/' 
                         ? 'border-custom text-gray-900 dark:text-white' 
-                        : 'border-transparent text-gray-500 dark:text-gray-300 hover:text-gray-700 dark:hover:text-gray-200'
+                        : 'border-transparent text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200'
                     } inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium`}
                   >
                     Dashboard
@@ -58,7 +58,7 @@ function Header() {
                     className={`${
                       window.location.pathname === '/notes' 
                         ? 'border-custom text-gray-900 dark:text-white' 
-                        : 'border-transparent text-gray-500 dark:text-gray-300 hover:text-gray-700 dark:hover:text-gray-200'
+                        : 'border-transparent text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200'
                     } inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium`}
                   >
                     AI Notes
@@ -68,7 +68,7 @@ function Header() {
                     className={`${
                       window.location.pathname === '/flashcards' 
                         ? 'border-custom text-gray-900 dark:text-white' 
-                        : 'border-transparent text-gray-500 dark:text-gray-300 hover:text-gray-700 dark:hover:text-gray-200'
+                        : 'border-transparent text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200'
                     } inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium`}
                   >
                     Flashcards
@@ -78,7 +78,7 @@ function Header() {
                     className={`${
                       window.location.pathname === '/tasks' 
                         ? 'border-custom text-gray-900 dark:text-white' 
-                        : 'border-transparent text-gray-500 dark:text-gray-300 hover:text-gray-700 dark:hover:text-gray-200'
+                        : 'border-transparent text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200'
                     } inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium`}
                   >
                     Tasks &amp; To-Do
@@ -88,7 +88,7 @@ function Header() {
                     className={`${
                       window.location.pathname === '/pdfstudy' 
                         ? 'border-custom text-gray-900 dark:text-white' 
-                        : 'border-transparent text-gray-500 dark:text-gray-300 hover:text-gray-700 dark:hover:text-gray-200'
+                        : 'border-transparent text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200'
                     } inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium`}
                   >
                     PDF Study
@@ -101,7 +101,7 @@ function Header() {
                 <div className="ml-4 flex items-center space-x-4">
                   <button 
                     onClick={toggleDarkMode} 
-                    className="text-gray-500 dark:text-gray-300 hover:text-gray-700 dark:hover:text-gray-200"
+                    className="text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200"
                   >
                     {isDarkMode ? (
                       <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
@@ -119,7 +119,7 @@ function Header() {
                   </button>
                   <button 
                     onClick={onLogout} 
-                    className="bg-custom text-white px-4 py-2 rounded-md text-sm font-medium"
+                    className="bg-gray-800 hover:bg-gray-900 text-white px-4 py-2 rounded-md text-sm font-medium"
                   >
                     Logout
                   </button>
@@ -128,7 +128,7 @@ function Header() {
                 <div className="ml-4 flex items-center space-x-4">
                   <button 
                     onClick={toggleDarkMode} 
-                    className="text-gray-500 dark:text-gray-300 hover:text-gray-700 dark:hover:text-gray-200"
+                    className="text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200"
                   >
                     {isDarkMode ? (
                       <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
@@ -146,13 +146,13 @@ function Header() {
                   </button>
                   <Link 
                     to="/login" 
-                    className="text-custom hover:text-custom-dark font-medium"
+                    className="text-gray-800 hover:text-black dark:text-gray-300 dark:hover:text-white font-medium"
                   >
                     Login
                   </Link>
                   <Link 
                     to="/register" 
-                    className="bg-custom text-white px-4 py-2 rounded-md text-sm font-medium"
+                    className="bg-gray-800 hover:bg-gray-900 text-white px-4 py-2 rounded-md text-sm font-medium"
                   >
                     Register
                   </Link>

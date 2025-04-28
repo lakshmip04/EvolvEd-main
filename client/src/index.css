@@ -8,29 +8,29 @@
 }
 
 .dark body {
-  background-color: #111827;
-  color: #f3f4f6;
+  background-color: #111111;
+  color: #EEEEEE;
 }
 
 /* Custom color classes */
 .bg-custom {
-  @apply bg-indigo-600;
+  @apply bg-gray-800;
 }
 
 .bg-custom-dark {
-  @apply bg-indigo-700;
+  @apply bg-gray-900;
 }
 
 .text-custom {
-  @apply text-indigo-600;
+  @apply text-gray-800;
 }
 
 .text-custom-dark {
-  @apply text-indigo-700;
+  @apply text-gray-900;
 }
 
 .border-custom {
-  border-color: #4F46E5;
+  border-color: #222222;
 }
 
 /* Timer Styles */
@@ -43,8 +43,8 @@
   font-weight: 600;
   padding: 0.5rem 0.75rem;
   border-radius: 0.375rem;
-  color: #2563eb;
-  background-color: #eff6ff;
+  color: #111111;
+  background-color: #EEEEEE;
   min-width: 80px;
   text-align: center;
 }
@@ -54,8 +54,8 @@
   position: relative;
   padding: 1rem;
   border-radius: 0.5rem;
-  background-color: #f0fdf4;
-  border: 1px solid #dcfce7;
+  background-color: #F5F5F5;
+  border: 1px solid #E0E0E0;
 }
 
 /* Current Session display */
@@ -65,17 +65,17 @@
   display: inline-block;
   padding: 0.25rem 0.5rem;
   border-radius: 0.375rem;
-  color: #166534;
-  background-color: #dcfce7;
+  color: #111111;
+  background-color: #E0E0E0;
 }
 
 /* Hover states */
 .hover\:bg-custom-dark:hover {
-  background-color: #4338CA;
+  background-color: #111111;
 }
 
 .hover\:text-custom-dark:hover {
-  color: #4338CA;
+  color: #111111;
 }
 
 /* Button styles */
@@ -85,16 +85,16 @@
 
 /* Focus styles */
 .focus\:ring-custom:focus {
-  @apply focus:ring-indigo-600;
+  @apply focus:ring-gray-800;
 }
 
 .focus\:border-custom:focus {
-  @apply focus:border-indigo-600;
+  @apply focus:border-gray-800;
 }
 
 /* Input fields with focus states */
 input:focus, textarea:focus, select:focus {
-  --tw-ring-color: #4F46E5;
+  --tw-ring-color: #424242;
   --tw-ring-opacity: 0.5;
 }
 
@@ -123,13 +123,13 @@ body {
 .task-input {
   flex: 1;
   padding: 8px;
-  border: 1px solid #ddd;
+  border: 1px solid #E0E0E0;
   border-radius: 4px;
 }
 
 .task-button {
   padding: 8px 16px;
-  background-color: #007bff;
+  background-color: #424242;
   color: white;
   border: none;
   border-radius: 4px;
@@ -137,7 +137,7 @@ body {
 }
 
 .task-button:hover {
-  background-color: #0056b3;
+  background-color: #212121;
 }
 
 .task-columns {
@@ -147,14 +147,14 @@ body {
 }
 
 .task-column {
-  background-color: #f8f9fa;
+  background-color: #F5F5F5;
   padding: 15px;
   border-radius: 4px;
 }
 
 .task-column h3 {
   margin-bottom: 15px;
-  color: #333;
+  color: #212121;
 }
 
 .task-card {
@@ -175,7 +175,7 @@ body {
 
 .task-action-button {
   padding: 4px 8px;
-  background-color: #e9ecef;
+  background-color: #F5F5F5;
   border: none;
   border-radius: 4px;
   cursor: pointer;
@@ -184,13 +184,13 @@ body {
 }
 
 .task-action-button:hover {
-  background-color: #dee2e6;
+  background-color: #E0E0E0;
 }
 
 .task-action-button.delete {
-  color: #dc3545;
+  color: #7F1D1D;
 }
 
 .task-action-button.delete:hover {
-  background-color: #ffebee;
+  background-color: #FAFAFA;
 } 
