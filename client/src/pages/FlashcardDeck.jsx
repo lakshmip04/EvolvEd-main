@@ -36,6 +36,8 @@ function FlashcardDeck() {
   // State to track if deck is being deleted
   const [isDeleting, setIsDeleting] = useState(false);
 
+  const limitedCards = deck?.cards?.slice(0, 10);
+
   useEffect(() => {
     if (!user) {
       navigate("/login");
@@ -53,7 +55,7 @@ function FlashcardDeck() {
   useEffect(() => {
     // Update progress based on current card index
     if (deck?.cards?.length) {
-      setProgress(Math.floor((currentCardIndex / deck.cards.length) * 100));
+      setProgress(Math.floor((currentCardIndex / limitedCards.length) * 100));
     }
   }, [currentCardIndex, deck?.cards?.length]);
 
@@ -62,10 +64,10 @@ function FlashcardDeck() {
   };
 
   const nextCard = () => {
-    if (deck?.cards && currentCardIndex < deck.cards.length - 1) {
+    if (limitedCards && currentCardIndex < limitedCards.length - 1) {
       setCurrentCardIndex(currentCardIndex + 1);
       setIsFlipped(false);
-    } else if (deck?.cards && currentCardIndex === deck.cards.length - 1) {
+    } else if (limitedCards && currentCardIndex === limitedCards.length - 1) {
       // Show completion screen when reaching the end of the deck
       setIsCompleted(true);
     }
@@ -95,18 +97,18 @@ function FlashcardDeck() {
       await dispatch(
         updateCardStats({
           deckId: deck._id,
-          cardId: deck.cards[currentCardIndex]._id,
+          cardId: limitedCards[currentCardIndex]._id,
           statsData: {
             status: "correct",
-            interval: deck.cards[currentCardIndex].interval * 2 || 1,
+            interval: limitedCards[currentCardIndex].interval * 2 || 1,
             easeFactor: Math.min(
-              deck.cards[currentCardIndex].easeFactor * 1.1 || 2.5,
+              limitedCards[currentCardIndex].easeFactor * 1.1 || 2.5,
               2.5
             ),
-            repetitions: (deck.cards[currentCardIndex].repetitions || 0) + 1,
+            repetitions: (limitedCards[currentCardIndex].repetitions || 0) + 1,
             nextReview: new Date(
               Date.now() +
-                (deck.cards[currentCardIndex].interval * 2 || 1) *
+                (limitedCards[currentCardIndex].interval * 2 || 1) *
                   24 *
                   60 *
                   60 *
@@ -133,12 +135,12 @@ function FlashcardDeck() {
       await dispatch(
         updateCardStats({
           deckId: deck._id,
-          cardId: deck.cards[currentCardIndex]._id,
+          cardId: limitedCards[currentCardIndex]._id,
           statsData: {
             status: "incorrect",
             interval: 1,
             easeFactor: Math.max(
-              deck.cards[currentCardIndex].easeFactor * 0.85 || 2.5,
+              limitedCards[currentCardIndex].easeFactor * 0.85 || 2.5,
               1.3
             ),
             repetitions: 0,
@@ -174,6 +176,95 @@ function FlashcardDeck() {
     }
   };
 
+  // Summary screen after completing all cards
+  if (deck?.cards?.length > 0 && limitedCards.length === currentCardIndex + 1) {
+    return (
+      <div className="space-y-6">
+        <div className="flex justify-between items-center">
+          <button
+            onClick={() => navigate("/flashcards")}
+            className="inline-flex items-center text-gray-700 dark:text-gray-300 hover:text-custom"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-5 w-5 mr-1"
+              viewBox="0 0 20 20"
+              fill="currentColor"
+            >
+              <path
+                fillRule="evenodd"
+                d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z"
+                clipRule="evenodd"
+              />
+            </svg>
+            Back to Decks
+          </button>
+          <button
+            onClick={() => setShowDeleteModal(true)}
+            className="inline-flex items-center text-red-600 hover:text-red-800"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-5 w-5 mr-1"
+              viewBox="0 0 20 20"
+              fill="currentColor"
+            >
+              <path
+                fillRule="evenodd"
+                d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z"
+                clipRule="evenodd"
+              />
+            </svg>
+            Delete Deck
+          </button>
+        </div>
+
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-8 text-center">
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-6">
+            Flashcard Study Complete!
+          </h1>
+
+          <div className="flex justify-center space-x-12 mb-8">
+            <div className="text-center">
+              <div className="text-5xl font-bold text-green-600 mb-2">
+                {correctCount}
+              </div>
+              <div className="text-gray-600 dark:text-gray-400">Correct</div>
+            </div>
+
+            <div className="text-center">
+              <div className="text-5xl font-bold text-red-600 mb-2">
+                {wrongCount}
+              </div>
+              <div className="text-gray-600 dark:text-gray-400">Wrong</div>
+            </div>
+          </div>
+
+          <div className="flex justify-center">
+            <button
+              onClick={resetDeck}
+              className="inline-flex items-center px-6 py-3 border border-transparent rounded-md shadow-sm text-base font-medium text-white bg-blue-600 hover:bg-blue-700"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-5 w-5 mr-2"
+                viewBox="0 0 20 20"
+                fill="currentColor"
+              >
+                <path
+                  fillRule="evenodd"
+                  d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z"
+                  clipRule="evenodd"
+                />
+              </svg>
+              Try Again
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   if (isLoading || !deck) {
     return (
       <div className="flex justify-center items-center min-h-[50vh]">
@@ -185,7 +276,7 @@ function FlashcardDeck() {
     );
   }
 
-  if (!deck.cards || deck.cards.length === 0) {
+  if (!limitedCards || limitedCards.length === 0) {
     return (
       <div className="text-center py-8">
         <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
@@ -213,92 +304,6 @@ function FlashcardDeck() {
   }
 
   // Limit the number of cards to 10
-  const limitedCards = deck.cards.slice(0, 10);
-  
-  // Summary screen after completing all cards
-  if (isCompleted) {
-    return (
-      <div className="space-y-6">
-        <div className="flex justify-between items-center">
-          <button
-            onClick={() => navigate("/flashcards")}
-            className="inline-flex items-center text-gray-700 dark:text-gray-300 hover:text-custom"
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="h-5 w-5 mr-1"
-              viewBox="0 0 20 20"
-              fill="currentColor"
-            >
-              <path
-                fillRule="evenodd"
-                d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z"
-                clipRule="evenodd"
-              />
-            </svg>
-            Back to Decks
-          </button>
-          <button
-            onClick={() => setShowDeleteModal(true)}
-            className="inline-flex items-center text-red-600 hover:text-red-800"
-          >
-            <svg 
-              xmlns="http://www.w3.org/2000/svg" 
-              className="h-5 w-5 mr-1" 
-              viewBox="0 0 20 20" 
-              fill="currentColor"
-            >
-              <path 
-                fillRule="evenodd" 
-                d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" 
-                clipRule="evenodd" 
-              />
-            </svg>
-            Delete Deck
-          </button>
-        </div>
-
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-8 text-center">
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-6">
-            Flashcard Study Complete!
-          </h1>
-          
-          <div className="flex justify-center space-x-12 mb-8">
-            <div className="text-center">
-              <div className="text-5xl font-bold text-green-600 mb-2">{correctCount}</div>
-              <div className="text-gray-600 dark:text-gray-400">Correct</div>
-            </div>
-            
-            <div className="text-center">
-              <div className="text-5xl font-bold text-red-600 mb-2">{wrongCount}</div>
-              <div className="text-gray-600 dark:text-gray-400">Wrong</div>
-            </div>
-          </div>
-          
-          <div className="flex justify-center">
-            <button
-              onClick={resetDeck}
-              className="inline-flex items-center px-6 py-3 border border-transparent rounded-md shadow-sm text-base font-medium text-white bg-blue-600 hover:bg-blue-700"
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="h-5 w-5 mr-2"
-                viewBox="0 0 20 20"
-                fill="currentColor"
-              >
-                <path
-                  fillRule="evenodd"
-                  d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z"
-                  clipRule="evenodd"
-                />
-              </svg>
-              Try Again
-            </button>
-          </div>
-        </div>
-      </div>
-    );
-  }
 
   // Regular flashcard view
   return (
@@ -323,23 +328,25 @@ function FlashcardDeck() {
           Back to Decks
         </button>
         <div className="text-sm font-medium text-gray-600 dark:text-gray-400">
-          Card {currentCardIndex + 1} of {Math.min(deck.cards.length, 10)}
-          {deck.cards.length > 10 && <span className="text-xs ml-1">(Limited to 10)</span>}
+          Card {currentCardIndex + 1} of {Math.min(limitedCards.length, 10)}
+          {limitedCards.length > 10 && (
+            <span className="text-xs ml-1">(Limited to 10)</span>
+          )}
         </div>
         <button
           onClick={() => setShowDeleteModal(true)}
           className="inline-flex items-center text-red-600 hover:text-red-800"
         >
-          <svg 
-            xmlns="http://www.w3.org/2000/svg" 
-            className="h-5 w-5 mr-1" 
-            viewBox="0 0 20 20" 
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            className="h-5 w-5 mr-1"
+            viewBox="0 0 20 20"
             fill="currentColor"
           >
-            <path 
-              fillRule="evenodd" 
-              d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" 
-              clipRule="evenodd" 
+            <path
+              fillRule="evenodd"
+              d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z"
+              clipRule="evenodd"
             />
           </svg>
           Delete Deck
@@ -470,9 +477,15 @@ function FlashcardDeck() {
 
           <button
             onClick={nextCard}
-            disabled={(currentCardIndex === Math.min(deck.cards.length, 10) - 1 && !isFlipped) || isUpdating}
+            disabled={
+              (currentCardIndex === Math.min(limitedCards.length, 10) - 1 &&
+                !isFlipped) ||
+              isUpdating
+            }
             className={`inline-flex items-center px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-sm font-medium ${
-              (currentCardIndex === Math.min(deck.cards.length, 10) - 1 && !isFlipped) || isUpdating
+              (currentCardIndex === Math.min(limitedCards.length, 10) - 1 &&
+                !isFlipped) ||
+              isUpdating
                 ? "text-gray-400 dark:text-gray-600 cursor-not-allowed"
                 : "text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
             }`}
@@ -493,32 +506,40 @@ function FlashcardDeck() {
           </button>
         </div>
       </div>
-      
+
       {/* Delete Confirmation Modal */}
       {showDeleteModal && (
         <div className="fixed inset-0 z-50 overflow-y-auto">
           <div className="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-            <div className="fixed inset-0 transition-opacity" aria-hidden="true">
+            <div
+              className="fixed inset-0 transition-opacity"
+              aria-hidden="true"
+            >
               <div className="absolute inset-0 bg-gray-500 opacity-75"></div>
             </div>
-            
-            <span className="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
-            
+
+            <span
+              className="hidden sm:inline-block sm:align-middle sm:h-screen"
+              aria-hidden="true"
+            >
+              &#8203;
+            </span>
+
             <div className="inline-block align-bottom bg-white dark:bg-gray-800 rounded-lg px-4 pt-5 pb-4 text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full sm:p-6">
               <div>
                 <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100">
-                  <svg 
-                    className="h-6 w-6 text-red-600" 
-                    xmlns="http://www.w3.org/2000/svg" 
-                    fill="none" 
-                    viewBox="0 0 24 24" 
+                  <svg
+                    className="h-6 w-6 text-red-600"
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
                     stroke="currentColor"
                   >
-                    <path 
-                      strokeLinecap="round" 
-                      strokeLinejoin="round" 
-                      strokeWidth="2" 
-                      d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" 
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="2"
+                      d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
                     />
                   </svg>
                 </div>
@@ -528,7 +549,8 @@ function FlashcardDeck() {
                   </h3>
                   <div className="mt-2">
                     <p className="text-sm text-gray-500 dark:text-gray-400">
-                      Are you sure you want to delete this deck? This action cannot be undone.
+                      Are you sure you want to delete this deck? This action
+                      cannot be undone.
                     </p>
                   </div>
                 </div>

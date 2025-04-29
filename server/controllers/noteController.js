@@ -4,6 +4,7 @@ const { uploadToSupabase } = require("../utils/supabase");
 const axios = require("axios");
 const { createClient } = require("@supabase/supabase-js");
 const pdfParse = require("pdf-parse");
+const pdfParse = require("pdf-parse");
 
 // @desc    Get all notes for a user
 // @route   GET /api/notes
@@ -232,6 +233,12 @@ const extractPDFText = async (pdfUrl) => {
   return pdfData.text;
 };
 
+const extractPDFText = async (pdfUrl) => {
+  const response = await axios.get(pdfUrl, { responseType: "arraybuffer" });
+  const pdfData = await pdfParse(response.data);
+  return pdfData.text;
+};
+
 // @desc    Summarize a PDF file using Mistral-7B
 // @route   POST /api/notes/summarize-pdf
 // @access  Private
@@ -242,6 +249,7 @@ const summarizePDF = asyncHandler(async (req, res) => {
 
   try {
     let pdfUrl = null;
+
 
     // Handle either uploaded file or URL
     if (req.file) {
@@ -261,21 +269,31 @@ const summarizePDF = asyncHandler(async (req, res) => {
 
     const pdfText = await extractPDFText(pdfUrl);
 
+    const pdfText = await extractPDFText(pdfUrl);
+
     const { length, style, focus } = req.body;
+
 
     const prompt = generateSummaryPrompt(pdfText, {
       length: length || "medium",
       style: style || "concise",
       focus: focus || "general",
+      length: length || "medium",
+      style: style || "concise",
+      focus: focus || "general",
     });
 
+
     // Call Mistral API for summarization using our utility
+    const summary = await generatePdfSummary(prompt);
+
     const summary = await generatePdfSummary(prompt);
 
     // Return the summary
     res.status(200).json({
       success: true,
       summary,
+      pdfUrl,
       pdfUrl,
     });
   } catch (error) {
@@ -288,6 +306,7 @@ const summarizePDF = asyncHandler(async (req, res) => {
 // Helper function to generate a summary prompt based on options
 const generateSummaryPrompt = (text, options) => {
   const { length, style, focus } = options;
+
 
   // Set length instruction
   let lengthInstruction = "";
@@ -329,6 +348,9 @@ const generateSummaryPrompt = (text, options) => {
     ${text.substring(0, 15000)}... ${
     text.length > 15000 ? "(text truncated for length)" : ""
   }
+    ${text.substring(0, 15000)}... ${
+    text.length > 15000 ? "(text truncated for length)" : ""
+  }
     
     ${lengthInstruction} ${styleInstruction} ${focusInstruction}
     
@@ -345,7 +367,7 @@ const generateSummaryPrompt = (text, options) => {
 const generatePdfSummary = async (prompt) => {
   try {
     const response = await axios.post(
-      `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-pro:generateContent?key=${process.env.GEMINI_API_KEY}`,
+      `https://generativelanguage.googleapis.com/v1/models/gemini-2.0-flash:generateContent?key=${process.env.GEMINI_API_KEY}`,
       {
         contents: [
           {

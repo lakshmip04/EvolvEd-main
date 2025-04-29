@@ -17,6 +17,7 @@ const {
   addCard,
   updateCard,
   deleteCard,
+  updateCardStats,
 } = require("../controllers/flashcardController");
 const Deck = require("../models/Deck");
 const Card = require("../models/Card");
@@ -80,34 +81,27 @@ async function generateFlashcards(text) {
   for (let attempt = 1; attempt <= maxRetries; attempt++) {
     try {
       const response = await axios.post(
-        "https://api-inference.huggingface.co/models/google/flan-t5-base",
+        `https://generativelanguage.googleapis.com/v1/models/gemini-2.0-flash:generateContent?key=${process.env.GEMINI_API_KEY}`,
         {
-          inputs: `Generate 3-5 flashcards from this text. Each flashcard should be in the format "Q: <question> | A: <answer>". Make the questions test understanding of key concepts:
+          contents: [
+            {
+              role: "user",
+              parts: [
+                {
+                  text: `Generate 3-5 flashcards from this text. Each flashcard should be in the format "Q: <question> | A: <answer>". Make the questions test understanding of key concepts:
 
 ${text}`,
-          parameters: {
-            max_length: 512,
-            temperature: 0.7,
-            top_p: 0.9,
-            do_sample: true,
-            return_full_text: false,
-          },
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${process.env.HUGGINGFACE_API_KEY}`,
-            "Content-Type": "application/json",
-          },
+                },
+              ],
+            },
+          ],
         }
       );
 
-      if (!response.data || !Array.isArray(response.data)) {
-        throw new Error("Invalid response format from HuggingFace API");
-      }
+      const generatedText =
+        response.data.candidates?.[0]?.content?.parts?.[0]?.text ||
+        "🤔 No reply generated.";
 
-      // Parse the response into flashcard pairs
-      const generatedText = response.data[0]?.generated_text || "";
-      console.log({ generatedText });
       const cards = generatedText
         .split("\n")
         .filter((line) => line.includes("|") && line.includes("Q:"))
@@ -259,15 +253,11 @@ router.post("/with-pdf", protect, upload.single("pdf"), async (req, res) => {
       pageCount: numPages,
     });
 
-    // Extract text from PDF and generate flashcards
     const pages = await extractTextFromPDF(req.file.buffer);
-    console.log({ pages });
 
-    // Generate and store flashcards for each page
     const allCards = [];
-    for (const page of pages) {
+    for (const page of pages.slice(0, 5)) {
       const generatedCards = await generateFlashcards(page.text);
-      console.log({ generatedCards });
 
       // Create cards in database
       const cardPromises = generatedCards.map((card) =>
@@ -317,5 +307,7 @@ router
   .route("/:id/cards/:cardId")
   .put(protect, updateCard)
   .delete(protect, deleteCard);
+
+router.route("/decks/:id/cards/:cardId/stats").put(protect, updateCardStats);
 
 module.exports = router;

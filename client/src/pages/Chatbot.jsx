@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import ReactMarkdown from "react-markdown"; // ✅ Markdown support
+import ReactMarkdown from "react-markdown";
 import config from "../config";
 
 function Chatbot() {
@@ -53,7 +53,7 @@ function Chatbot() {
   };
 
   return (
-    <div className="p-4 min-h-screen bg-gray-50 dark:bg-gray-900">
+    <div className="p-4 h-screen max-h-[80vh] bg-gray-50 dark:bg-gray-900 flex flex-col">
       <div className="flex justify-between items-center mb-4">
         <h1 className="text-2xl font-bold text-gray-800 dark:text-white">
           Student Helper Chatbot 🤖
@@ -66,7 +66,7 @@ function Chatbot() {
         </button>
       </div>
 
-      <div className="border rounded-lg p-4 h-96 overflow-y-auto bg-white dark:bg-gray-800 shadow">
+      <div className="border rounded-lg p-4 flex-1 h-full overflow-y-auto bg-white dark:bg-gray-800 shadow">
         {messages.map((msg, index) => (
           <div
             key={index}
@@ -85,7 +85,6 @@ function Chatbot() {
             )}
           </div>
         ))}
-
         {isTyping && (
           <div className="mb-2 flex justify-start">
             <span className="inline-block px-3 py-2 rounded-lg bg-gray-300 dark:bg-gray-600 text-sm text-gray-700 dark:text-white animate-pulse">

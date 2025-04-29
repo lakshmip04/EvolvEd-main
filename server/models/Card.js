@@ -37,7 +37,7 @@ const cardSchema = new mongoose.Schema(
     },
     status: {
       type: String,
-      enum: ["new", "learning", "review", "relearning"],
+      enum: ["correct", "incorrect", "new"],
       default: "new",
     },
   },
