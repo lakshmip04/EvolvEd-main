@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
+import ReactMarkdown from "react-markdown"; // ✅ Markdown support
 import config from "../config";
 
 function Chatbot() {
@@ -39,17 +40,12 @@ function Chatbot() {
   };
 
   useEffect(() => {
-    // Auto-scroll to bottom
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
-
-    // Save chat history
     localStorage.setItem("chatHistory", JSON.stringify(messages));
   }, [messages]);
 
   const handleKeyPress = (e) => {
-    if (e.key === "Enter") {
-      handleSend();
-    }
+    if (e.key === "Enter") handleSend();
   };
 
   const handleClearChat = () => {
@@ -75,21 +71,22 @@ function Chatbot() {
         {messages.map((msg, index) => (
           <div
             key={index}
-            className={`mb-2 flex ${
-              msg.sender === "user" ? "justify-end" : "justify-start"
+            className={`mb-4 flex flex-col ${
+              msg.sender === "user" ? "items-end" : "items-start"
             }`}
           >
-            <span
-              className={`inline-block px-3 py-2 rounded-lg shadow ${
-                msg.sender === "user"
-                  ? "bg-blue-500 text-white"
-                  : "bg-gray-200 dark:bg-gray-700 dark:text-white"
-              }`}
-            >
-              {msg.text}
-            </span>
+            {msg.sender === "bot" ? (
+              <div className="prose prose-sm dark:prose-invert max-w-full bg-gray-200 dark:bg-gray-700 p-3 rounded-xl shadow text-left">
+                <ReactMarkdown>{msg.text}</ReactMarkdown>
+              </div>
+            ) : (
+              <div className="bg-blue-500 text-white px-4 py-2 rounded-xl shadow max-w-[75%] whitespace-pre-wrap break-words">
+                {msg.text}
+              </div>
+            )}
           </div>
         ))}
+
         {isTyping && (
           <div className="mb-2 flex justify-start">
             <span className="inline-block px-3 py-2 rounded-lg bg-gray-300 dark:bg-gray-600 text-sm text-gray-700 dark:text-white animate-pulse">
