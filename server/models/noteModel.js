@@ -15,7 +15,10 @@ const noteSchema = mongoose.Schema(
       type: String,
       required: [true, "Please add a url"],
     },
-
+    content: {
+      type: String,
+      default: "",
+    },
     tags: {
       type: [String],
       default: [],
