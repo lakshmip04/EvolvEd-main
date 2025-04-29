@@ -41,7 +41,6 @@ function Chatbot() {
 
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
-    localStorage.setItem("chatHistory", JSON.stringify(messages));
   }, [messages]);
 
   const handleKeyPress = (e) => {
