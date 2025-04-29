@@ -4,7 +4,6 @@ const { uploadToSupabase } = require("../utils/supabase");
 const axios = require("axios");
 const { createClient } = require("@supabase/supabase-js");
 const pdfParse = require("pdf-parse");
-const pdfParse = require("pdf-parse");
 
 // @desc    Get all notes for a user
 // @route   GET /api/notes
