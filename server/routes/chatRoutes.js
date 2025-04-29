@@ -7,8 +7,8 @@ require('dotenv').config();
 router.post('/', async (req, res) => {
   const { message } = req.body;
 
-  if (!message) {
-    return res.status(400).json({ reply: "Please provide a message!" });
+  if (!message || typeof message !== 'string') {
+    return res.status(400).json({ reply: "⚠️ Please provide a valid message." });
   }
 
   try {
@@ -24,12 +24,19 @@ router.post('/', async (req, res) => {
       }
     );
 
-    const reply = response.data.candidates?.[0]?.content?.parts?.[0]?.text || "🤔 No reply generated.";
-    return res.json({ reply: reply.trim() });
+    let reply = response.data.candidates?.[0]?.content?.parts?.[0]?.text;
+
+    if (!reply) {
+      reply = "🤔 No reply generated.";
+    }
+
+    return res.json({ reply: reply.trim().replace(/\s+$/, "") });
 
   } catch (error) {
     console.error('Error communicating with Gemini:', error.response?.data || error.message);
-    return res.status(500).json({ reply: "⚠️ Sorry, something went wrong while talking to Gemini!" });
+    return res.status(500).json({
+      reply: "⚠️ Sorry, something went wrong while talking to Gemini!"
+    });
   }
 });
 
