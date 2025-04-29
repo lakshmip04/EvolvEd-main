@@ -1,21 +1,28 @@
-import { useState, useEffect } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { getTasks, createTask, updateTask, deleteTask } from '../features/tasks/taskSlice';
-import { FaTrash, FaPlus } from 'react-icons/fa';
+import { useState, useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import {
+  getTasks,
+  createTask,
+  updateTask,
+  deleteTask,
+} from "../features/tasks/taskSlice";
+import { FaTrash, FaPlus } from "react-icons/fa";
 
 function Tasks() {
   const dispatch = useDispatch();
-  const { tasks, isLoading, isError, message } = useSelector((state) => state.tasks);
+  const { tasks, isLoading, isError, message } = useSelector(
+    (state) => state.tasks
+  );
   const { user } = useSelector((state) => state.auth);
-  const [filter, setFilter] = useState('All');
+  const [filter, setFilter] = useState("All");
   const [showAddTask, setShowAddTask] = useState(false);
   const [newTask, setNewTask] = useState({
-    title: '',
-    description: '',
-    dueDate: '',
-    priority: 'Medium',
+    title: "",
+    description: "",
+    dueDate: "",
+    priority: "Medium",
     tags: [],
-    status: 'Active'
+    status: "Active",
   });
 
   useEffect(() => {
@@ -28,59 +35,65 @@ function Tasks() {
     e.preventDefault();
     if (newTask.title.trim()) {
       try {
-        await dispatch(createTask({
-          title: newTask.title,
-          description: newTask.description,
-          dueDate: newTask.dueDate,
-          priority: newTask.priority,
-          status: 'Active'
-        })).unwrap();
+        await dispatch(
+          createTask({
+            title: newTask.title,
+            description: newTask.description,
+            dueDate: newTask.dueDate,
+            priority: newTask.priority,
+            status: "Active",
+          })
+        ).unwrap();
 
         setNewTask({
-          title: '',
-          description: '',
-          dueDate: '',
-          priority: 'Medium',
+          title: "",
+          description: "",
+          dueDate: "",
+          priority: "Medium",
           tags: [],
-          status: 'Active'
+          status: "Active",
         });
         setShowAddTask(false);
       } catch (error) {
-        console.error('Failed to create task:', error);
+        console.error("Failed to create task:", error);
       }
     }
   };
 
   const handleDelete = async (taskId) => {
-    if (window.confirm('Are you sure you want to delete this task?')) {
+    if (window.confirm("Are you sure you want to delete this task?")) {
       try {
         await dispatch(deleteTask(taskId)).unwrap();
       } catch (error) {
-        console.error('Failed to delete task:', error);
+        console.error("Failed to delete task:", error);
       }
     }
   };
 
   const handleStatusChange = async (taskId, currentStatus) => {
     try {
-      await dispatch(updateTask({
-        taskId,
-        taskData: { 
-          status: currentStatus === 'Active' ? 'Completed' : 'Active'
-        }
-      })).unwrap();
+      await dispatch(
+        updateTask({
+          taskId,
+          taskData: {
+            status: currentStatus === "Active" ? "Completed" : "Active",
+          },
+        })
+      ).unwrap();
     } catch (error) {
-      console.error('Failed to update task status:', error);
+      console.error("Failed to update task status:", error);
     }
   };
 
-  const filteredTasks = tasks.filter(task => {
-    if (filter === 'All') return true;
+  const filteredTasks = tasks?.filter?.((task) => {
+    if (filter === "All") return true;
     return task.status === filter;
   });
 
   if (isLoading) {
-    return <div className="flex justify-center items-center h-full">Loading...</div>;
+    return (
+      <div className="flex justify-center items-center h-full">Loading...</div>
+    );
   }
 
   if (isError) {
@@ -101,14 +114,14 @@ function Tasks() {
 
       <div className="mb-6">
         <div className="flex gap-4">
-          {['All', 'Active', 'Completed'].map((status) => (
+          {["All", "Active", "Completed"].map((status) => (
             <button
               key={status}
               onClick={() => setFilter(status)}
               className={`px-4 py-2 rounded-lg ${
                 filter === status
-                  ? 'bg-indigo-600 text-white'
-                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                  ? "bg-indigo-600 text-white"
+                  : "bg-gray-100 text-gray-600 hover:bg-gray-200"
               }`}
             >
               {status}
@@ -116,7 +129,6 @@ function Tasks() {
           ))}
         </div>
       </div>
-
       {showAddTask && (
         <div className="mb-6 bg-white p-4 rounded-lg shadow">
           <form onSubmit={handleSubmit}>
@@ -125,7 +137,9 @@ function Tasks() {
                 type="text"
                 placeholder="Task title"
                 value={newTask.title}
-                onChange={(e) => setNewTask({ ...newTask, title: e.target.value })}
+                onChange={(e) =>
+                  setNewTask({ ...newTask, title: e.target.value })
+                }
                 className="w-full p-2 border rounded focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
                 required
               />
@@ -134,7 +148,9 @@ function Tasks() {
               <textarea
                 placeholder="Task description"
                 value={newTask.description}
-                onChange={(e) => setNewTask({ ...newTask, description: e.target.value })}
+                onChange={(e) =>
+                  setNewTask({ ...newTask, description: e.target.value })
+                }
                 className="w-full p-2 border rounded focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
                 rows="3"
               />
@@ -144,14 +160,18 @@ function Tasks() {
                 <input
                   type="date"
                   value={newTask.dueDate}
-                  onChange={(e) => setNewTask({ ...newTask, dueDate: e.target.value })}
+                  onChange={(e) =>
+                    setNewTask({ ...newTask, dueDate: e.target.value })
+                  }
                   className="w-full p-2 border rounded focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
                 />
               </div>
               <div>
                 <select
                   value={newTask.priority}
-                  onChange={(e) => setNewTask({ ...newTask, priority: e.target.value })}
+                  onChange={(e) =>
+                    setNewTask({ ...newTask, priority: e.target.value })
+                  }
                   className="w-full p-2 border rounded focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
                 >
                   <option value="Low">Low</option>
@@ -178,14 +198,13 @@ function Tasks() {
           </form>
         </div>
       )}
-
       <div className="space-y-4">
         {filteredTasks.length === 0 ? (
           <div className="text-center text-gray-500 py-8">
             No tasks found. Click "Add Task" to create one.
           </div>
         ) : (
-          filteredTasks.map((task) => (
+          filteredTasks?.map((task) => (
             <div
               key={task._id}
               className="bg-white p-4 rounded-lg shadow flex items-center justify-between"
@@ -193,23 +212,33 @@ function Tasks() {
               <div className="flex items-center gap-4">
                 <input
                   type="checkbox"
-                  checked={task.status === 'Completed'}
+                  checked={task.status === "Completed"}
                   onChange={() => handleStatusChange(task._id, task.status)}
                   className="h-5 w-5 rounded border-gray-300"
                 />
                 <div>
-                  <h3 className={`font-medium ${task.status === 'Completed' ? 'line-through text-gray-500' : ''}`}>
+                  <h3
+                    className={`font-medium ${
+                      task.status === "Completed"
+                        ? "line-through text-gray-500"
+                        : ""
+                    }`}
+                  >
                     {task.title}
                   </h3>
                   {task.description && (
                     <p className="text-sm text-gray-600">{task.description}</p>
                   )}
                   <div className="flex gap-2 mt-2">
-                    <span className={`text-xs px-2 py-1 rounded ${
-                      task.priority === 'High' ? 'bg-red-100 text-red-800' :
-                      task.priority === 'Medium' ? 'bg-yellow-100 text-yellow-800' :
-                      'bg-green-100 text-green-800'
-                    }`}>
+                    <span
+                      className={`text-xs px-2 py-1 rounded ${
+                        task.priority === "High"
+                          ? "bg-red-100 text-red-800"
+                          : task.priority === "Medium"
+                          ? "bg-yellow-100 text-yellow-800"
+                          : "bg-green-100 text-green-800"
+                      }`}
+                    >
                       {task.priority}
                     </span>
                     {task.dueDate && (
@@ -234,4 +263,4 @@ function Tasks() {
   );
 }
 
-export default Tasks; 
+export default Tasks;

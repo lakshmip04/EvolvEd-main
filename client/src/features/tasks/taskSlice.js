@@ -1,17 +1,17 @@
-import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import taskService from './taskService';
+import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
+import taskService from "./taskService";
 
 const initialState = {
   tasks: [],
   isError: false,
   isSuccess: false,
   isLoading: false,
-  message: '',
+  message: "",
 };
 
 // Create new task
 export const createTask = createAsyncThunk(
-  'tasks/create',
+  "tasks/create",
   async (taskData, thunkAPI) => {
     try {
       const token = thunkAPI.getState().auth.user.token;
@@ -30,7 +30,7 @@ export const createTask = createAsyncThunk(
 
 // Get user tasks
 export const getTasks = createAsyncThunk(
-  'tasks/getAll',
+  "tasks/getAll",
   async (_, thunkAPI) => {
     try {
       const token = thunkAPI.getState().auth.user.token;
@@ -49,7 +49,7 @@ export const getTasks = createAsyncThunk(
 
 // Update task
 export const updateTask = createAsyncThunk(
-  'tasks/update',
+  "tasks/update",
   async ({ taskId, taskData }, thunkAPI) => {
     try {
       const token = thunkAPI.getState().auth.user.token;
@@ -68,7 +68,7 @@ export const updateTask = createAsyncThunk(
 
 // Delete task
 export const deleteTask = createAsyncThunk(
-  'tasks/delete',
+  "tasks/delete",
   async (id, thunkAPI) => {
     try {
       const token = thunkAPI.getState().auth.user.token;
@@ -88,43 +88,45 @@ export const deleteTask = createAsyncThunk(
 
 // Toggle task completion
 export const toggleTaskCompletion = createAsyncThunk(
-  'tasks/toggle',
-  async (taskId, thunkAPI) => {
+  "tasks/toggle",
+  async ({ taskId, status }, thunkAPI) => {
     try {
       const token = thunkAPI.getState().auth.user.token;
-      const task = thunkAPI.getState().tasks.tasks.find(task => task._id === taskId);
-      
+      const task = thunkAPI
+        .getState()
+        .tasks.tasks.find((task) => task._id === taskId);
+
       if (!task) {
-        return thunkAPI.rejectWithValue('Task not found');
+        return thunkAPI.rejectWithValue("Task not found");
       }
-      
+
       const taskData = {
-        completed: !task.completed,
-        completedAt: !task.completed ? new Date().toISOString() : null
+        status: status,
+        completedAt: status === "completed" ? new Date().toISOString() : null,
       };
-      
+
       return await taskService.updateTask(taskId, taskData, token);
     } catch (error) {
-      const message = 
-        (error.response && 
-          error.response.data && 
+      const message =
+        (error.response &&
+          error.response.data &&
           error.response.data.message) ||
         error.message ||
         error.toString();
-      
+
       return thunkAPI.rejectWithValue(message);
     }
   }
 );
 
 export const taskSlice = createSlice({
-  name: 'task',
+  name: "task",
   initialState,
   reducers: {
     reset: (state) => initialState,
     clearError: (state) => {
       state.isError = false;
-      state.message = '';
+      state.message = "";
     },
   },
   extraReducers: (builder) => {
@@ -132,7 +134,7 @@ export const taskSlice = createSlice({
       .addCase(createTask.pending, (state) => {
         state.isLoading = true;
         state.isError = false;
-        state.message = '';
+        state.message = "";
       })
       .addCase(createTask.fulfilled, (state, action) => {
         state.isLoading = false;
@@ -147,7 +149,7 @@ export const taskSlice = createSlice({
       .addCase(getTasks.pending, (state) => {
         state.isLoading = true;
         state.isError = false;
-        state.message = '';
+        state.message = "";
       })
       .addCase(getTasks.fulfilled, (state, action) => {
         state.isLoading = false;
@@ -162,7 +164,7 @@ export const taskSlice = createSlice({
       .addCase(updateTask.pending, (state) => {
         state.isLoading = true;
         state.isError = false;
-        state.message = '';
+        state.message = "";
       })
       .addCase(updateTask.fulfilled, (state, action) => {
         state.isLoading = false;
@@ -179,12 +181,12 @@ export const taskSlice = createSlice({
       .addCase(deleteTask.pending, (state) => {
         state.isLoading = true;
         state.isError = false;
-        state.message = '';
+        state.message = "";
       })
       .addCase(deleteTask.fulfilled, (state, action) => {
         state.isLoading = false;
         state.isSuccess = true;
-        state.tasks = state.tasks.filter(
+        state.tasks = state.tasks?.filter?.(
           (task) => task._id !== action.payload.id
         );
       })
@@ -199,7 +201,7 @@ export const taskSlice = createSlice({
       .addCase(toggleTaskCompletion.fulfilled, (state, action) => {
         state.isLoading = false;
         state.isSuccess = true;
-        state.tasks = state.tasks.map(task => 
+        state.tasks = state.tasks.map((task) =>
           task._id === action.payload._id ? action.payload : task
         );
       })
@@ -212,4 +214,4 @@ export const taskSlice = createSlice({
 });
 
 export const { reset, clearError } = taskSlice.actions;
-export default taskSlice.reducer; 
+export default taskSlice.reducer;

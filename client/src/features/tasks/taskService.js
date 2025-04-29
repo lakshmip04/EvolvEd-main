@@ -1,6 +1,7 @@
-import axios from 'axios';
+import axios from "axios";
+import config from "../../config";
 
-const API_URL = '/api/tasks/';
+const API_URL = `${config.API_URL}/api/tasks/`;
 
 // Create new task
 const createTask = async (taskData, token) => {
@@ -14,13 +15,13 @@ const createTask = async (taskData, token) => {
     const response = await axios.post(API_URL, taskData, config);
     return response.data;
   } catch (error) {
-    throw new Error(error.response?.data?.message || 'Failed to create task');
+    throw new Error(error.response?.data?.message || "Failed to create task");
   }
 };
 
 // Get user tasks
 const getTasks = async (token) => {
-  console.log("getTasks", token)
+  console.log("getTasks", token);
   try {
     const config = {
       headers: {
@@ -31,7 +32,7 @@ const getTasks = async (token) => {
     const response = await axios.get(API_URL, config);
     return response.data;
   } catch (error) {
-    throw new Error(error.response?.data?.message || 'Failed to fetch tasks');
+    throw new Error(error.response?.data?.message || "Failed to fetch tasks");
   }
 };
 
@@ -47,7 +48,7 @@ const updateTask = async (taskId, taskData, token) => {
     const response = await axios.put(API_URL + taskId, taskData, config);
     return response.data;
   } catch (error) {
-    throw new Error(error.response?.data?.message || 'Failed to update task');
+    throw new Error(error.response?.data?.message || "Failed to update task");
   }
 };
 
@@ -63,7 +64,7 @@ const deleteTask = async (taskId, token) => {
     const response = await axios.delete(API_URL + taskId, config);
     return response.data;
   } catch (error) {
-    throw new Error(error.response?.data?.message || 'Failed to delete task');
+    throw new Error(error.response?.data?.message || "Failed to delete task");
   }
 };
 
@@ -74,4 +75,4 @@ const taskService = {
   deleteTask,
 };
 
-export default taskService; 
+export default taskService;

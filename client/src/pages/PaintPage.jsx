@@ -1,7 +1,7 @@
-import React, { useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useSelector } from 'react-redux';
-import Paint from '../components/Paint';
+import React, { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { useSelector } from "react-redux";
+import Paint from "../components/Paint";
 
 function PaintPage() {
   const navigate = useNavigate();
@@ -9,7 +9,7 @@ function PaintPage() {
 
   useEffect(() => {
     if (!user) {
-      navigate('/login');
+      navigate("/login");
     }
   }, [user, navigate]);
 
@@ -20,10 +20,11 @@ function PaintPage() {
           Drawing Board
         </h1>
         <p className="text-gray-600 dark:text-gray-300 mb-6">
-          Use this paint tool to create diagrams, sketches, or visual notes for your studies.
+          Use this paint tool to create diagrams, sketches, or visual notes for
+          your studies.
         </p>
       </div>
-      
+
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm">
         <Paint isPage={true} />
       </div>
@@ -31,4 +32,4 @@ function PaintPage() {
   );
 }
 
-export default PaintPage; 
+export default PaintPage;

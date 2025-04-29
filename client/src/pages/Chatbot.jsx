@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
+import config from "../config";
 
 function Chatbot() {
   const [messages, setMessages] = useState(() => {
@@ -17,7 +18,7 @@ function Chatbot() {
     setIsTyping(true);
 
     try {
-      const response = await fetch("/api/chat", {
+      const response = await fetch(`${config.API_URL}/api/chat`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ message: input }),
@@ -27,7 +28,10 @@ function Chatbot() {
       setMessages((prev) => [...prev, botMessage]);
     } catch (error) {
       console.error(error);
-      const errorMsg = { text: "⚠️ Error: Couldn't get a reply.", sender: "bot" };
+      const errorMsg = {
+        text: "⚠️ Error: Couldn't get a reply.",
+        sender: "bot",
+      };
       setMessages((prev) => [...prev, errorMsg]);
     } finally {
       setIsTyping(false);
@@ -71,7 +75,9 @@ function Chatbot() {
         {messages.map((msg, index) => (
           <div
             key={index}
-            className={`mb-2 flex ${msg.sender === "user" ? "justify-end" : "justify-start"}`}
+            className={`mb-2 flex ${
+              msg.sender === "user" ? "justify-end" : "justify-start"
+            }`}
           >
             <span
               className={`inline-block px-3 py-2 rounded-lg shadow ${

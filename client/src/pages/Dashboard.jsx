@@ -3,7 +3,10 @@ import { useNavigate, Link } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import { format } from "date-fns";
 import { getTasks } from "../features/tasks/taskSlice";
-import { getUserAnalytics, updateStudyTime } from "../features/analytics/analyticsSlice";
+import {
+  getUserAnalytics,
+  updateStudyTime,
+} from "../features/analytics/analyticsSlice";
 import Timer from "../components/Timer";
 
 function Dashboard() {
@@ -46,10 +49,10 @@ function Dashboard() {
       setStudyTime(analytics.totalStudyTime);
       setStudyHistory(analytics.studyHistory || []);
       setStreak(analytics.currentStreak);
-      
+
       // Calculate daily study times for chart
-      const recentDays = analytics.studyHistory 
-        ? analytics.studyHistory.slice(-7).reverse() 
+      const recentDays = analytics.studyHistory
+        ? analytics.studyHistory.slice(-7).reverse()
         : [];
       setDailyStudyTime(recentDays);
     }
@@ -57,7 +60,7 @@ function Dashboard() {
 
   useEffect(() => {
     if (tasks && tasks.length > 0) {
-      const completed = tasks.filter((task) => task.completed).length;
+      const completed = tasks?.filter?.((task) => task.completed).length;
       setTaskStats({
         completed,
         total: tasks.length,
@@ -72,34 +75,39 @@ function Dashboard() {
     const savedHistory = localStorage.getItem("studyHistory");
     const savedTime = localStorage.getItem("totalStudyTime");
 
-    if ((savedHistory || savedTime) && 
-        analytics && (!analytics.studyHistory || analytics.studyHistory.length === 0)) {
-      console.log('Migrating analytics data from localStorage to backend...');
-      
+    if (
+      (savedHistory || savedTime) &&
+      analytics &&
+      (!analytics.studyHistory || analytics.studyHistory.length === 0)
+    ) {
+      console.log("Migrating analytics data from localStorage to backend...");
+
       // Process study history
       if (savedHistory) {
         try {
           const parsedHistory = JSON.parse(savedHistory);
-          
+
           // For each day in history, update the backend
-          parsedHistory.forEach(day => {
-            dispatch(updateStudyTime({ 
-              minutes: day.minutes, 
-              date: day.date 
-            }));
+          parsedHistory.forEach((day) => {
+            dispatch(
+              updateStudyTime({
+                minutes: day.minutes,
+                date: day.date,
+              })
+            );
           });
-          
+
           // Clean up localStorage after migration
           localStorage.removeItem("studyHistory");
           localStorage.removeItem("totalStudyTime");
-          
-          console.log('Analytics data migration complete');
+
+          console.log("Analytics data migration complete");
         } catch (error) {
-          console.error('Failed to migrate analytics data:', error);
+          console.error("Failed to migrate analytics data:", error);
         }
       }
     }
-    
+
     setDataMigrated(true);
   };
 
@@ -116,7 +124,7 @@ function Dashboard() {
 
     // Get today's date in YYYY-MM-DD format
     const today = new Date().toISOString().split("T")[0];
-    
+
     // Update study time with API
     dispatch(updateStudyTime({ minutes, date: today }));
   };
@@ -622,7 +630,7 @@ function Dashboard() {
         </div>
         <div className="space-y-4">
           {tasks && tasks.length > 0 ? (
-            tasks.slice(0, 3).map((task, index) => (
+            tasks.slice(0, 3)?.map?.((task, index) => (
               <div
                 key={index}
                 className="flex items-start space-x-4 p-4 bg-gray-50 dark:bg-gray-700 rounded-md"
