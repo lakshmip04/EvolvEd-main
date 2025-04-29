@@ -233,11 +233,6 @@ const extractPDFText = async (pdfUrl) => {
   return pdfData.text;
 };
 
-const extractPDFText = async (pdfUrl) => {
-  const response = await axios.get(pdfUrl, { responseType: "arraybuffer" });
-  const pdfData = await pdfParse(response.data);
-  return pdfData.text;
-};
 
 // @desc    Summarize a PDF file using Mistral-7B
 // @route   POST /api/notes/summarize-pdf
@@ -269,8 +264,6 @@ const summarizePDF = asyncHandler(async (req, res) => {
 
     const pdfText = await extractPDFText(pdfUrl);
 
-    const pdfText = await extractPDFText(pdfUrl);
-
     const { length, style, focus } = req.body;
 
 
@@ -287,7 +280,6 @@ const summarizePDF = asyncHandler(async (req, res) => {
     // Call Mistral API for summarization using our utility
     const summary = await generatePdfSummary(prompt);
 
-    const summary = await generatePdfSummary(prompt);
 
     // Return the summary
     res.status(200).json({
@@ -396,4 +388,4 @@ module.exports = {
   deleteNote,
   createNoteWithPDF,
   summarizePDF,
-};
+}
