@@ -270,9 +270,6 @@ const summarizePDF = asyncHandler(async (req, res) => {
       length: length || "medium",
       style: style || "concise",
       focus: focus || "general",
-      length: length || "medium",
-      style: style || "concise",
-      focus: focus || "general",
     });
 
 
@@ -336,12 +333,7 @@ const generateSummaryPrompt = (text, options) => {
   return `
     Summarize the following text extracted from a PDF document:
     
-    ${text.substring(0, 15000)}... ${
-    text.length > 15000 ? "(text truncated for length)" : ""
-  }
-    ${text.substring(0, 15000)}... ${
-    text.length > 15000 ? "(text truncated for length)" : ""
-  }
+  text: ${text}
     
     ${lengthInstruction} ${styleInstruction} ${focusInstruction}
     
