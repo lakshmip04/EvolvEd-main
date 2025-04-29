@@ -1,12 +1,7 @@
 const express = require('express');
+const axios = require('axios');
 const router = express.Router();
-const { Configuration, OpenAIApi } = require('openai');
-
-// Setup OpenAI with your API Key
-const configuration = new Configuration({
-  apiKey: process.env.OPENAI_API_KEY,
-});
-const openai = new OpenAIApi(configuration);
+require('dotenv').config();
 
 // POST /api/chat
 router.post('/', async (req, res) => {
@@ -17,22 +12,24 @@ router.post('/', async (req, res) => {
   }
 
   try {
-    const response = await openai.createChatCompletion({
-      model: "gpt-3.5-turbo",
-      messages: [
-        { role: "system", content: "You are a helpful AI assistant for students." },
-        { role: "user", content: message },
-      ],
-      temperature: 0.7,
-      max_tokens: 500,
-    });
+    const response = await axios.post(
+      `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-pro:generateContent?key=${process.env.GEMINI_API_KEY}`,
+      {
+        contents: [
+          {
+            role: "user",
+            parts: [{ text: message }]
+          }
+        ]
+      }
+    );
 
-    const reply = response.data.choices[0]?.message?.content?.trim();
-    return res.json({ reply: reply || "🤔 Sorry, I couldn't generate a reply." });
+    const reply = response.data.candidates?.[0]?.content?.parts?.[0]?.text || "🤔 No reply generated.";
+    return res.json({ reply: reply.trim() });
 
   } catch (error) {
-    console.error('Error communicating with OpenAI:', error.response?.data || error.message);
-    return res.status(500).json({ reply: "⚠️ Sorry, something went wrong while talking to ChatGPT!" });
+    console.error('Error communicating with Gemini:', error.response?.data || error.message);
+    return res.status(500).json({ reply: "⚠️ Sorry, something went wrong while talking to Gemini!" });
   }
 });
 
