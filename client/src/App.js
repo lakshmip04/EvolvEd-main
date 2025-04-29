@@ -12,6 +12,7 @@ import Flashcards from './pages/Flashcards';
 import FlashcardDeck from './pages/FlashcardDeck';
 import Tasks from './pages/Tasks';
 import PDFStudy from './pages/PDFStudy';
+import PaintPage from './pages/PaintPage';
 import PrivateRoute from './components/PrivateRoute';
 import Chatbot from "./pages/Chatbot";
 
@@ -32,6 +33,7 @@ function App() {
             <Route path="/tasks" element={<Tasks />} />
             <Route path="/pdfstudy" element={<PDFStudy />} />
             <Route path="/chatbot" element={<Chatbot />} />
+            <Route path="/paint" element={<PaintPage />} />
           </Routes>
         </main>
         <Footer />

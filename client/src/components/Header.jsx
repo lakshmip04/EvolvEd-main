@@ -93,6 +93,16 @@ function Header() {
                   >
                     AI Chatbot
                   </Link>
+                  <Link
+                    to="/paint"
+                    className={`${
+                        window.location.pathname === '/paint'
+                            ? 'border-custom text-gray-900 dark:text-white'
+                            : 'border-transparent text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200'
+                    } inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium`}
+                  >
+                    Paint
+                  </Link>
                   {/* <Link 
                     to="/pdfstudy" 
                     className={`${
