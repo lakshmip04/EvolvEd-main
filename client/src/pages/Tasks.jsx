@@ -274,7 +274,7 @@ function Tasks() {
                   Study Session in Progress
                 </h3>
               </div>
-              <div className="flex items-center">
+              {/* <div className="flex items-center">
                 <label
                   htmlFor="session-length"
                   className="mr-2 text-sm text-green-700 dark:text-green-400"
@@ -292,7 +292,7 @@ function Tasks() {
                   <option value="45">45 min</option>
                   <option value="60">60 min</option>
                 </select>
-              </div>
+              </div> */}
             </div>
             <p className="mt-2 text-sm text-green-700 dark:text-green-400">
               Focus on your tasks and avoid distractions. The timer will notify

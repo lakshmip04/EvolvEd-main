@@ -1,6 +1,6 @@
 // Configuration for the client app
 const config = {
-  API_URL: import.meta.env.VITE_API_URL || "http://localhost:5001",
+  API_URL: import.meta.env.REACT_APP_API_URL   || "http://localhost:5001",
 };
 
 export default config;

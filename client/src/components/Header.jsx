@@ -91,7 +91,7 @@ function Header() {
                             : 'border-transparent text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200'
                     } inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium`}
                   >
-                    Paint
+                    Take Notes
                   </Link>
                   <Link
                     to="/chatbot"
