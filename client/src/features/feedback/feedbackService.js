@@ -1,7 +1,9 @@
 import axios from 'axios';
+import config from "../../config";
 
+const API_URL = `${config.API_URL}/api/feedback`;
 // Base API URL for feedback
-const API_URL = '/api/feedback/';
+
 
 // Submit feedback
 const submitFeedback = async (feedbackData, token) => {
