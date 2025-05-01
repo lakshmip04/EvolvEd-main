@@ -529,6 +529,108 @@ function Dashboard() {
             </span>
           </div>
         </Link>
+
+        {/* Take Notes */}
+        <Link
+          to="/paint"
+          className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6 transition-transform transform hover:scale-105"
+        >
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
+              Take Notes
+            </h2>
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-6 w-6 text-custom"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"
+              />
+            </svg>
+          </div>
+          <p className="text-sm text-gray-600 dark:text-gray-300">
+            Draw diagrams, create sketches, and take handwritten notes.
+          </p>
+          <div className="mt-4 flex justify-end">
+            <span className="text-custom text-sm font-medium">
+              Open Canvas &rarr;
+            </span>
+          </div>
+        </Link>
+
+        {/* AI Chatbot */}
+        <Link
+          to="/chatbot"
+          className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6 transition-transform transform hover:scale-105"
+        >
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
+              AI Chatbot
+            </h2>
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-6 w-6 text-custom"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"
+              />
+            </svg>
+          </div>
+          <p className="text-sm text-gray-600 dark:text-gray-300">
+            Chat with an AI assistant to help with your studies and questions.
+          </p>
+          <div className="mt-4 flex justify-end">
+            <span className="text-custom text-sm font-medium">
+              Start Chatting &rarr;
+            </span>
+          </div>
+        </Link>
+
+        {/* Feedback Card */}
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6 transition-transform transform hover:scale-105">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
+              Give Feedback
+            </h2>
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-6 w-6 text-custom"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z"
+              />
+            </svg>
+          </div>
+          <p className="text-sm text-gray-600 dark:text-gray-300">
+            Share your thoughts and help us improve the platform for everyone.
+          </p>
+          <div className="mt-4">
+            <button 
+              onClick={() => document.getElementById('feedback-section').scrollIntoView({ behavior: 'smooth' })}
+              className="text-custom text-sm font-medium hover:underline flex items-center justify-end w-full"
+            >
+              <span>Submit Feedback &rarr;</span>
+            </button>
+          </div>
+        </div>
       </div>
 
       {/* Analytics Section */}
@@ -688,7 +790,7 @@ function Dashboard() {
         </div>
         
         {/* Feedback component */}
-        <div className="md:col-span-2">
+        <div id="feedback-section" className="md:col-span-2">
           <FeedbackForm />
         </div>
       </div>
