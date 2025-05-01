@@ -8,6 +8,7 @@ function Header() {
   const dispatch = useDispatch();
   const { user } = useSelector((state) => state.auth);
   const [isDarkMode, setIsDarkMode] = useState(localStorage.getItem('theme') === 'dark');
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   useEffect(() => {
     // Apply dark mode on theme change
@@ -17,6 +18,19 @@ function Header() {
       document.documentElement.classList.remove('dark');
     }
   }, [isDarkMode]);
+
+  // Close mobile menu when navigating to a new page
+  useEffect(() => {
+    const handleRouteChange = () => {
+      setIsMobileMenuOpen(false);
+    };
+    
+    window.addEventListener('popstate', handleRouteChange);
+    
+    return () => {
+      window.removeEventListener('popstate', handleRouteChange);
+    };
+  }, []);
 
   const onLogout = () => {
     dispatch(logout());
@@ -28,6 +42,10 @@ function Header() {
     const newDarkMode = !isDarkMode;
     setIsDarkMode(newDarkMode);
     localStorage.setItem('theme', newDarkMode ? 'dark' : 'light');
+  };
+
+  const toggleMobileMenu = () => {
+    setIsMobileMenuOpen(!isMobileMenuOpen);
   };
 
   return (
@@ -118,6 +136,25 @@ function Header() {
               )}
             </div>
             <div className="flex items-center">
+              {user && (
+                <div className="sm:hidden">
+                  <button
+                    onClick={toggleMobileMenu}
+                    className="inline-flex items-center justify-center p-2 rounded-md text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 focus:outline-none"
+                  >
+                    <span className="sr-only">Open main menu</span>
+                    {!isMobileMenuOpen ? (
+                      <svg className="block h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16" />
+                      </svg>
+                    ) : (
+                      <svg className="block h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                    )}
+                  </button>
+                </div>
+              )}
               {user ? (
                 <div className="ml-4 flex items-center space-x-4">
                   <button 
@@ -182,6 +219,113 @@ function Header() {
             </div>
           </div>
         </div>
+        
+        {/* Mobile menu, show/hide based on menu state */}
+        {user && (
+          <div className={`${isMobileMenuOpen ? 'block' : 'hidden'} sm:hidden`}>
+            <div className="fixed inset-0 z-40 bg-gray-800 bg-opacity-75" onClick={toggleMobileMenu}></div>
+            <div className="fixed inset-y-0 left-0 z-50 w-64 bg-white dark:bg-gray-900 shadow-lg transform transition-transform duration-300 ease-in-out overflow-y-auto pb-12" 
+                style={{ transform: isMobileMenuOpen ? 'translateX(0)' : 'translateX(-100%)' }}>
+              <div className="px-4 pt-5 pb-6 space-y-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <img className="h-8 w-auto" src="/logo.png" alt="StudyMind" />
+                  </div>
+                  <button
+                    onClick={toggleMobileMenu}
+                    className="rounded-md p-2 text-gray-500 hover:text-gray-600 dark:text-gray-400 dark:hover:text-gray-300 focus:outline-none"
+                  >
+                    <span className="sr-only">Close menu</span>
+                    <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                </div>
+                <div className="mt-6">
+                  <nav className="space-y-3">
+                    <Link 
+                      to="/" 
+                      className={`${
+                        window.location.pathname === '/' 
+                          ? 'bg-gray-100 dark:bg-gray-800 text-custom' 
+                          : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800'
+                      } block px-3 py-2 rounded-md text-base font-medium`}
+                      onClick={toggleMobileMenu}
+                    >
+                      Dashboard
+                    </Link>
+                    <Link 
+                      to="/notes" 
+                      className={`${
+                        window.location.pathname === '/notes' 
+                          ? 'bg-gray-100 dark:bg-gray-800 text-custom' 
+                          : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800'
+                      } block px-3 py-2 rounded-md text-base font-medium`}
+                      onClick={toggleMobileMenu}
+                    >
+                      AI Notes
+                    </Link>
+                    <Link 
+                      to="/flashcards" 
+                      className={`${
+                        window.location.pathname === '/flashcards' 
+                          ? 'bg-gray-100 dark:bg-gray-800 text-custom' 
+                          : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800'
+                      } block px-3 py-2 rounded-md text-base font-medium`}
+                      onClick={toggleMobileMenu}
+                    >
+                      Flashcards
+                    </Link>
+                    <Link 
+                      to="/tasks" 
+                      className={`${
+                        window.location.pathname === '/tasks' 
+                          ? 'bg-gray-100 dark:bg-gray-800 text-custom' 
+                          : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800'
+                      } block px-3 py-2 rounded-md text-base font-medium`}
+                      onClick={toggleMobileMenu}
+                    >
+                      Tasks &amp; To-Do
+                    </Link>
+                    <Link
+                      to="/paint"
+                      className={`${
+                        window.location.pathname === '/paint'
+                            ? 'bg-gray-100 dark:bg-gray-800 text-custom'
+                            : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800'
+                      } block px-3 py-2 rounded-md text-base font-medium`}
+                      onClick={toggleMobileMenu}
+                    >
+                      Take Notes
+                    </Link>
+                    <Link
+                      to="/chatbot"
+                      className={`${
+                        window.location.pathname === '/chatbot'
+                            ? 'bg-gray-100 dark:bg-gray-800 text-custom'
+                            : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800'
+                      } block px-3 py-2 rounded-md text-base font-medium`}
+                      onClick={toggleMobileMenu}
+                    >
+                      AI Chatbot
+                    </Link>
+                    <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
+                      <button
+                        onClick={() => {
+                          onLogout();
+                          toggleMobileMenu();
+                        }} 
+                        className="w-full text-left block px-3 py-2 rounded-md text-base font-medium text-red-600 dark:text-red-400 hover:bg-gray-50 dark:hover:bg-gray-800"
+                      >
+                        Logout
+                      </button>
+                    </div>
+                  </nav>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
       </nav>
     </>
   );
