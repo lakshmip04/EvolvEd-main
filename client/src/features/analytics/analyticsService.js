@@ -1,7 +1,7 @@
 import axios from 'axios';
 import config from '../../config';
 
-const API_URL = `${config.API_URL}/api/analytics/`;
+const API_URL = `${config.API_URL}/api/analytics`;
 
 // Get user analytics
 const getUserAnalytics = async (token) => {

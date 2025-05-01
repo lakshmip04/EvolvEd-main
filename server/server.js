@@ -36,6 +36,7 @@ app.use('/api/flashcards', require('./routes/flashcardRoutes'));
 app.use('/api/tasks', require('./routes/taskRoutes'));
 app.use('/api/pdf', require('./routes/pdfRoutes'));
 app.use('/api/chat', require('./routes/chatRoutes'));
+app.use('/api/analytics', require('./routes/analyticsRoutes'));
 
 // Serve client build folder in production
 if (process.env.NODE_ENV === 'production') {
