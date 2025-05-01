@@ -8,6 +8,7 @@ import {
   updateStudyTime,
 } from "../features/analytics/analyticsSlice";
 import Timer from "../components/Timer";
+import FeedbackForm from "../components/FeedbackForm";
 
 function Dashboard() {
   const navigate = useNavigate();
@@ -684,6 +685,11 @@ function Dashboard() {
             </div>
             {/* Add other quick actions here */}
           </div>
+        </div>
+        
+        {/* Feedback component */}
+        <div className="md:col-span-2">
+          <FeedbackForm />
         </div>
       </div>
     </div>
