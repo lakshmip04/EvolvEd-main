@@ -469,33 +469,63 @@ function Dashboard() {
         {/* Notes */}
         <Link
           to="/notes"
-          className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6 transition-transform transform hover:scale-105"
+          style={{
+            backgroundColor: "white",
+            padding: "1.5rem",
+            borderRadius: "0.75rem",
+            boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
+            borderLeft: "4px solid #6366f1",
+            transition: "all 0.3s ease",
+            display: "block"
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.transform = "translateY(-5px)";
+            e.currentTarget.style.boxShadow = "0 10px 15px rgba(0, 0, 0, 0.1)";
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.transform = "translateY(0)";
+            e.currentTarget.style.boxShadow = "0 4px 6px rgba(0, 0, 0, 0.1)";
+          }}
         >
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
               AI Notes
             </h2>
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="h-6 w-6 text-custom"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-              />
-            </svg>
+            <div style={{
+              width: "2.5rem",
+              height: "2.5rem",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              borderRadius: "9999px",
+              backgroundColor: "#e0e7ff",
+              color: "#6366f1"
+            }}>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-6 w-6"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                />
+              </svg>
+            </div>
           </div>
           <p className="text-sm text-gray-600 dark:text-gray-300">
             Create, edit and organize your notes with AI assistance.
           </p>
           <div className="mt-4 flex justify-end">
-            <span className="text-custom text-sm font-medium">
-              View Notes &rarr;
+            <span className="text-indigo-600 text-sm font-medium flex items-center">
+              View Notes 
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 ml-1" viewBox="0 0 20 20" fill="currentColor">
+                <path fillRule="evenodd" d="M10.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L12.586 11H5a1 1 0 110-2h7.586l-2.293-2.293a1 1 0 010-1.414z" clipRule="evenodd" />
+              </svg>
             </span>
           </div>
         </Link>
@@ -503,33 +533,63 @@ function Dashboard() {
         {/* Flashcards */}
         <Link
           to="/flashcards"
-          className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6 transition-transform transform hover:scale-105"
+          style={{
+            backgroundColor: "white",
+            padding: "1.5rem",
+            borderRadius: "0.75rem",
+            boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
+            borderLeft: "4px solid #8b5cf6",
+            transition: "all 0.3s ease",
+            display: "block"
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.transform = "translateY(-5px)";
+            e.currentTarget.style.boxShadow = "0 10px 15px rgba(0, 0, 0, 0.1)";
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.transform = "translateY(0)";
+            e.currentTarget.style.boxShadow = "0 4px 6px rgba(0, 0, 0, 0.1)";
+          }}
         >
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
               Flashcards
             </h2>
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="h-6 w-6 text-custom"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
-              />
-            </svg>
+            <div style={{
+              width: "2.5rem",
+              height: "2.5rem",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              borderRadius: "9999px",
+              backgroundColor: "#f3e8ff",
+              color: "#8b5cf6"
+            }}>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-6 w-6"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
+                />
+              </svg>
+            </div>
           </div>
           <p className="text-sm text-gray-600 dark:text-gray-300">
             Create and study flashcards with spaced repetition.
           </p>
           <div className="mt-4 flex justify-end">
-            <span className="text-custom text-sm font-medium">
-              View Flashcards &rarr;
+            <span className="text-purple-600 text-sm font-medium flex items-center">
+              View Flashcards
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 ml-1" viewBox="0 0 20 20" fill="currentColor">
+                <path fillRule="evenodd" d="M10.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L12.586 11H5a1 1 0 110-2h7.586l-2.293-2.293a1 1 0 010-1.414z" clipRule="evenodd" />
+              </svg>
             </span>
           </div>
         </Link>
@@ -537,33 +597,39 @@ function Dashboard() {
         {/* Tasks */}
         <Link
           to="/tasks"
-          className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6 transition-transform transform hover:scale-105"
+          className="card bg-white dark:bg-gray-800 p-6 transition-transform transform hover:scale-105 border-l-4 border-green-500 fade-in-element"
+          style={{animationDelay: "0.3s"}}
         >
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
               Tasks & To-Do
             </h2>
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="h-6 w-6 text-custom"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"
-              />
-            </svg>
+            <div className="w-10 h-10 flex items-center justify-center rounded-full bg-green-100 text-green-600">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-6 w-6"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"
+                />
+              </svg>
+            </div>
           </div>
           <p className="text-sm text-gray-600 dark:text-gray-300">
             Manage your study schedule and track your progress.
           </p>
           <div className="mt-4 flex justify-end">
-            <span className="text-custom text-sm font-medium">
-              View Tasks &rarr;
+            <span className="text-green-600 text-sm font-medium group flex items-center">
+              View Tasks
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 ml-1 group-hover:translate-x-1 transition-transform" viewBox="0 0 20 20" fill="currentColor">
+                <path fillRule="evenodd" d="M10.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L12.586 11H5a1 1 0 110-2h7.586l-2.293-2.293a1 1 0 010-1.414z" clipRule="evenodd" />
+              </svg>
             </span>
           </div>
         </Link>
@@ -672,18 +738,26 @@ function Dashboard() {
       </div>
 
       {/* Analytics Section */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6">
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6 card">
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
             My Analytics
           </h2>
-          <div className="text-sm text-gray-500">
-            <span className="font-medium text-green-600">Today:</span>{" "}
+          <div className="text-sm bg-green-100 text-green-800 px-3 py-1 rounded-full">
+            <span className="font-medium">Today:</span>{" "}
             {todayStudyTime} minutes studied
           </div>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-          <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-6">
+          <div 
+            className="rounded-lg p-6"
+            style={{
+              background: "linear-gradient(145deg, #e6f0ff 0%, #f0f7ff 100%)",
+              borderLeft: "4px solid #3b82f6",
+              boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
+              position: "relative"
+            }}
+          >
             <h3 className="text-lg font-medium text-gray-700 dark:text-gray-300 mb-2">
               Total Study Time
             </h3>
@@ -694,7 +768,15 @@ function Dashboard() {
               Lifetime tracked study time
             </p>
           </div>
-          <div className="bg-green-50 dark:bg-green-900/20 rounded-lg p-6">
+          <div 
+            className="rounded-lg p-6"
+            style={{
+              background: "linear-gradient(145deg, #e6fbef 0%, #f0fdf9 100%)",
+              borderLeft: "4px solid #10b981",
+              boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
+              position: "relative"
+            }}
+          >
             <h3 className="text-lg font-medium text-gray-700 dark:text-gray-300 mb-2">
               Current Streak
             </h3>
@@ -703,7 +785,15 @@ function Dashboard() {
             </p>
             <p className="text-sm text-gray-500 mt-2">Consecutive study days</p>
           </div>
-          <div className="bg-yellow-50 dark:bg-yellow-900/20 rounded-lg p-6">
+          <div 
+            className="rounded-lg p-6"
+            style={{
+              background: "linear-gradient(145deg, #fef6e6 0%, #fffbf0 100%)",
+              borderLeft: "4px solid #f59e0b",
+              boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
+              position: "relative"
+            }}
+          >
             <h3 className="text-lg font-medium text-gray-700 dark:text-gray-300 mb-2">
               Longest Streak
             </h3>
@@ -712,7 +802,15 @@ function Dashboard() {
             </p>
             <p className="text-sm text-gray-500 mt-2">Best study consistency</p>
           </div>
-          <div className="bg-purple-50 dark:bg-purple-900/20 rounded-lg p-6">
+          <div 
+            className="rounded-lg p-6"
+            style={{
+              background: "linear-gradient(145deg, #f5f0ff 0%, #fbf7ff 100%)",
+              borderLeft: "4px solid #8b5cf6",
+              boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
+              position: "relative"
+            }}
+          >
             <h3 className="text-lg font-medium text-gray-700 dark:text-gray-300 mb-2">
               Tasks Completed
             </h3>
@@ -730,11 +828,23 @@ function Dashboard() {
           <h3 className="text-lg font-medium text-gray-700 dark:text-gray-300 mb-4">
             Daily Study Time (Last 30 Days)
           </h3>
-          <div className="w-full h-64 bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
+          <div className="w-full h-64 bg-gray-50 dark:bg-gray-700 rounded-lg p-4 chart-container">
             {dailyStudyTime.length > 0 ? (
               <div className="relative h-48 w-full">
                 {/* Line Graph */}
                 <svg className="w-full h-full" viewBox="0 0 700 200" preserveAspectRatio="none">
+                  {/* Define gradients */}
+                  <defs>
+                    <linearGradient id="line-gradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                      <stop offset="0%" stopColor="#6366f1" />
+                      <stop offset="100%" stopColor="#8b5cf6" />
+                    </linearGradient>
+                    <linearGradient id="areaGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                      <stop offset="0%" stopColor="#8b5cf6" stopOpacity="0.5" />
+                      <stop offset="100%" stopColor="#8b5cf6" stopOpacity="0.05" />
+                    </linearGradient>
+                  </defs>
+                  
                   {/* Y-axis grid lines */}
                   <line x1="40" y1="0" x2="40" y2="180" stroke="#e5e7eb" strokeWidth="1" />
                   <line x1="40" y1="0" x2="700" y2="0" stroke="#e5e7eb" strokeWidth="1" />
@@ -751,14 +861,6 @@ function Dashboard() {
                   <text x="30" y="112" textAnchor="end" fontSize="10" fill="#6b7280">192m</text>
                   <text x="30" y="148" textAnchor="end" fontSize="10" fill="#6b7280">96m</text>
                   <text x="30" y="185" textAnchor="end" fontSize="10" fill="#6b7280">0m</text>
-                  
-                  {/* Line area gradient */}
-                  <defs>
-                    <linearGradient id="areaGradient" x1="0%" y1="0%" x2="0%" y2="100%">
-                      <stop offset="0%" stopColor="#818cf8" stopOpacity="0.4" />
-                      <stop offset="100%" stopColor="#818cf8" stopOpacity="0.05" />
-                    </linearGradient>
-                  </defs>
                   
                   {/* Area beneath the line */}
                   <polygon
@@ -778,8 +880,10 @@ function Dashboard() {
                       return `${xPos},${yPos}`;
                     }).join(' ')}
                     fill="none"
-                    stroke="#818cf8"
-                    strokeWidth="2"
+                    stroke="url(#line-gradient)"
+                    strokeWidth="3"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
                   />
                   
                   {/* Data points with tooltips */}
@@ -794,7 +898,7 @@ function Dashboard() {
                             cx={xPos} 
                             cy={yPos} 
                             r="4" 
-                            fill="#818cf8" 
+                            fill="#8b5cf6" 
                             stroke="#ffffff"
                             strokeWidth="1.5"
                             className="chart-point"
@@ -809,7 +913,7 @@ function Dashboard() {
                             width="40"
                             height="20"
                             rx="4"
-                            fill="#4f46e5"
+                            fill="#6366f1"
                           />
                           <text
                             x={xPos}
