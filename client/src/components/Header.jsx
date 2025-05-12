@@ -50,24 +50,24 @@ function Header() {
 
   return (
     <>
-      <nav className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800">
+      <nav className="bg-white dark:bg-gray-900 border-b border-gray-100 dark:border-gray-800 shadow-sm">
         <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between h-16">
             <div className="flex">
               <div className="flex-shrink-0 flex items-center">
-                <Link to="/">
-                  <img className="h-10 w-auto" src="/logo.png" alt="StudyMind" />
+                <Link to="/" className="transition-transform hover:scale-105">
+                  <img className="h-10 w-auto" src="/logo.png" alt="EvolvEd" />
                 </Link>
               </div>
               {user && (
-                <div className="hidden sm:ml-6 sm:flex sm:space-x-8">
+                <div className="hidden sm:ml-8 sm:flex sm:space-x-4">
                   <Link 
                     to="/" 
                     className={`${
                       window.location.pathname === '/' 
-                        ? 'border-custom text-gray-900 dark:text-white' 
-                        : 'border-transparent text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200'
-                    } inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium`}
+                        ? 'text-indigo-600 dark:text-indigo-400 relative after:absolute after:bottom-0 after:left-0 after:right-0 after:h-0.5 after:bg-gradient-to-r after:from-indigo-500 after:to-purple-500' 
+                        : 'text-gray-600 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-gray-50 dark:hover:bg-gray-800'
+                    } inline-flex items-center px-3 py-2 text-sm font-medium rounded-md transition-all duration-200`}
                   >
                     Dashboard
                   </Link>
@@ -75,9 +75,9 @@ function Header() {
                     to="/notes" 
                     className={`${
                       window.location.pathname === '/notes' 
-                        ? 'border-custom text-gray-900 dark:text-white' 
-                        : 'border-transparent text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200'
-                    } inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium`}
+                        ? 'text-indigo-600 dark:text-indigo-400 relative after:absolute after:bottom-0 after:left-0 after:right-0 after:h-0.5 after:bg-gradient-to-r after:from-indigo-500 after:to-purple-500' 
+                        : 'text-gray-600 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-gray-50 dark:hover:bg-gray-800'
+                    } inline-flex items-center px-3 py-2 text-sm font-medium rounded-md transition-all duration-200`}
                   >
                     AI Notes
                   </Link>
@@ -85,9 +85,9 @@ function Header() {
                     to="/flashcards" 
                     className={`${
                       window.location.pathname === '/flashcards' 
-                        ? 'border-custom text-gray-900 dark:text-white' 
-                        : 'border-transparent text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200'
-                    } inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium`}
+                        ? 'text-indigo-600 dark:text-indigo-400 relative after:absolute after:bottom-0 after:left-0 after:right-0 after:h-0.5 after:bg-gradient-to-r after:from-indigo-500 after:to-purple-500' 
+                        : 'text-gray-600 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-gray-50 dark:hover:bg-gray-800'
+                    } inline-flex items-center px-3 py-2 text-sm font-medium rounded-md transition-all duration-200`}
                   >
                     Flashcards
                   </Link>
@@ -95,19 +95,19 @@ function Header() {
                     to="/tasks" 
                     className={`${
                       window.location.pathname === '/tasks' 
-                        ? 'border-custom text-gray-900 dark:text-white' 
-                        : 'border-transparent text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200'
-                    } inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium`}
+                        ? 'text-indigo-600 dark:text-indigo-400 relative after:absolute after:bottom-0 after:left-0 after:right-0 after:h-0.5 after:bg-gradient-to-r after:from-indigo-500 after:to-purple-500' 
+                        : 'text-gray-600 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-gray-50 dark:hover:bg-gray-800'
+                    } inline-flex items-center px-3 py-2 text-sm font-medium rounded-md transition-all duration-200`}
                   >
-                    Tasks &amp; To-Do
+                    Tasks
                   </Link>
                   <Link
                     to="/paint"
                     className={`${
                         window.location.pathname === '/paint'
-                            ? 'border-custom text-gray-900 dark:text-white'
-                            : 'border-transparent text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200'
-                    } inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium`}
+                            ? 'text-indigo-600 dark:text-indigo-400 relative after:absolute after:bottom-0 after:left-0 after:right-0 after:h-0.5 after:bg-gradient-to-r after:from-indigo-500 after:to-purple-500' 
+                            : 'text-gray-600 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-gray-50 dark:hover:bg-gray-800'
+                    } inline-flex items-center px-3 py-2 text-sm font-medium rounded-md transition-all duration-200`}
                   >
                     Take Notes
                   </Link>
@@ -115,23 +115,12 @@ function Header() {
                     to="/chatbot"
                     className={`${
                         window.location.pathname === '/chatbot'
-                            ? 'border-custom text-gray-900 dark:text-white'
-                            : 'border-transparent text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200'
-                    } inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium`}
+                            ? 'text-indigo-600 dark:text-indigo-400 relative after:absolute after:bottom-0 after:left-0 after:right-0 after:h-0.5 after:bg-gradient-to-r after:from-indigo-500 after:to-purple-500' 
+                            : 'text-gray-600 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-gray-50 dark:hover:bg-gray-800'
+                    } inline-flex items-center px-3 py-2 text-sm font-medium rounded-md transition-all duration-200`}
                   >
                     AI Chatbot
                   </Link>
-                  
-                  {/* <Link 
-                    to="/pdfstudy" 
-                    className={`${
-                      window.location.pathname === '/pdfstudy' 
-                        ? 'border-custom text-gray-900 dark:text-white' 
-                        : 'border-transparent text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200'
-                    } inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium`}
-                  >
-                    PDF Study
-                  </Link> */}
                 </div>
               )}
             </div>
@@ -140,7 +129,7 @@ function Header() {
                 <div className="sm:hidden">
                   <button
                     onClick={toggleMobileMenu}
-                    className="inline-flex items-center justify-center p-2 rounded-md text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 focus:outline-none"
+                    className="inline-flex items-center justify-center p-2 rounded-md text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800 focus:outline-none transition-colors"
                   >
                     <span className="sr-only">Open main menu</span>
                     {!isMobileMenuOpen ? (
@@ -159,7 +148,8 @@ function Header() {
                 <div className="ml-4 flex items-center space-x-4">
                   <button 
                     onClick={toggleDarkMode} 
-                    className="text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200"
+                    className="bg-gray-100 dark:bg-gray-800 p-2 rounded-full text-gray-600 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
+                    aria-label="Toggle dark mode"
                   >
                     {isDarkMode ? (
                       <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
@@ -177,7 +167,7 @@ function Header() {
                   </button>
                   <button 
                     onClick={onLogout} 
-                    className="bg-gray-800 hover:bg-gray-900 text-white px-4 py-2 rounded-md text-sm font-medium"
+                    className="bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white px-4 py-2 rounded-md text-sm font-medium shadow-sm hover:shadow transition-all duration-200"
                   >
                     Logout
                   </button>
@@ -186,7 +176,8 @@ function Header() {
                 <div className="ml-4 flex items-center space-x-4">
                   <button 
                     onClick={toggleDarkMode} 
-                    className="text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200"
+                    className="bg-gray-100 dark:bg-gray-800 p-2 rounded-full text-gray-600 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
+                    aria-label="Toggle dark mode"
                   >
                     {isDarkMode ? (
                       <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
@@ -204,13 +195,13 @@ function Header() {
                   </button>
                   <Link 
                     to="/login" 
-                    className="text-gray-800 hover:text-black dark:text-gray-300 dark:hover:text-white font-medium"
+                    className="text-indigo-600 hover:text-indigo-800 dark:text-indigo-400 dark:hover:text-indigo-300 font-medium transition-colors"
                   >
                     Login
                   </Link>
                   <Link 
                     to="/register" 
-                    className="bg-gray-800 hover:bg-gray-900 text-white px-4 py-2 rounded-md text-sm font-medium"
+                    className="bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white px-4 py-2 rounded-md text-sm font-medium shadow-sm hover:shadow transition-all duration-200"
                   >
                     Register
                   </Link>
@@ -229,11 +220,11 @@ function Header() {
               <div className="px-4 pt-5 pb-6 space-y-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <img className="h-8 w-auto" src="/logo.png" alt="StudyMind" />
+                    <img className="h-8 w-auto" src="/logo.png" alt="EvolvEd" />
                   </div>
                   <button
                     onClick={toggleMobileMenu}
-                    className="rounded-md p-2 text-gray-500 hover:text-gray-600 dark:text-gray-400 dark:hover:text-gray-300 focus:outline-none"
+                    className="rounded-md p-2 text-gray-500 hover:text-gray-600 dark:text-gray-400 dark:hover:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 focus:outline-none transition-colors"
                   >
                     <span className="sr-only">Close menu</span>
                     <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -242,14 +233,14 @@ function Header() {
                   </button>
                 </div>
                 <div className="mt-6">
-                  <nav className="space-y-3">
+                  <nav className="space-y-2">
                     <Link 
                       to="/" 
                       className={`${
                         window.location.pathname === '/' 
-                          ? 'bg-gray-100 dark:bg-gray-800 text-custom' 
-                          : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800'
-                      } block px-3 py-2 rounded-md text-base font-medium`}
+                          ? 'bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400 font-medium' 
+                          : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-indigo-600 dark:hover:text-indigo-400'
+                      } block px-3 py-2 rounded-md text-base font-medium transition-colors`}
                       onClick={toggleMobileMenu}
                     >
                       Dashboard
@@ -258,9 +249,9 @@ function Header() {
                       to="/notes" 
                       className={`${
                         window.location.pathname === '/notes' 
-                          ? 'bg-gray-100 dark:bg-gray-800 text-custom' 
-                          : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800'
-                      } block px-3 py-2 rounded-md text-base font-medium`}
+                          ? 'bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400 font-medium' 
+                          : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-indigo-600 dark:hover:text-indigo-400'
+                      } block px-3 py-2 rounded-md text-base font-medium transition-colors`}
                       onClick={toggleMobileMenu}
                     >
                       AI Notes
@@ -269,9 +260,9 @@ function Header() {
                       to="/flashcards" 
                       className={`${
                         window.location.pathname === '/flashcards' 
-                          ? 'bg-gray-100 dark:bg-gray-800 text-custom' 
-                          : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800'
-                      } block px-3 py-2 rounded-md text-base font-medium`}
+                          ? 'bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400 font-medium' 
+                          : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-indigo-600 dark:hover:text-indigo-400'
+                      } block px-3 py-2 rounded-md text-base font-medium transition-colors`}
                       onClick={toggleMobileMenu}
                     >
                       Flashcards
@@ -280,20 +271,20 @@ function Header() {
                       to="/tasks" 
                       className={`${
                         window.location.pathname === '/tasks' 
-                          ? 'bg-gray-100 dark:bg-gray-800 text-custom' 
-                          : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800'
-                      } block px-3 py-2 rounded-md text-base font-medium`}
+                          ? 'bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400 font-medium' 
+                          : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-indigo-600 dark:hover:text-indigo-400'
+                      } block px-3 py-2 rounded-md text-base font-medium transition-colors`}
                       onClick={toggleMobileMenu}
                     >
-                      Tasks &amp; To-Do
+                      Tasks
                     </Link>
                     <Link
                       to="/paint"
                       className={`${
                         window.location.pathname === '/paint'
-                            ? 'bg-gray-100 dark:bg-gray-800 text-custom'
-                            : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800'
-                      } block px-3 py-2 rounded-md text-base font-medium`}
+                            ? 'bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400 font-medium' 
+                            : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-indigo-600 dark:hover:text-indigo-400'
+                      } block px-3 py-2 rounded-md text-base font-medium transition-colors`}
                       onClick={toggleMobileMenu}
                     >
                       Take Notes
@@ -302,9 +293,9 @@ function Header() {
                       to="/chatbot"
                       className={`${
                         window.location.pathname === '/chatbot'
-                            ? 'bg-gray-100 dark:bg-gray-800 text-custom'
-                            : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800'
-                      } block px-3 py-2 rounded-md text-base font-medium`}
+                            ? 'bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400 font-medium' 
+                            : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-indigo-600 dark:hover:text-indigo-400'
+                      } block px-3 py-2 rounded-md text-base font-medium transition-colors`}
                       onClick={toggleMobileMenu}
                     >
                       AI Chatbot
@@ -315,7 +306,7 @@ function Header() {
                           onLogout();
                           toggleMobileMenu();
                         }} 
-                        className="w-full text-left block px-3 py-2 rounded-md text-base font-medium text-red-600 dark:text-red-400 hover:bg-gray-50 dark:hover:bg-gray-800"
+                        className="w-full text-left px-3 py-2 rounded-md text-base font-medium text-white bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 transition-colors"
                       >
                         Logout
                       </button>
