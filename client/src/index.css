@@ -197,3 +197,18 @@ body {
 .task-action-button.delete:hover {
   background-color: #fafafa;
 }
+
+/* Chart tooltip styles */
+.chart-point-group:hover .chart-tooltip {
+  opacity: 1 !important;
+}
+
+.chart-point-group .chart-tooltip {
+  opacity: 0;
+  transition: opacity 0.2s ease-in-out;
+  pointer-events: none;
+}
+
+.chart-point-group:hover .chart-point {
+  r: 6;
+}

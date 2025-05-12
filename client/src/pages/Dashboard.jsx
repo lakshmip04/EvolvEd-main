@@ -53,11 +53,32 @@ function Dashboard() {
       setStreak(analytics.currentStreak);
       setLongestStreak(analytics.longestStreak);
 
-      // Calculate daily study times for chart
-      const recentDays = analytics.studyHistory
-        ? analytics.studyHistory.slice(-7).reverse()
-        : [];
-      setDailyStudyTime(recentDays);
+      // Generate data for the past 30 days
+      const generatePastMonthData = () => {
+        const today = new Date();
+        const pastMonth = [];
+        
+        // Create entries for the past 30 days
+        for (let i = 29; i >= 0; i--) {
+          const date = new Date();
+          date.setDate(today.getDate() - i);
+          const dateStr = date.toISOString().split('T')[0];
+          
+          // Find if there's study data for this date
+          const dayData = analytics.studyHistory?.find(day => day.date === dateStr);
+          
+          // Add the data point (with 0 minutes if no activity)
+          pastMonth.push({
+            date: dateStr,
+            minutes: dayData ? dayData.minutes : 0
+          });
+        }
+        
+        return pastMonth;
+      };
+      
+      // Set the daily study time with all days included
+      setDailyStudyTime(generatePastMonthData());
     }
   }, [analytics]);
 
@@ -688,42 +709,149 @@ function Dashboard() {
         {/* Daily Study Chart */}
         <div className="mt-8">
           <h3 className="text-lg font-medium text-gray-700 dark:text-gray-300 mb-4">
-            Daily Study Time (Last 7 Days)
+            Daily Study Time (Last 30 Days)
           </h3>
           <div className="w-full h-64 bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
-            <div className="flex h-48 items-end space-x-2">
-              {dailyStudyTime.length > 0 ? (
-                dailyStudyTime.map((day, index) => {
-                  const heightPercentage = Math.min(
-                    100,
-                    (day.minutes / 120) * 100
-                  );
-                  return (
-                    <div
-                      key={index}
-                      className="flex-1 flex flex-col items-center"
-                    >
-                      <div
-                        className="w-full bg-indigo-400 rounded-t"
-                        style={{ height: `${heightPercentage}%` }}
-                      ></div>
-                      <p className="text-xs mt-2 text-gray-600 dark:text-gray-400">
-                        {formatDate(day.date)}
-                      </p>
-                      <p className="text-xs font-medium text-gray-800 dark:text-gray-300">
-                        {day.minutes}m
-                      </p>
-                    </div>
-                  );
-                })
-              ) : (
-                <div className="w-full flex items-center justify-center">
-                  <p className="text-gray-500 dark:text-gray-400">
-                    No study data available yet
-                  </p>
+            {dailyStudyTime.length > 0 ? (
+              <div className="relative h-48 w-full">
+                {/* Line Graph */}
+                <svg className="w-full h-full" viewBox="0 0 700 200" preserveAspectRatio="none">
+                  {/* Y-axis grid lines */}
+                  <line x1="40" y1="0" x2="40" y2="180" stroke="#e5e7eb" strokeWidth="1" />
+                  <line x1="40" y1="0" x2="700" y2="0" stroke="#e5e7eb" strokeWidth="1" />
+                  <line x1="40" y1="36" x2="700" y2="36" stroke="#e5e7eb" strokeWidth="1" strokeDasharray="4" />
+                  <line x1="40" y1="72" x2="700" y2="72" stroke="#e5e7eb" strokeWidth="1" strokeDasharray="4" />
+                  <line x1="40" y1="108" x2="700" y2="108" stroke="#e5e7eb" strokeWidth="1" strokeDasharray="4" />
+                  <line x1="40" y1="144" x2="700" y2="144" stroke="#e5e7eb" strokeWidth="1" strokeDasharray="4" />
+                  <line x1="40" y1="180" x2="700" y2="180" stroke="#e5e7eb" strokeWidth="1" />
+                  
+                  {/* Y-axis labels */}
+                  <text x="30" y="5" textAnchor="end" fontSize="10" fill="#6b7280">480m</text>
+                  <text x="30" y="40" textAnchor="end" fontSize="10" fill="#6b7280">384m</text>
+                  <text x="30" y="76" textAnchor="end" fontSize="10" fill="#6b7280">288m</text>
+                  <text x="30" y="112" textAnchor="end" fontSize="10" fill="#6b7280">192m</text>
+                  <text x="30" y="148" textAnchor="end" fontSize="10" fill="#6b7280">96m</text>
+                  <text x="30" y="185" textAnchor="end" fontSize="10" fill="#6b7280">0m</text>
+                  
+                  {/* Line area gradient */}
+                  <defs>
+                    <linearGradient id="areaGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                      <stop offset="0%" stopColor="#818cf8" stopOpacity="0.4" />
+                      <stop offset="100%" stopColor="#818cf8" stopOpacity="0.05" />
+                    </linearGradient>
+                  </defs>
+                  
+                  {/* Area beneath the line */}
+                  <polygon
+                    points={`40,180 ${dailyStudyTime.map((day, index) => {
+                      const xPos = 40 + ((700 - 40) / (dailyStudyTime.length - 1 || 1)) * index;
+                      const yPos = 180 - (day.minutes / 480) * 180;
+                      return `${xPos},${yPos}`;
+                    }).join(' ')} ${40 + ((700 - 40) / (dailyStudyTime.length - 1 || 1)) * (dailyStudyTime.length - 1)},180`}
+                    fill="url(#areaGradient)"
+                  />
+                  
+                  {/* Line for the study minutes */}
+                  <polyline
+                    points={dailyStudyTime.map((day, index) => {
+                      const xPos = 40 + ((700 - 40) / (dailyStudyTime.length - 1 || 1)) * index;
+                      const yPos = 180 - (day.minutes / 480) * 180;
+                      return `${xPos},${yPos}`;
+                    }).join(' ')}
+                    fill="none"
+                    stroke="#818cf8"
+                    strokeWidth="2"
+                  />
+                  
+                  {/* Data points with tooltips */}
+                  {dailyStudyTime.map((day, index) => {
+                    const xPos = 40 + ((700 - 40) / (dailyStudyTime.length - 1 || 1)) * index;
+                    const yPos = 180 - (day.minutes / 480) * 180;
+                    return (
+                      <g key={index} className="chart-point-group">
+                        {/* Only show data points for days with activity */}
+                        {day.minutes > 0 && (
+                          <circle 
+                            cx={xPos} 
+                            cy={yPos} 
+                            r="4" 
+                            fill="#818cf8" 
+                            stroke="#ffffff"
+                            strokeWidth="1.5"
+                            className="chart-point"
+                          />
+                        )}
+                        
+                        {/* Data value tooltip */}
+                        <g className="chart-tooltip" style={{ opacity: 0 }}>
+                          <rect
+                            x={xPos - 20}
+                            y={yPos - 30}
+                            width="40"
+                            height="20"
+                            rx="4"
+                            fill="#4f46e5"
+                          />
+                          <text
+                            x={xPos}
+                            y={yPos - 16}
+                            textAnchor="middle"
+                            fontSize="10"
+                            fill="white"
+                            fontWeight="bold"
+                          >
+                            {day.minutes}m
+                          </text>
+                        </g>
+                        
+                        {/* Interactive overlay (larger than the point for easier interaction) */}
+                        <circle 
+                          cx={xPos} 
+                          cy={yPos} 
+                          r="10" 
+                          fill="transparent"
+                          onMouseOver={(e) => {
+                            const tooltip = e.target.parentNode.querySelector('.chart-tooltip');
+                            if (tooltip) tooltip.style.opacity = 1;
+                          }}
+                          onMouseOut={(e) => {
+                            const tooltip = e.target.parentNode.querySelector('.chart-tooltip');
+                            if (tooltip) tooltip.style.opacity = 0;
+                          }}
+                        />
+                        
+                        {/* Only show date labels for every 5 days to prevent crowding */}
+                        {(index % 5 === 0 || index === dailyStudyTime.length - 1) && (
+                          <text 
+                            x={xPos} 
+                            y="195" 
+                            textAnchor="middle" 
+                            fontSize="10" 
+                            fill="#6b7280"
+                          >
+                            {formatDate(day.date)}
+                          </text>
+                        )}
+                      </g>
+                    );
+                  })}
+                </svg>
+                
+                {/* Graph legend */}
+                <div className="absolute top-0 right-0 bg-white dark:bg-gray-600 rounded p-2 text-xs">
+                  <div className="flex items-center">
+                    <div className="w-3 h-3 rounded-full bg-indigo-400 mr-1"></div>
+                    <span className="text-gray-600 dark:text-gray-300">Minutes studied</span>
+                  </div>
                 </div>
-              )}
-            </div>
+              </div>
+            ) : (
+              <div className="w-full h-full flex items-center justify-center">
+                <p className="text-gray-500 dark:text-gray-400">
+                  No study data available yet
+                </p>
+              </div>
+            )}
           </div>
         </div>
       </div>
