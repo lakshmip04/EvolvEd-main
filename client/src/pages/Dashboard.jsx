@@ -10,6 +10,82 @@ import {
 import Timer from "../components/Timer";
 import FeedbackForm from "../components/FeedbackForm";
 
+// CSS for animations and dashboard styles
+const dashboardStyles = `
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+
+  @keyframes fadeInDown {
+    from {
+      opacity: 0;
+      transform: translateY(-20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes float {
+    0% {
+      transform: translateY(0px);
+    }
+    50% {
+      transform: translateY(-10px);
+    }
+    100% {
+      transform: translateY(0px);
+    }
+  }
+
+  @keyframes pulse {
+    0% {
+      transform: scale(1);
+    }
+    50% {
+      transform: scale(1.05);
+    }
+    100% {
+      transform: scale(1);
+    }
+  }
+
+  .animate-fade-in {
+    animation: fadeIn 0.8s ease-in-out forwards;
+  }
+
+  .animate-fade-in-down {
+    animation: fadeInDown 0.8s ease-out forwards;
+  }
+
+  .animate-float {
+    animation: float 3s infinite ease-in-out;
+  }
+
+  .animate-pulse {
+    animation: pulse 2s infinite;
+  }
+
+  .chart-point:hover {
+    r: 6;
+    transition: all 0.3s ease;
+  }
+
+  .chart-tooltip {
+    transition: opacity 0.3s ease;
+    pointer-events: none;
+  }
+  
+  /* Add glass morphism effect */
+  .glass-card {
+    background: rgba(255, 255, 255, 0.25);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+  }
+`;
+
 function Dashboard() {
   const navigate = useNavigate();
   const dispatch = useDispatch();
@@ -193,22 +269,61 @@ function Dashboard() {
       (day) => day.date === new Date().toISOString().split("T")[0]
     )?.minutes || 0;
 
+  // Apply styles to head on component mount
+  useEffect(() => {
+    const styleElement = document.createElement('style');
+    styleElement.innerHTML = dashboardStyles;
+    document.head.appendChild(styleElement);
+    
+    // Clean up on unmount
+    return () => {
+      document.head.removeChild(styleElement);
+    };
+  }, []);
+
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 pb-10" style={{
+      background: "linear-gradient(135deg, #f5f7ff 0%, #ffffff 100%)",
+      backgroundImage: "radial-gradient(#e0e7ff 1px, transparent 1px), radial-gradient(#e0e7ff 1px, transparent 1px)",
+      backgroundSize: "20px 20px",
+      backgroundPosition: "0 0, 10px 10px",
+      borderRadius: "8px",
+      overflow: "hidden"
+    }}>
+      {/* Custom scrollbar style */}
+      <style jsx="true">{`
+        ::-webkit-scrollbar {
+          width: 8px;
+          height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+          background: #f1f5f9;
+          border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb {
+          background: #c7d2fe;
+          border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+          background: #818cf8;
+        }
+      `}</style>
+
       {/* Welcome Banner */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6">
+      <div className="bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 rounded-xl shadow-lg p-8 mb-8 transform transition-all duration-300 hover:shadow-xl animate-fade-in-down">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
-          <div>
-            <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-4">
+          <div className="text-white">
+            <h1 className="text-4xl font-bold mb-4 animate-fade-in">
               Welcome back, {user?.name}!
             </h1>
-            <p className="text-lg text-gray-600 dark:text-gray-300 mb-6">
+            <p className="text-lg opacity-90 mb-6 animate-fade-in" style={{animationDelay: "0.2s"}}>
               "Success is not final, failure is not fatal: it is the courage to
               continue that counts."
             </p>
             <button
-              className="bg-custom text-white rounded-md px-6 py-3 text-base font-medium inline-flex items-center"
+              className="bg-white text-indigo-600 rounded-full px-8 py-3 text-base font-medium inline-flex items-center transform transition-all duration-300 hover:scale-105 hover:shadow-lg animate-fade-in"
               onClick={startTodaysSession}
+              style={{animationDelay: "0.4s"}}
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -225,7 +340,7 @@ function Dashboard() {
               Start Today's Session
             </button>
           </div>
-          <div className="hidden lg:block">
+          <div className="hidden lg:block transform transition-all duration-500 hover:scale-105 animate-float">
             <svg
               width="250"
               height="250"
@@ -465,359 +580,365 @@ function Dashboard() {
       </div>
 
       {/* Quick Access Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
         {/* Notes */}
         <Link
           to="/notes"
-          style={{
-            backgroundColor: "white",
-            padding: "1.5rem",
-            borderRadius: "0.75rem",
-            boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
-            borderLeft: "4px solid #6366f1",
-            transition: "all 0.3s ease",
-            display: "block"
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.transform = "translateY(-5px)";
-            e.currentTarget.style.boxShadow = "0 10px 15px rgba(0, 0, 0, 0.1)";
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.transform = "translateY(0)";
-            e.currentTarget.style.boxShadow = "0 4px 6px rgba(0, 0, 0, 0.1)";
-          }}
+          className="group bg-white rounded-xl overflow-hidden shadow-md transform transition-all duration-300 hover:scale-[1.02] hover:shadow-xl border-l-4 border-indigo-500"
         >
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
-              AI Notes
-            </h2>
-            <div style={{
-              width: "2.5rem",
-              height: "2.5rem",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              borderRadius: "9999px",
-              backgroundColor: "#e0e7ff",
-              color: "#6366f1"
-            }}>
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="h-6 w-6"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                />
-              </svg>
+          <div className="p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
+                AI Notes
+              </h2>
+              <div className="w-10 h-10 flex items-center justify-center rounded-full bg-indigo-100 text-indigo-600 transform transition-all duration-300 group-hover:bg-indigo-600 group-hover:text-white">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-6 w-6"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                  />
+                </svg>
+              </div>
             </div>
-          </div>
-          <p className="text-sm text-gray-600 dark:text-gray-300">
-            Create, edit and organize your notes with AI assistance.
-          </p>
-          <div className="mt-4 flex justify-end">
-            <span className="text-indigo-600 text-sm font-medium flex items-center">
-              View Notes 
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 ml-1" viewBox="0 0 20 20" fill="currentColor">
-                <path fillRule="evenodd" d="M10.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L12.586 11H5a1 1 0 110-2h7.586l-2.293-2.293a1 1 0 010-1.414z" clipRule="evenodd" />
-              </svg>
-            </span>
+            <p className="text-sm text-gray-600 dark:text-gray-300 mb-4">
+              Create, edit and organize your notes with AI assistance.
+            </p>
+            <div className="flex justify-end">
+              <span className="text-indigo-600 text-sm font-medium flex items-center transform transition-all duration-300 group-hover:translate-x-1">
+                View Notes 
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 ml-1" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M10.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L12.586 11H5a1 1 0 110-2h7.586l-2.293-2.293a1 1 0 010-1.414z" clipRule="evenodd" />
+                </svg>
+              </span>
+            </div>
           </div>
         </Link>
 
         {/* Flashcards */}
         <Link
           to="/flashcards"
-          style={{
-            backgroundColor: "white",
-            padding: "1.5rem",
-            borderRadius: "0.75rem",
-            boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
-            borderLeft: "4px solid #8b5cf6",
-            transition: "all 0.3s ease",
-            display: "block"
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.transform = "translateY(-5px)";
-            e.currentTarget.style.boxShadow = "0 10px 15px rgba(0, 0, 0, 0.1)";
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.transform = "translateY(0)";
-            e.currentTarget.style.boxShadow = "0 4px 6px rgba(0, 0, 0, 0.1)";
-          }}
+          className="group bg-white rounded-xl overflow-hidden shadow-md transform transition-all duration-300 hover:scale-[1.02] hover:shadow-xl border-l-4 border-purple-500"
         >
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
-              Flashcards
-            </h2>
-            <div style={{
-              width: "2.5rem",
-              height: "2.5rem",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              borderRadius: "9999px",
-              backgroundColor: "#f3e8ff",
-              color: "#8b5cf6"
-            }}>
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="h-6 w-6"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
-                />
-              </svg>
+          <div className="p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
+                Flashcards
+              </h2>
+              <div className="w-10 h-10 flex items-center justify-center rounded-full bg-purple-100 text-purple-600 transform transition-all duration-300 group-hover:bg-purple-600 group-hover:text-white">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-6 w-6"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
+                  />
+                </svg>
+              </div>
             </div>
-          </div>
-          <p className="text-sm text-gray-600 dark:text-gray-300">
-            Create and study flashcards with spaced repetition.
-          </p>
-          <div className="mt-4 flex justify-end">
-            <span className="text-purple-600 text-sm font-medium flex items-center">
-              View Flashcards
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 ml-1" viewBox="0 0 20 20" fill="currentColor">
-                <path fillRule="evenodd" d="M10.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L12.586 11H5a1 1 0 110-2h7.586l-2.293-2.293a1 1 0 010-1.414z" clipRule="evenodd" />
-              </svg>
-            </span>
+            <p className="text-sm text-gray-600 dark:text-gray-300 mb-4">
+              Create and study flashcards with spaced repetition.
+            </p>
+            <div className="flex justify-end">
+              <span className="text-purple-600 text-sm font-medium flex items-center transform transition-all duration-300 group-hover:translate-x-1">
+                View Flashcards
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 ml-1" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M10.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L12.586 11H5a1 1 0 110-2h7.586l-2.293-2.293a1 1 0 010-1.414z" clipRule="evenodd" />
+                </svg>
+              </span>
+            </div>
           </div>
         </Link>
 
         {/* Tasks */}
         <Link
           to="/tasks"
-          className="card bg-white dark:bg-gray-800 p-6 transition-transform transform hover:scale-105 border-l-4 border-green-500 fade-in-element"
-          style={{animationDelay: "0.3s"}}
+          className="group bg-white rounded-xl overflow-hidden shadow-md transform transition-all duration-300 hover:scale-[1.02] hover:shadow-xl border-l-4 border-green-500"
         >
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
-              Tasks & To-Do
-            </h2>
-            <div className="w-10 h-10 flex items-center justify-center rounded-full bg-green-100 text-green-600">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="h-6 w-6"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"
-                />
-              </svg>
+          <div className="p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
+                Tasks & To-Do
+              </h2>
+              <div className="w-10 h-10 flex items-center justify-center rounded-full bg-green-100 text-green-600 transform transition-all duration-300 group-hover:bg-green-600 group-hover:text-white">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-6 w-6"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"
+                  />
+                </svg>
+              </div>
             </div>
-          </div>
-          <p className="text-sm text-gray-600 dark:text-gray-300">
-            Manage your study schedule and track your progress.
-          </p>
-          <div className="mt-4 flex justify-end">
-            <span className="text-green-600 text-sm font-medium group flex items-center">
-              View Tasks
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 ml-1 group-hover:translate-x-1 transition-transform" viewBox="0 0 20 20" fill="currentColor">
-                <path fillRule="evenodd" d="M10.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L12.586 11H5a1 1 0 110-2h7.586l-2.293-2.293a1 1 0 010-1.414z" clipRule="evenodd" />
-              </svg>
-            </span>
+            <p className="text-sm text-gray-600 dark:text-gray-300 mb-4">
+              Manage your study schedule and track your progress.
+            </p>
+            <div className="flex justify-end">
+              <span className="text-green-600 text-sm font-medium flex items-center transform transition-all duration-300 group-hover:translate-x-1">
+                View Tasks
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 ml-1" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M10.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L12.586 11H5a1 1 0 110-2h7.586l-2.293-2.293a1 1 0 010-1.414z" clipRule="evenodd" />
+                </svg>
+              </span>
+            </div>
           </div>
         </Link>
 
         {/* Take Notes */}
         <Link
           to="/paint"
-          className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6 transition-transform transform hover:scale-105"
+          className="group bg-white rounded-xl overflow-hidden shadow-md transform transition-all duration-300 hover:scale-[1.02] hover:shadow-xl border-l-4 border-pink-500"
         >
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
-              Take Notes
-            </h2>
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="h-6 w-6 text-custom"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"
-              />
-            </svg>
-          </div>
-          <p className="text-sm text-gray-600 dark:text-gray-300">
-            Draw diagrams, create sketches, and take handwritten notes.
-          </p>
-          <div className="mt-4 flex justify-end">
-            <span className="text-custom text-sm font-medium">
-              Open Canvas &rarr;
-            </span>
+          <div className="p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
+                Take Notes
+              </h2>
+              <div className="w-10 h-10 flex items-center justify-center rounded-full bg-pink-100 text-pink-600 transform transition-all duration-300 group-hover:bg-pink-600 group-hover:text-white">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-6 w-6"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"
+                  />
+                </svg>
+              </div>
+            </div>
+            <p className="text-sm text-gray-600 dark:text-gray-300 mb-4">
+              Draw diagrams, create sketches, and take handwritten notes.
+            </p>
+            <div className="flex justify-end">
+              <span className="text-pink-600 text-sm font-medium flex items-center transform transition-all duration-300 group-hover:translate-x-1">
+                Open Canvas
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 ml-1" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M10.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L12.586 11H5a1 1 0 110-2h7.586l-2.293-2.293a1 1 0 010-1.414z" clipRule="evenodd" />
+                </svg>
+              </span>
+            </div>
           </div>
         </Link>
 
         {/* AI Chatbot */}
         <Link
           to="/chatbot"
-          className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6 transition-transform transform hover:scale-105"
+          className="group bg-white rounded-xl overflow-hidden shadow-md transform transition-all duration-300 hover:scale-[1.02] hover:shadow-xl border-l-4 border-blue-500"
         >
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
-              AI Chatbot
-            </h2>
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="h-6 w-6 text-custom"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"
-              />
-            </svg>
-          </div>
-          <p className="text-sm text-gray-600 dark:text-gray-300">
-            Chat with an AI assistant to help with your studies and questions.
-          </p>
-          <div className="mt-4 flex justify-end">
-            <span className="text-custom text-sm font-medium">
-              Start Chatting &rarr;
-            </span>
+          <div className="p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
+                AI Chatbot
+              </h2>
+              <div className="w-10 h-10 flex items-center justify-center rounded-full bg-blue-100 text-blue-600 transform transition-all duration-300 group-hover:bg-blue-600 group-hover:text-white">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-6 w-6"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"
+                  />
+                </svg>
+              </div>
+            </div>
+            <p className="text-sm text-gray-600 dark:text-gray-300 mb-4">
+              Chat with an AI assistant to help with your studies and questions.
+            </p>
+            <div className="flex justify-end">
+              <span className="text-blue-600 text-sm font-medium flex items-center transform transition-all duration-300 group-hover:translate-x-1">
+                Start Chatting
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 ml-1" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M10.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L12.586 11H5a1 1 0 110-2h7.586l-2.293-2.293a1 1 0 010-1.414z" clipRule="evenodd" />
+                </svg>
+              </span>
+            </div>
           </div>
         </Link>
 
         {/* Feedback Card */}
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6 transition-transform transform hover:scale-105">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
-              Give Feedback
-            </h2>
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="h-6 w-6 text-custom"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z"
-              />
-            </svg>
-          </div>
-          <p className="text-sm text-gray-600 dark:text-gray-300">
-            Share your thoughts and help us improve the platform for everyone.
-          </p>
-          <div className="mt-4">
-            <button 
-              onClick={() => document.getElementById('feedback-section').scrollIntoView({ behavior: 'smooth' })}
-              className="text-custom text-sm font-medium hover:underline flex items-center justify-end w-full"
-            >
-              <span>Submit Feedback &rarr;</span>
-            </button>
+        <div className="group bg-white rounded-xl overflow-hidden shadow-md transform transition-all duration-300 hover:scale-[1.02] hover:shadow-xl border-l-4 border-amber-500">
+          <div className="p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
+                Give Feedback
+              </h2>
+              <div className="w-10 h-10 flex items-center justify-center rounded-full bg-amber-100 text-amber-600 transform transition-all duration-300 group-hover:bg-amber-600 group-hover:text-white">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-6 w-6"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z"
+                  />
+                </svg>
+              </div>
+            </div>
+            <p className="text-sm text-gray-600 dark:text-gray-300 mb-4">
+              Share your thoughts and help us improve the platform for everyone.
+            </p>
+            <div className="flex justify-end">
+              <button 
+                onClick={() => document.getElementById('feedback-section').scrollIntoView({ behavior: 'smooth' })}
+                className="text-amber-600 text-sm font-medium flex items-center transform transition-all duration-300 group-hover:translate-x-1"
+              >
+                Submit Feedback
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 ml-1" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M10.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L12.586 11H5a1 1 0 110-2h7.586l-2.293-2.293a1 1 0 010-1.414z" clipRule="evenodd" />
+                </svg>
+              </button>
+            </div>
           </div>
         </div>
       </div>
 
       {/* Analytics Section */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6 card">
+      <div className="bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-900 rounded-xl shadow-lg p-6 mb-8">
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
-            My Analytics
-          </h2>
-          <div className="text-sm bg-green-100 text-green-800 px-3 py-1 rounded-full">
-            <span className="font-medium">Today:</span>{" "}
-            {todayStudyTime} minutes studied
+          <div className="flex items-center">
+            <svg className="w-6 h-6 text-indigo-600 mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+            </svg>
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+              My Analytics
+            </h2>
+          </div>
+          <div className="text-sm font-medium bg-green-100 text-green-800 px-4 py-2 rounded-full shadow-sm flex items-center">
+            <svg className="w-4 h-4 mr-1 text-green-600" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 10.586V6z" clipRule="evenodd" />
+            </svg>
+            <span className="font-bold">Today:</span>{" "}
+            <span className="ml-1">{todayStudyTime} minutes studied</span>
           </div>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
           <div 
-            className="rounded-lg p-6"
-            style={{
-              background: "linear-gradient(145deg, #e6f0ff 0%, #f0f7ff 100%)",
-              borderLeft: "4px solid #3b82f6",
-              boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
-              position: "relative"
-            }}
+            className="bg-white rounded-xl p-6 shadow-md transform transition-all duration-300 hover:shadow-lg hover:translate-y-[-5px] relative overflow-hidden"
           >
-            <h3 className="text-lg font-medium text-gray-700 dark:text-gray-300 mb-2">
+            <div className="absolute top-0 right-0 w-20 h-20 bg-blue-500 opacity-10 rounded-full transform translate-x-8 -translate-y-8"></div>
+            <div className="absolute bottom-0 left-0 w-16 h-16 bg-blue-500 opacity-10 rounded-full transform -translate-x-4 translate-y-4"></div>
+            
+            <svg className="w-8 h-8 text-blue-600 mb-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <h3 className="text-lg font-semibold text-gray-700 dark:text-gray-300 mb-2">
               Total Study Time
             </h3>
             <p className="text-3xl font-bold text-blue-600 dark:text-blue-400">
               {formatStudyTime(studyTime)}
             </p>
-            <p className="text-sm text-gray-500 mt-2">
+            <p className="text-sm text-gray-500 mt-2 flex items-center">
+              <svg className="w-4 h-4 mr-1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 10-2 0 1 1 0 002 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+              </svg>
               Lifetime tracked study time
             </p>
           </div>
+          
           <div 
-            className="rounded-lg p-6"
-            style={{
-              background: "linear-gradient(145deg, #e6fbef 0%, #f0fdf9 100%)",
-              borderLeft: "4px solid #10b981",
-              boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
-              position: "relative"
-            }}
+            className="bg-white rounded-xl p-6 shadow-md transform transition-all duration-300 hover:shadow-lg hover:translate-y-[-5px] relative overflow-hidden"
           >
-            <h3 className="text-lg font-medium text-gray-700 dark:text-gray-300 mb-2">
+            <div className="absolute top-0 right-0 w-20 h-20 bg-green-500 opacity-10 rounded-full transform translate-x-8 -translate-y-8"></div>
+            <div className="absolute bottom-0 left-0 w-16 h-16 bg-green-500 opacity-10 rounded-full transform -translate-x-4 translate-y-4"></div>
+            
+            <svg className="w-8 h-8 text-green-600 mb-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+            </svg>
+            <h3 className="text-lg font-semibold text-gray-700 dark:text-gray-300 mb-2">
               Current Streak
             </h3>
             <p className="text-3xl font-bold text-green-600 dark:text-green-400">
               {streak} {streak === 1 ? 'day' : 'days'}
             </p>
-            <p className="text-sm text-gray-500 mt-2">Consecutive study days</p>
+            <p className="text-sm text-gray-500 mt-2 flex items-center">
+              <svg className="w-4 h-4 mr-1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                <path fillRule="evenodd" d="M12.395 2.553a1 1 0 00-1.45-.385c-.345.23-.614.558-.822.88-.214.33-.403.713-.57 1.116-.334.804-.614 1.768-.84 2.734a31.365 31.365 0 00-.613 3.58 2.64 2.64 0 01-.945-1.067c-.328-.68-.398-1.534-.398-2.654A1 1 0 005.05 6.05 6.981 6.981 0 003 11a7 7 0 1011.95-4.95c-.592-.591-.98-.985-1.348-1.467-.363-.476-.724-1.063-1.207-2.03zM12.12 15.12A3 3 0 017 13s.879.5 2.5.5c0-1 .5-4 1.25-4.5.5 1 .786 1.293 1.371 1.879A2.99 2.99 0 0113 13a2.99 2.99 0 01-.879 2.121z" clipRule="evenodd" />
+              </svg>
+              Consecutive study days
+            </p>
           </div>
+          
           <div 
-            className="rounded-lg p-6"
-            style={{
-              background: "linear-gradient(145deg, #fef6e6 0%, #fffbf0 100%)",
-              borderLeft: "4px solid #f59e0b",
-              boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
-              position: "relative"
-            }}
+            className="bg-white rounded-xl p-6 shadow-md transform transition-all duration-300 hover:shadow-lg hover:translate-y-[-5px] relative overflow-hidden"
           >
-            <h3 className="text-lg font-medium text-gray-700 dark:text-gray-300 mb-2">
+            <div className="absolute top-0 right-0 w-20 h-20 bg-yellow-500 opacity-10 rounded-full transform translate-x-8 -translate-y-8"></div>
+            <div className="absolute bottom-0 left-0 w-16 h-16 bg-yellow-500 opacity-10 rounded-full transform -translate-x-4 translate-y-4"></div>
+            
+            <svg className="w-8 h-8 text-yellow-600 mb-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
+            </svg>
+            <h3 className="text-lg font-semibold text-gray-700 dark:text-gray-300 mb-2">
               Longest Streak
             </h3>
             <p className="text-3xl font-bold text-yellow-600 dark:text-yellow-400">
               {longestStreak} {longestStreak === 1 ? 'day' : 'days'}
             </p>
-            <p className="text-sm text-gray-500 mt-2">Best study consistency</p>
+            <p className="text-sm text-gray-500 mt-2 flex items-center">
+              <svg className="w-4 h-4 mr-1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                <path fillRule="evenodd" d="M5 2a1 1 0 011 1v1h1a1 1 0 010 2H6v1a1 1 0 01-2 0V6H3a1 1 0 010-2h1V3a1 1 0 011-1zm0 10a1 1 0 011 1v1h1a1 1 0 110 2H6v1a1 1 0 11-2 0v-1H3a1 1 0 110-2h1v-1a1 1 0 011-1zM12 2a1 1 0 01.967.744L14.146 7.2 17.5 9.134a1 1 0 010 1.732l-3.354 1.935-1.18 4.455a1 1 0 01-1.933 0L9.854 12.8 6.5 10.866a1 1 0 010-1.732l3.354-1.935 1.18-4.455A1 1 0 0112 2z" clipRule="evenodd" />
+              </svg>
+              Best study consistency
+            </p>
           </div>
+          
           <div 
-            className="rounded-lg p-6"
-            style={{
-              background: "linear-gradient(145deg, #f5f0ff 0%, #fbf7ff 100%)",
-              borderLeft: "4px solid #8b5cf6",
-              boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
-              position: "relative"
-            }}
+            className="bg-white rounded-xl p-6 shadow-md transform transition-all duration-300 hover:shadow-lg hover:translate-y-[-5px] relative overflow-hidden"
           >
-            <h3 className="text-lg font-medium text-gray-700 dark:text-gray-300 mb-2">
+            <div className="absolute top-0 right-0 w-20 h-20 bg-purple-500 opacity-10 rounded-full transform translate-x-8 -translate-y-8"></div>
+            <div className="absolute bottom-0 left-0 w-16 h-16 bg-purple-500 opacity-10 rounded-full transform -translate-x-4 translate-y-4"></div>
+            
+            <svg className="w-8 h-8 text-purple-600 mb-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+            </svg>
+            <h3 className="text-lg font-semibold text-gray-700 dark:text-gray-300 mb-2">
               Tasks Completed
             </h3>
             <p className="text-3xl font-bold text-purple-600 dark:text-purple-400">
               {taskStats.completed}/{taskStats.total}
             </p>
-            <p className="text-sm text-gray-500 mt-2">
+            <div className="w-full bg-gray-200 rounded-full h-2.5 mt-2 mb-2">
+              <div className="bg-purple-600 h-2.5 rounded-full" style={{ width: `${taskStats.rate}%` }}></div>
+            </div>
+            <p className="text-sm text-gray-500 mt-1 flex items-center">
+              <svg className="w-4 h-4 mr-1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+              </svg>
               {taskStats.rate}% completion rate
             </p>
           </div>
@@ -825,12 +946,17 @@ function Dashboard() {
 
         {/* Daily Study Chart */}
         <div className="mt-8">
-          <h3 className="text-lg font-medium text-gray-700 dark:text-gray-300 mb-4">
-            Daily Study Time (Last 30 Days)
-          </h3>
-          <div className="w-full h-64 bg-gray-50 dark:bg-gray-700 rounded-lg p-4 chart-container">
+          <div className="flex items-center mb-4">
+            <svg className="w-5 h-5 text-indigo-600 mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z" />
+            </svg>
+            <h3 className="text-lg font-semibold text-gray-700 dark:text-gray-300">
+              Daily Study Time (Last 30 Days)
+            </h3>
+          </div>
+          <div className="w-full h-72 bg-white dark:bg-gray-800 rounded-xl shadow-md p-4 chart-container">
             {dailyStudyTime.length > 0 ? (
-              <div className="relative h-48 w-full">
+              <div className="relative h-60 w-full">
                 {/* Line Graph */}
                 <svg className="w-full h-full" viewBox="0 0 700 200" preserveAspectRatio="none">
                   {/* Define gradients */}
@@ -908,18 +1034,18 @@ function Dashboard() {
                         {/* Data value tooltip */}
                         <g className="chart-tooltip" style={{ opacity: 0 }}>
                           <rect
-                            x={xPos - 20}
-                            y={yPos - 30}
-                            width="40"
-                            height="20"
+                            x={xPos - 25}
+                            y={yPos - 35}
+                            width="50"
+                            height="25"
                             rx="4"
                             fill="#6366f1"
                           />
                           <text
                             x={xPos}
-                            y={yPos - 16}
+                            y={yPos - 18}
                             textAnchor="middle"
-                            fontSize="10"
+                            fontSize="12"
                             fill="white"
                             fontWeight="bold"
                           >
@@ -961,9 +1087,9 @@ function Dashboard() {
                 </svg>
                 
                 {/* Graph legend */}
-                <div className="absolute top-0 right-0 bg-white dark:bg-gray-600 rounded p-2 text-xs">
+                <div className="absolute top-0 right-0 bg-white dark:bg-gray-700 rounded-md p-2 text-xs shadow-sm">
                   <div className="flex items-center">
-                    <div className="w-3 h-3 rounded-full bg-indigo-400 mr-1"></div>
+                    <div className="w-3 h-3 rounded-full bg-gradient-to-r from-indigo-500 to-purple-500 mr-1"></div>
                     <span className="text-gray-600 dark:text-gray-300">Minutes studied</span>
                   </div>
                 </div>
@@ -980,13 +1106,21 @@ function Dashboard() {
       </div>
 
       {/* Recent Activity Section */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6">
+      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 mb-8">
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
-            Recent Activity
-          </h2>
-          <button className="text-sm text-custom hover:text-custom-dark font-medium">
+          <div className="flex items-center">
+            <svg className="w-6 h-6 text-purple-600 mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <h2 className="text-xl font-bold text-gray-900 dark:text-white">
+              Recent Activity
+            </h2>
+          </div>
+          <button className="text-sm text-indigo-600 hover:text-indigo-800 font-medium flex items-center transform transition-all duration-300 hover:translate-x-1">
             View All
+            <svg className="w-4 h-4 ml-1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+              <path fillRule="evenodd" d="M12.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-2.293-2.293a1 1 0 010-1.414z" clipRule="evenodd" />
+            </svg>
           </button>
         </div>
         <div className="space-y-4">
@@ -994,61 +1128,102 @@ function Dashboard() {
             tasks.slice(0, 3)?.map?.((task, index) => (
               <div
                 key={index}
-                className="flex items-start space-x-4 p-4 bg-gray-50 dark:bg-gray-700 rounded-md"
+                className="flex items-start space-x-4 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg shadow-sm hover:shadow-md transition-all duration-300"
               >
-                <div className="flex-shrink-0">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    className="h-6 w-6 text-custom"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"
-                    />
-                  </svg>
+                <div className={`flex-shrink-0 w-10 h-10 flex items-center justify-center rounded-full ${task.status === "completed" ? "bg-green-100 text-green-600" : "bg-amber-100 text-amber-600"}`}>
+                  {task.status === "completed" ? (
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    </svg>
+                  ) : (
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                    </svg>
+                  )}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-gray-900 dark:text-white">
-                    {task.status === "completed" ? "Completed task: " : "Added task: "}
-                    {task.title}
+                  <p className="text-sm font-medium text-gray-900 dark:text-white flex items-center">
+                    {task.status === "completed" ? (
+                      <>
+                        <span className="mr-1">Completed task:</span>
+                        <span className="font-bold">{task.title}</span>
+                      </>
+                    ) : (
+                      <>
+                        <span className="mr-1">Added task:</span>
+                        <span className="font-bold">{task.title}</span>
+                      </>
+                    )}
                   </p>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 flex items-center">
+                    <svg className="w-3 h-3 mr-1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                      <path fillRule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clipRule="evenodd" />
+                    </svg>
                     Due: {new Date(task.dueDate).toLocaleDateString()}
                   </p>
+                </div>
+                <div className="flex-shrink-0">
+                  <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${task.status === "completed" ? "bg-green-100 text-green-800" : "bg-amber-100 text-amber-800"}`}>
+                    {task.status}
+                  </span>
                 </div>
               </div>
             ))
           ) : (
-            <div className="text-center py-4">
+            <div className="text-center py-8">
+              <svg className="w-12 h-12 mx-auto text-gray-400 mb-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+              </svg>
               <p className="text-gray-500">No recent activity</p>
+              <button className="mt-2 inline-flex items-center text-sm font-medium text-indigo-600 hover:text-indigo-800">
+                Create your first task
+                <svg className="w-4 h-4 ml-1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M10.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L12.586 11H3a1 1 0 110-2h9.586l-2.293-2.293a1 1 0 010-1.414z" clipRule="evenodd" />
+                </svg>
+              </button>
             </div>
           )}
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        <div className="bg-white rounded-lg shadow-md p-6">
-          {/* <h2 className="text-xl font-semibold text-gray-800 mb-4">
-            Quick Actions
-          </h2> */}
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <span className="text-gray-600">Study Timer</span>
-              <div className="timer-container timer-display" data-minutes="25">
-                <Timer initialMinutes={25} onComplete={handleTimerComplete} />
-              </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+        <div className="bg-gradient-to-r from-indigo-500 to-purple-600 rounded-xl shadow-lg p-6 text-white">
+          <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center">
+              <svg className="w-8 h-8 mr-3" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <h2 className="text-2xl font-bold">
+                Study Timer
+              </h2>
             </div>
-            {/* Add other quick actions here */}
+          </div>
+          <div className="bg-white/20 backdrop-blur-sm rounded-lg p-4 mb-4">
+            <div className="timer-container timer-display flex justify-center" data-minutes="25">
+              <Timer initialMinutes={25} onComplete={handleTimerComplete} />
+            </div>
+          </div>
+          <p className="text-white/80 text-center mb-4">
+            Focus on your studies and track your progress automatically.
+          </p>
+          <div className="flex justify-center space-x-2">
+            <button onClick={() => navigate('/tasks')} className="px-4 py-2 bg-white text-indigo-600 rounded-lg font-medium hover:bg-indigo-100 transition-colors">
+              View Tasks
+            </button>
+            <button onClick={() => navigate('/notes')} className="px-4 py-2 bg-white/20 text-white rounded-lg font-medium hover:bg-white/30 transition-colors">
+              Take Notes
+            </button>
           </div>
         </div>
         
         {/* Feedback component */}
-        <div id="feedback-section" className="md:col-span-2">
+        <div id="feedback-section" className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
+          <div className="flex items-center mb-4">
+            <svg className="w-6 h-6 text-amber-500 mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" />
+            </svg>
+            <h2 className="text-xl font-bold text-gray-900 dark:text-white">Send Feedback</h2>
+          </div>
           <FeedbackForm />
         </div>
       </div>
