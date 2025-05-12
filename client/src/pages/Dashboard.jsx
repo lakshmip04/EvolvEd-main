@@ -227,19 +227,77 @@ function Dashboard() {
   };
 
   const handleTimerComplete = (minutes) => {
-    // You can add notification or sound here
-    alert("Timer completed!");
-
-    // If no minutes provided, use the default timer value
-    const actualMinutes = minutes || 25;
-
+    if (!minutes || minutes <= 0) return;
+    
+    console.log(`Timer completed with ${minutes} minutes tracked`);
+    
     // Get today's date in YYYY-MM-DD format
     const today = new Date().toISOString().split("T")[0];
 
     // Update study time with API and refresh analytics data
-    dispatch(updateStudyTime({ minutes: actualMinutes, date: today }))
-      .then(() => {
-        // Refresh analytics data to update the graph
+    dispatch(updateStudyTime({ minutes, date: today }))
+      .unwrap()
+      .then((updatedAnalytics) => {
+        // Success - update local state with the new analytics data
+        setStudyTime(updatedAnalytics.totalStudyTime);
+        setStudyHistory(updatedAnalytics.studyHistory || []);
+        setStreak(updatedAnalytics.currentStreak);
+        setLongestStreak(updatedAnalytics.longestStreak);
+        
+        // Regenerate daily study time data to update the chart
+        const generatePastMonthData = () => {
+          const today = new Date();
+          const pastMonth = [];
+          
+          // Create entries for the past 30 days
+          for (let i = 29; i >= 0; i--) {
+            const date = new Date();
+            date.setDate(today.getDate() - i);
+            const dateStr = date.toISOString().split('T')[0];
+            
+            // Find if there's study data for this date
+            const dayData = updatedAnalytics.studyHistory?.find(day => day.date === dateStr);
+            
+            // Add the data point (with 0 minutes if no activity)
+            pastMonth.push({
+              date: dateStr,
+              minutes: dayData ? dayData.minutes : 0
+            });
+          }
+          
+          return pastMonth;
+        };
+        
+        // Update chart data
+        setDailyStudyTime(generatePastMonthData());
+        
+        // Show success notification instead of alert
+        const notification = document.createElement('div');
+        notification.className = 'fixed top-4 right-4 bg-green-100 border-l-4 border-green-500 text-green-700 p-4 rounded shadow-lg';
+        notification.style.zIndex = '9999';
+        notification.innerHTML = `
+          <div class="flex items-center">
+            <svg class="h-6 w-6 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+            </svg>
+            <p>Great job! You've studied for ${minutes} minutes.</p>
+          </div>
+        `;
+        document.body.appendChild(notification);
+        
+        // Remove notification after 4 seconds
+        setTimeout(() => {
+          notification.style.opacity = '0';
+          notification.style.transition = 'opacity 0.5s ease-in-out';
+          setTimeout(() => document.body.removeChild(notification), 500);
+        }, 4000);
+      })
+      .catch((error) => {
+        console.error("Error updating study time:", error);
+        // Show error message
+        alert("Failed to update study time. Please try again.");
+        
+        // Refresh analytics data to ensure consistency
         dispatch(getUserAnalytics());
       });
   };

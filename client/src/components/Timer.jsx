@@ -39,17 +39,58 @@ function Timer({ initialMinutes = 25, onComplete }) {
       : 0
   );
   
-  // Load last start time from localStorage if timer was running
+  // Handle initial load of the component
   useEffect(() => {
+    // If timer was running when the page was last closed/refreshed
     if (isRunning) {
       const savedStartTime = localStorage.getItem('studyTimer_startTime');
       if (savedStartTime) {
-        startTimeRef.current = parseInt(savedStartTime);
+        const storedStartTime = parseInt(savedStartTime);
+        startTimeRef.current = storedStartTime;
+        
+        // Calculate elapsed time since the timer was started and adjust timeLeft
+        const now = Date.now();
+        const elapsedSeconds = Math.floor((now - storedStartTime) / 1000);
+        
+        // If more time has elapsed than was left on the timer
+        if (elapsedSeconds >= timeLeft) {
+          // Timer should have completed while away
+          setIsRunning(false);
+          setTimeLeft(0);
+          
+          // Calculate study time that happened while away
+          const totalSeconds = accumulatedTimeRef.current + timeLeft;
+          const totalMinutes = Math.round(totalSeconds / 60);
+          
+          if (totalMinutes > 0) {
+            // Sync the study time to the database
+            const today = new Date().toISOString().split('T')[0];
+            dispatch(updateStudyTime({ minutes: totalMinutes, date: today }));
+            
+            // Reset accumulated time
+            accumulatedTimeRef.current = 0;
+            localStorage.setItem('studyTimer_accumulatedTime', 0);
+            localStorage.removeItem('studyTimer_startTime');
+            
+            if (onComplete) onComplete(totalMinutes);
+          }
+        } else {
+          // Timer still has time left
+          setTimeLeft(prevTime => prevTime - elapsedSeconds);
+        }
       } else {
+        // No start time saved but timer is running, reset the state
         startTimeRef.current = Date.now();
         localStorage.setItem('studyTimer_startTime', startTimeRef.current);
       }
     }
+    
+    // Clean up function to handle page navigation/refresh
+    return () => {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+      }
+    };
   }, []);
 
   // Save timer state to localStorage whenever it changes
@@ -64,16 +105,19 @@ function Timer({ initialMinutes = 25, onComplete }) {
     }
   }, [timeLeft, isRunning, customMinutes]);
 
-  // Sync study time to database when accumulating significant time (5+ minutes)
+  // Sync study time to database when accumulating significant time (1+ minute)
   const syncToDatabase = (minutes) => {
     if (minutes <= 0) return;
     
     const now = Date.now();
     const today = new Date().toISOString().split('T')[0];
     
-    // Only sync if we have a meaningful amount of time (1 minute or more)
-    // and if it's been at least 5 minutes since the last sync
-    if (minutes >= 1 && (now - lastSyncTimeRef.current >= 5 * 60 * 1000)) {
+    // Only sync if we have a meaningful amount of time (at least 1 minute)
+    // and it's been at least 1 minute since the last sync
+    if (minutes >= 1 && (now - lastSyncTimeRef.current >= 60 * 1000)) {
+      // Debug log
+      console.log(`Syncing ${minutes} minutes to database for ${today}`);
+      
       dispatch(updateStudyTime({ minutes, date: today }));
       lastSyncTimeRef.current = now;
       localStorage.setItem('studyTimer_lastSyncTime', now);
@@ -81,7 +125,11 @@ function Timer({ initialMinutes = 25, onComplete }) {
       // Reset accumulated time after syncing to database
       accumulatedTimeRef.current = 0;
       localStorage.setItem('studyTimer_accumulatedTime', 0);
+      
+      return true;
     }
+    
+    return false;
   };
 
   useEffect(() => {
@@ -129,10 +177,14 @@ function Timer({ initialMinutes = 25, onComplete }) {
         accumulatedTimeRef.current += elapsedSeconds;
         localStorage.setItem('studyTimer_accumulatedTime', accumulatedTimeRef.current);
         
-        // If accumulated enough time (5+ minutes), sync to database
+        // If accumulated enough time (1+ minute), sync to database
         const accumulatedMinutes = Math.floor(accumulatedTimeRef.current / 60);
-        if (accumulatedMinutes >= 5) {
-          syncToDatabase(accumulatedMinutes);
+        if (accumulatedMinutes >= 1) {
+          // Only reset accumulated time if sync is successful
+          if (syncToDatabase(accumulatedMinutes)) {
+            accumulatedTimeRef.current = accumulatedTimeRef.current % 60; // Keep remaining seconds
+            localStorage.setItem('studyTimer_accumulatedTime', accumulatedTimeRef.current);
+          }
         }
         
         startTimeRef.current = null;
@@ -161,6 +213,22 @@ function Timer({ initialMinutes = 25, onComplete }) {
   }, [isRunning, onComplete, dispatch]);
 
   const toggleTimer = () => {
+    // If starting the timer, record current timestamp
+    if (!isRunning) {
+      startTimeRef.current = Date.now();
+      localStorage.setItem('studyTimer_startTime', startTimeRef.current);
+    } else {
+      // If stopping, calculate and store elapsed time
+      if (startTimeRef.current) {
+        const elapsedSeconds = Math.floor((Date.now() - startTimeRef.current) / 1000);
+        accumulatedTimeRef.current += elapsedSeconds;
+        localStorage.setItem('studyTimer_accumulatedTime', accumulatedTimeRef.current);
+        
+        startTimeRef.current = null;
+        localStorage.removeItem('studyTimer_startTime');
+      }
+    }
+    
     setIsRunning(!isRunning);
   };
 
@@ -248,7 +316,7 @@ function Timer({ initialMinutes = 25, onComplete }) {
           </button>
           <button
             onClick={resetTimer}
-            className="p-2 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-700 transition-all duration-200"
+            className="p-2 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-600 transition-all duration-200 transform hover:scale-110"
             aria-label="Reset timer"
           >
             <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" viewBox="0 0 20 20" fill="currentColor">
@@ -263,7 +331,7 @@ function Timer({ initialMinutes = 25, onComplete }) {
 
 Timer.propTypes = {
   initialMinutes: PropTypes.number,
-  onComplete: PropTypes.func,
+  onComplete: PropTypes.func
 };
 
 export default Timer; 
