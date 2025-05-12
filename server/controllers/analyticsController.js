@@ -82,52 +82,64 @@ const calculateStreak = (analytics) => {
     return;
   }
   
-  // Sort history by date (newest first)
+  // Sort history by date (newest to oldest)
   const sortedHistory = [...analytics.studyHistory].sort(
     (a, b) => new Date(b.date) - new Date(a.date)
   );
   
-  let currentStreak = 0;
-  const today = new Date().toISOString().split('T')[0];
-  const yesterday = new Date(Date.now() - 86400000).toISOString().split('T')[0];
+  // Get today's date and yesterday's date
+  const today = new Date();
+  today.setHours(0, 0, 0, 0); // Set to beginning of day
+  
+  const yesterday = new Date(today);
+  yesterday.setDate(yesterday.getDate() - 1);
+  
+  // Format dates as YYYY-MM-DD for comparison
+  const todayStr = today.toISOString().split('T')[0];
+  const yesterdayStr = yesterday.toISOString().split('T')[0];
   
   // Check if studied today or yesterday to maintain streak
-  const hasStudiedToday = sortedHistory.some(item => item.date === today);
-  const hasStudiedYesterday = sortedHistory.some(item => item.date === yesterday);
+  const hasStudiedToday = sortedHistory.some(item => item.date === todayStr);
+  const hasStudiedYesterday = sortedHistory.some(item => item.date === yesterdayStr);
   
+  // If neither studied today nor yesterday, the streak is broken unless today is the first day
   if (!hasStudiedToday && !hasStudiedYesterday) {
-    analytics.currentStreak = 0;
-    return;
+    // Check if the last study date was within the past 48 hours
+    const lastStudyDate = new Date(sortedHistory[0]?.date);
+    const hoursSinceLastStudy = (today - lastStudyDate) / (1000 * 60 * 60);
+    
+    if (hoursSinceLastStudy > 48) {
+      analytics.currentStreak = 0;
+      return;
+    }
   }
+  
+  // Create a set of all study dates for faster lookup
+  const studyDates = new Set(sortedHistory.map(item => item.date));
   
   // Calculate consecutive days
-  let previousDate = hasStudiedToday ? today : yesterday;
-  currentStreak = 1; // Start with 1 for today/yesterday
+  let currentStreak = 0;
+  let checkDate = new Date(today);
   
-  for (let i = 0; i < sortedHistory.length; i++) {
-    const currentDate = sortedHistory[i].date;
+  // Start counting from today or yesterday, whichever has a study record
+  if (!hasStudiedToday && hasStudiedYesterday) {
+    checkDate = yesterday;
+  }
+  
+  // Count consecutive days
+  while (true) {
+    const dateStr = checkDate.toISOString().split('T')[0];
     
-    // Skip if we already counted today/yesterday
-    if ((hasStudiedToday && currentDate === today) || 
-        (!hasStudiedToday && currentDate === yesterday)) {
-      continue;
-    }
-    
-    // Calculate the difference in days
-    const prevDay = new Date(previousDate);
-    const currDay = new Date(currentDate);
-    const diffTime = prevDay.getTime() - currDay.getTime();
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    
-    // If the difference is exactly 1 day, it's consecutive
-    if (diffDays === 1) {
+    if (studyDates.has(dateStr)) {
       currentStreak++;
-      previousDate = currentDate;
+      // Move to the previous day
+      checkDate.setDate(checkDate.getDate() - 1);
     } else {
-      break; // Break the streak
+      break; // Break the streak when a day is missed
     }
   }
   
+  // Update current streak
   analytics.currentStreak = currentStreak;
   
   // Update longest streak if current streak is longer

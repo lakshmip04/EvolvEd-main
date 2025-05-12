@@ -7,15 +7,32 @@ function Timer({ initialMinutes = 25, onComplete }) {
   const [customMinutes, setCustomMinutes] = useState(initialMinutes);
   const [isSettingTime, setIsSettingTime] = useState(false);
   const intervalRef = useRef(null);
+  const startTimeRef = useRef(null);
+  const accumulatedTimeRef = useRef(0);
 
   useEffect(() => {
     if (isRunning && timeLeft > 0) {
+      // Record start time when timer begins
+      if (startTimeRef.current === null) {
+        startTimeRef.current = Date.now();
+      }
+      
       intervalRef.current = setInterval(() => {
         setTimeLeft((prevTime) => {
           if (prevTime <= 1) {
             clearInterval(intervalRef.current);
             setIsRunning(false);
-            if (onComplete) onComplete();
+            
+            // Calculate actual time spent
+            const elapsedSeconds = Math.floor((Date.now() - startTimeRef.current) / 1000);
+            const totalMinutes = Math.round((accumulatedTimeRef.current + elapsedSeconds) / 60);
+            
+            // Reset tracking refs
+            startTimeRef.current = null;
+            accumulatedTimeRef.current = 0;
+            
+            // Call the completion callback with actual minutes studied
+            if (onComplete) onComplete(totalMinutes);
             return 0;
           }
           return prevTime - 1;
@@ -23,6 +40,13 @@ function Timer({ initialMinutes = 25, onComplete }) {
       }, 1000);
     } else if (!isRunning && intervalRef.current) {
       clearInterval(intervalRef.current);
+      
+      // If paused, accumulate the time spent so far
+      if (startTimeRef.current !== null) {
+        const elapsedSeconds = Math.floor((Date.now() - startTimeRef.current) / 1000);
+        accumulatedTimeRef.current += elapsedSeconds;
+        startTimeRef.current = null;
+      }
     }
     
     return () => {
@@ -37,6 +61,9 @@ function Timer({ initialMinutes = 25, onComplete }) {
   const resetTimer = () => {
     setIsRunning(false);
     setTimeLeft(customMinutes * 60);
+    // Reset tracking refs
+    startTimeRef.current = null;
+    accumulatedTimeRef.current = 0;
   };
 
   const handleMinutesChange = (e) => {
@@ -82,7 +109,7 @@ function Timer({ initialMinutes = 25, onComplete }) {
         <>
           <div 
             onClick={() => setIsSettingTime(true)}
-            className={`font-mono text-lg cursor-pointer px-2 py-1 rounded ${isRunning ? 'bg-blue-50 text-blue-700' : 'hover:bg-gray-100'}`}
+            className={`timer-display font-mono text-lg cursor-pointer px-2 py-1 rounded ${isRunning ? 'bg-blue-50 text-blue-700' : 'hover:bg-gray-100'}`}
             data-minutes={customMinutes}
           >
             {formatTime(timeLeft)}

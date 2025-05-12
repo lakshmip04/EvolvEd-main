@@ -20,6 +20,7 @@ function Dashboard() {
   const [studyTime, setStudyTime] = useState(0);
   const [studyHistory, setStudyHistory] = useState([]);
   const [streak, setStreak] = useState(0);
+  const [longestStreak, setLongestStreak] = useState(0);
   const [taskStats, setTaskStats] = useState({
     completed: 0,
     total: 0,
@@ -50,6 +51,7 @@ function Dashboard() {
       setStudyTime(analytics.totalStudyTime);
       setStudyHistory(analytics.studyHistory || []);
       setStreak(analytics.currentStreak);
+      setLongestStreak(analytics.longestStreak);
 
       // Calculate daily study times for chart
       const recentDays = analytics.studyHistory
@@ -112,22 +114,18 @@ function Dashboard() {
     setDataMigrated(true);
   };
 
-  const handleTimerComplete = () => {
+  const handleTimerComplete = (minutes) => {
     // You can add notification or sound here
     alert("Timer completed!");
 
-    // Get the actual time that was set (in case user changed it)
-    const timerElement = document.querySelector(".timer-container");
-    const minutes =
-      timerElement && timerElement.dataset.minutes
-        ? parseInt(timerElement.dataset.minutes)
-        : 25;
+    // If no minutes provided, use the default timer value
+    const actualMinutes = minutes || 25;
 
     // Get today's date in YYYY-MM-DD format
     const today = new Date().toISOString().split("T")[0];
 
     // Update study time with API
-    dispatch(updateStudyTime({ minutes, date: today }));
+    dispatch(updateStudyTime({ minutes: actualMinutes, date: today }));
   };
 
   const formatStudyTime = (seconds) => {
@@ -644,7 +642,7 @@ function Dashboard() {
             {todayStudyTime} minutes studied
           </div>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
           <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-6">
             <h3 className="text-lg font-medium text-gray-700 dark:text-gray-300 mb-2">
               Total Study Time
@@ -661,9 +659,18 @@ function Dashboard() {
               Current Streak
             </h3>
             <p className="text-3xl font-bold text-green-600 dark:text-green-400">
-              {streak} days
+              {streak} {streak === 1 ? 'day' : 'days'}
             </p>
             <p className="text-sm text-gray-500 mt-2">Consecutive study days</p>
+          </div>
+          <div className="bg-yellow-50 dark:bg-yellow-900/20 rounded-lg p-6">
+            <h3 className="text-lg font-medium text-gray-700 dark:text-gray-300 mb-2">
+              Longest Streak
+            </h3>
+            <p className="text-3xl font-bold text-yellow-600 dark:text-yellow-400">
+              {longestStreak} {longestStreak === 1 ? 'day' : 'days'}
+            </p>
+            <p className="text-sm text-gray-500 mt-2">Best study consistency</p>
           </div>
           <div className="bg-purple-50 dark:bg-purple-900/20 rounded-lg p-6">
             <h3 className="text-lg font-medium text-gray-700 dark:text-gray-300 mb-2">

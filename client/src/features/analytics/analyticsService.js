@@ -23,7 +23,7 @@ const updateStudyTime = async (studyData, token) => {
     },
   };
 
-  const response = await axios.put(API_URL + 'study-time', studyData, config);
+  const response = await axios.put(API_URL + '/study-time', studyData, config);
   return response.data;
 };
 
