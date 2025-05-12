@@ -84,7 +84,7 @@ function Dashboard() {
 
   useEffect(() => {
     if (tasks && tasks.length > 0) {
-      const completed = tasks?.filter?.((task) => task.completed).length;
+      const completed = tasks?.filter?.((task) => task.status === "completed").length;
       setTaskStats({
         completed,
         total: tasks.length,
@@ -891,7 +891,7 @@ function Dashboard() {
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium text-gray-900 dark:text-white">
-                    {task.completed ? "Completed task: " : "Added task: "}
+                    {task.status === "completed" ? "Completed task: " : "Added task: "}
                     {task.title}
                   </p>
                   <p className="text-xs text-gray-500 dark:text-gray-400">
