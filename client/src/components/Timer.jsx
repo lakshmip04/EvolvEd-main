@@ -2,19 +2,63 @@ import { useState, useEffect, useRef } from 'react';
 import PropTypes from 'prop-types';
 
 function Timer({ initialMinutes = 25, onComplete }) {
-  const [timeLeft, setTimeLeft] = useState(initialMinutes * 60);
-  const [isRunning, setIsRunning] = useState(false);
-  const [customMinutes, setCustomMinutes] = useState(initialMinutes);
+  // Initialize state from localStorage or use default values
+  const [timeLeft, setTimeLeft] = useState(() => {
+    const saved = localStorage.getItem('studyTimer_timeLeft');
+    return saved ? parseInt(saved) : initialMinutes * 60;
+  });
+  
+  const [isRunning, setIsRunning] = useState(() => {
+    return localStorage.getItem('studyTimer_isRunning') === 'true';
+  });
+  
+  const [customMinutes, setCustomMinutes] = useState(() => {
+    const saved = localStorage.getItem('studyTimer_customMinutes');
+    return saved ? parseInt(saved) : initialMinutes;
+  });
+  
   const [isSettingTime, setIsSettingTime] = useState(false);
   const intervalRef = useRef(null);
   const startTimeRef = useRef(null);
-  const accumulatedTimeRef = useRef(0);
+  
+  // Load accumulated time from localStorage
+  const accumulatedTimeRef = useRef(
+    localStorage.getItem('studyTimer_accumulatedTime') 
+      ? parseInt(localStorage.getItem('studyTimer_accumulatedTime')) 
+      : 0
+  );
+  
+  // Load last start time from localStorage if timer was running
+  useEffect(() => {
+    if (isRunning) {
+      const savedStartTime = localStorage.getItem('studyTimer_startTime');
+      if (savedStartTime) {
+        startTimeRef.current = parseInt(savedStartTime);
+      } else {
+        startTimeRef.current = Date.now();
+        localStorage.setItem('studyTimer_startTime', startTimeRef.current);
+      }
+    }
+  }, []);
+
+  // Save timer state to localStorage whenever it changes
+  useEffect(() => {
+    localStorage.setItem('studyTimer_timeLeft', timeLeft);
+    localStorage.setItem('studyTimer_isRunning', isRunning);
+    localStorage.setItem('studyTimer_customMinutes', customMinutes);
+    localStorage.setItem('studyTimer_accumulatedTime', accumulatedTimeRef.current);
+    
+    if (startTimeRef.current) {
+      localStorage.setItem('studyTimer_startTime', startTimeRef.current);
+    }
+  }, [timeLeft, isRunning, customMinutes]);
 
   useEffect(() => {
     if (isRunning && timeLeft > 0) {
       // Record start time when timer begins
       if (startTimeRef.current === null) {
         startTimeRef.current = Date.now();
+        localStorage.setItem('studyTimer_startTime', startTimeRef.current);
       }
       
       intervalRef.current = setInterval(() => {
@@ -31,6 +75,10 @@ function Timer({ initialMinutes = 25, onComplete }) {
             startTimeRef.current = null;
             accumulatedTimeRef.current = 0;
             
+            // Clear localStorage timer data
+            localStorage.removeItem('studyTimer_startTime');
+            localStorage.setItem('studyTimer_accumulatedTime', 0);
+            
             // Call the completion callback with actual minutes studied
             if (onComplete) onComplete(totalMinutes);
             return 0;
@@ -45,7 +93,10 @@ function Timer({ initialMinutes = 25, onComplete }) {
       if (startTimeRef.current !== null) {
         const elapsedSeconds = Math.floor((Date.now() - startTimeRef.current) / 1000);
         accumulatedTimeRef.current += elapsedSeconds;
+        localStorage.setItem('studyTimer_accumulatedTime', accumulatedTimeRef.current);
+        
         startTimeRef.current = null;
+        localStorage.removeItem('studyTimer_startTime');
       }
     }
     
@@ -64,6 +115,10 @@ function Timer({ initialMinutes = 25, onComplete }) {
     // Reset tracking refs
     startTimeRef.current = null;
     accumulatedTimeRef.current = 0;
+    
+    // Clear localStorage timer data
+    localStorage.removeItem('studyTimer_startTime');
+    localStorage.setItem('studyTimer_accumulatedTime', 0);
   };
 
   const handleMinutesChange = (e) => {
