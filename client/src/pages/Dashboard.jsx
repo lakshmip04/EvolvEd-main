@@ -38,6 +38,21 @@ function Dashboard() {
     }
   }, [user, navigate, dispatch]);
 
+  // Set up a refresh interval to update analytics data every 2 hours
+  useEffect(() => {
+    // Initial data fetch
+    dispatch(getUserAnalytics());
+    
+    // Set up an interval to refresh data every 2 hours (7,200,000 ms)
+    const refreshInterval = setInterval(() => {
+      dispatch(getUserAnalytics());
+      console.log('Analytics data refreshed automatically');
+    }, 2 * 60 * 60 * 1000);
+    
+    // Clean up interval on component unmount
+    return () => clearInterval(refreshInterval);
+  }, [dispatch]);
+
   // Migrate localStorage data to the backend once
   useEffect(() => {
     if (user && analytics && !dataMigrated) {
@@ -145,8 +160,12 @@ function Dashboard() {
     // Get today's date in YYYY-MM-DD format
     const today = new Date().toISOString().split("T")[0];
 
-    // Update study time with API
-    dispatch(updateStudyTime({ minutes: actualMinutes, date: today }));
+    // Update study time with API and refresh analytics data
+    dispatch(updateStudyTime({ minutes: actualMinutes, date: today }))
+      .then(() => {
+        // Refresh analytics data to update the graph
+        dispatch(getUserAnalytics());
+      });
   };
 
   const formatStudyTime = (seconds) => {

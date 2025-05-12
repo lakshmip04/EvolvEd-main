@@ -1,7 +1,11 @@
 import { useState, useEffect, useRef } from 'react';
 import PropTypes from 'prop-types';
+import { useDispatch } from 'react-redux';
+import { updateStudyTime } from '../features/analytics/analyticsSlice';
 
 function Timer({ initialMinutes = 25, onComplete }) {
+  const dispatch = useDispatch();
+  
   // Initialize state from localStorage or use default values
   const [timeLeft, setTimeLeft] = useState(() => {
     const saved = localStorage.getItem('studyTimer_timeLeft');
@@ -25,6 +29,13 @@ function Timer({ initialMinutes = 25, onComplete }) {
   const accumulatedTimeRef = useRef(
     localStorage.getItem('studyTimer_accumulatedTime') 
       ? parseInt(localStorage.getItem('studyTimer_accumulatedTime')) 
+      : 0
+  );
+  
+  // Time of last db sync to prevent too frequent updates
+  const lastSyncTimeRef = useRef(
+    localStorage.getItem('studyTimer_lastSyncTime')
+      ? parseInt(localStorage.getItem('studyTimer_lastSyncTime'))
       : 0
   );
   
@@ -53,6 +64,26 @@ function Timer({ initialMinutes = 25, onComplete }) {
     }
   }, [timeLeft, isRunning, customMinutes]);
 
+  // Sync study time to database when accumulating significant time (5+ minutes)
+  const syncToDatabase = (minutes) => {
+    if (minutes <= 0) return;
+    
+    const now = Date.now();
+    const today = new Date().toISOString().split('T')[0];
+    
+    // Only sync if we have a meaningful amount of time (1 minute or more)
+    // and if it's been at least 5 minutes since the last sync
+    if (minutes >= 1 && (now - lastSyncTimeRef.current >= 5 * 60 * 1000)) {
+      dispatch(updateStudyTime({ minutes, date: today }));
+      lastSyncTimeRef.current = now;
+      localStorage.setItem('studyTimer_lastSyncTime', now);
+      
+      // Reset accumulated time after syncing to database
+      accumulatedTimeRef.current = 0;
+      localStorage.setItem('studyTimer_accumulatedTime', 0);
+    }
+  };
+
   useEffect(() => {
     if (isRunning && timeLeft > 0) {
       // Record start time when timer begins
@@ -79,6 +110,9 @@ function Timer({ initialMinutes = 25, onComplete }) {
             localStorage.removeItem('studyTimer_startTime');
             localStorage.setItem('studyTimer_accumulatedTime', 0);
             
+            // Sync to database
+            syncToDatabase(totalMinutes);
+            
             // Call the completion callback with actual minutes studied
             if (onComplete) onComplete(totalMinutes);
             return 0;
@@ -95,15 +129,36 @@ function Timer({ initialMinutes = 25, onComplete }) {
         accumulatedTimeRef.current += elapsedSeconds;
         localStorage.setItem('studyTimer_accumulatedTime', accumulatedTimeRef.current);
         
+        // If accumulated enough time (5+ minutes), sync to database
+        const accumulatedMinutes = Math.floor(accumulatedTimeRef.current / 60);
+        if (accumulatedMinutes >= 5) {
+          syncToDatabase(accumulatedMinutes);
+        }
+        
         startTimeRef.current = null;
         localStorage.removeItem('studyTimer_startTime');
       }
     }
     
     return () => {
-      if (intervalRef.current) clearInterval(intervalRef.current);
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+        
+        // If unmounting while the timer is running, save the accumulated time
+        if (isRunning && startTimeRef.current) {
+          const elapsedSeconds = Math.floor((Date.now() - startTimeRef.current) / 1000);
+          accumulatedTimeRef.current += elapsedSeconds;
+          localStorage.setItem('studyTimer_accumulatedTime', accumulatedTimeRef.current);
+          
+          // If accumulated enough time (1+ minute), sync to database
+          const accumulatedMinutes = Math.floor(accumulatedTimeRef.current / 60);
+          if (accumulatedMinutes >= 1) {
+            syncToDatabase(accumulatedMinutes);
+          }
+        }
+      }
     };
-  }, [isRunning, onComplete]);
+  }, [isRunning, onComplete, dispatch]);
 
   const toggleTimer = () => {
     setIsRunning(!isRunning);
@@ -112,6 +167,13 @@ function Timer({ initialMinutes = 25, onComplete }) {
   const resetTimer = () => {
     setIsRunning(false);
     setTimeLeft(customMinutes * 60);
+    
+    // If there's accumulated time, sync it to the database before resetting
+    const accumulatedMinutes = Math.floor(accumulatedTimeRef.current / 60);
+    if (accumulatedMinutes >= 1) {
+      syncToDatabase(accumulatedMinutes);
+    }
+    
     // Reset tracking refs
     startTimeRef.current = null;
     accumulatedTimeRef.current = 0;
