@@ -130,83 +130,171 @@ function FlashcardUploader({ onPDFSelect, onClose }) {
   };
 
   return (
-    <div className="bg-white p-6 rounded-lg shadow-md mb-6">
+    <div className="bg-white dark:bg-gray-800 rounded-lg">
       <form onSubmit={handleSubmit}>
-        <div className="mb-4">
+        <div className="mb-6">
+          <label htmlFor="deckTitle" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            Deck Title
+          </label>
           <input
+            id="deckTitle"
             type="text"
             value={deckTitle}
             onChange={(e) => setDeckTitle(e.target.value)}
-            placeholder="Deck Title"
-            className="w-full p-2 border border-gray-300 rounded mb-2"
+            placeholder="Enter a title for your flashcard deck"
+            className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400 focus:border-indigo-500 dark:focus:border-indigo-400 transition-colors bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
             required
           />
+        </div>
+        
+        <div className="mb-6">
+          <label htmlFor="deckDescription" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            Deck Description (optional)
+          </label>
           <textarea
+            id="deckDescription"
             value={deckDescription}
             onChange={(e) => setDeckDescription(e.target.value)}
-            placeholder="Deck Description (optional)"
-            className="w-full p-2 border border-gray-300 rounded"
-            rows="2"
+            placeholder="Add a description to help you remember what this deck is about"
+            className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400 focus:border-indigo-500 dark:focus:border-indigo-400 transition-colors bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+            rows="3"
           />
         </div>
+        
         <div
-          className="mb-4 border-2 border-dashed border-gray-300 rounded-lg p-6 text-center"
+          className="mb-6 border-2 border-dashed border-indigo-200 dark:border-indigo-800 rounded-lg p-6 text-center transition-colors hover:bg-indigo-50 dark:hover:bg-indigo-900/20 cursor-pointer"
           onDragOver={handleDragOver}
           onDrop={handleDrop}
+          onClick={() => fileInputRef.current.click()}
         >
-          <label className="block text-gray-700 mb-2">
-            Drag & drop a PDF file here or
-            <input
-              type="file"
-              accept="application/pdf"
-              onChange={handleFileChange}
-              className="hidden"
-              ref={fileInputRef}
-              disabled={isLoading}
-            />
-            <button
-              type="button"
-              onClick={() => fileInputRef.current.click()}
-              className="text-blue-500 underline ml-1"
-            >
-              select a file
-            </button>
-          </label>
-          {previewURL && (
-            <div className="mt-4">
+          {!file ? (
+            <div>
+              <svg xmlns="http://www.w3.org/2000/svg" className="mx-auto h-12 w-12 text-indigo-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+              </svg>
+              <p className="mt-4 text-sm text-gray-700 dark:text-gray-300">
+                <span className="font-medium text-indigo-600 dark:text-indigo-400">
+                  Drag and drop your PDF
+                </span>{" "}
+                or click to browse files
+              </p>
+              <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                PDF files up to 10MB
+              </p>
+            </div>
+          ) : (
+            <div className="flex flex-col items-center">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-10 w-10 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <p className="mt-2 text-sm font-medium text-indigo-600 dark:text-indigo-400">
+                {file.name}
+              </p>
+              <button 
+                type="button" 
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setFile(null);
+                  setPreviewURL(null);
+                  if (fileInputRef.current) fileInputRef.current.value = "";
+                }}
+                className="mt-2 text-xs text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300 font-medium"
+              >
+                Remove file
+              </button>
+            </div>
+          )}
+          <input
+            type="file"
+            accept="application/pdf"
+            onChange={handleFileChange}
+            className="hidden"
+            ref={fileInputRef}
+            disabled={isLoading}
+          />
+        </div>
+        
+        {previewURL && (
+          <div className="mb-6 border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
+            <div className="bg-gray-100 dark:bg-gray-800 p-2 flex justify-between items-center border-b border-gray-200 dark:border-gray-700">
+              <span className="text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                </svg>
+                PDF Preview
+              </span>
+              <button 
+                type="button" 
+                onClick={() => window.open(previewURL, '_blank')}
+                className="text-xs text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300 font-medium"
+              >
+                Open in new tab
+              </button>
+            </div>
+            <div className="h-64 overflow-hidden">
               <embed
                 src={previewURL}
                 type="application/pdf"
                 width="100%"
-                height="400px"
+                height="100%"
+                className="border-0"
               />
             </div>
-          )}
-        </div>
-        {isLoading && (
-          <div className="mb-4">
-            <div className="w-full bg-gray-200 rounded-full h-2.5">
-              <div
-                className="bg-blue-600 h-2.5 rounded-full transition-all duration-300"
-                style={{ width: `${progress}%` }}
-              ></div>
-            </div>
-            <span className="block text-center text-sm text-gray-600 mt-1">
-              {progress}%
-            </span>
           </div>
         )}
-        <button
-          type="submit"
-          className={`w-full py-2 px-4 rounded font-bold ${
-            isLoading
-              ? "bg-gray-400 cursor-not-allowed"
-              : "bg-blue-500 hover:bg-blue-600 text-white"
-          }`}
-          disabled={isLoading || !file}
-        >
-          {isLoading ? "Creating Deck..." : "Create Flashcard Deck"}
-        </button>
+        
+        {isLoading && (
+          <div className="mb-6">
+            <div className="flex items-center mb-1">
+              <div className="flex-grow">
+                <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2.5">
+                  <div
+                    className="bg-gradient-to-r from-indigo-500 to-purple-600 h-2.5 rounded-full transition-all duration-300"
+                    style={{ width: `${progress}%` }}
+                  ></div>
+                </div>
+              </div>
+              <span className="ml-2 text-sm font-medium text-gray-700 dark:text-gray-300">
+                {progress}%
+              </span>
+            </div>
+            <p className="text-xs text-gray-500 dark:text-gray-400">
+              Creating flashcards from your PDF...
+            </p>
+          </div>
+        )}
+        
+        <div className="flex justify-end">
+          <button
+            type="button"
+            onClick={onClose}
+            className="px-4 py-2 mr-3 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+            disabled={isLoading}
+          >
+            Cancel
+          </button>
+          <button
+            type="submit"
+            className={`px-6 py-2 rounded-lg font-medium ${
+              isLoading || !file
+                ? "bg-gray-400 dark:bg-gray-600 cursor-not-allowed text-white"
+                : "bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 text-white shadow-sm hover:shadow transition-all duration-200"
+            }`}
+            disabled={isLoading || !file}
+          >
+            {isLoading ? (
+              <span className="flex items-center">
+                <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                Processing...
+              </span>
+            ) : (
+              "Create Flashcard Deck"
+            )}
+          </button>
+        </div>
       </form>
     </div>
   );
